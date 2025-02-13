@@ -185,9 +185,6 @@ namespace WPEFramework
             FrontPanel::_instance = this;
             m_runUpdateTimer = false;
 
-            _engine = Core::ProxyType<RPC::InvokeServerType<1, 0, 4>>::Create();
-            _communicatorClient = Core::ProxyType<RPC::CommunicatorClient>::Create(Core::NodeId("/tmp/communicator"), Core::ProxyType<Core::IIPCServer>(_engine));
-
             Register(METHOD_FP_SET_BRIGHTNESS, &FrontPanel::setBrightnessWrapper, this);
             Register(METHOD_FP_GET_BRIGHTNESS, &FrontPanel::getBrightnessWrapper, this);
             Register(METHOD_FP_POWER_LED_ON, &FrontPanel::powerLedOnWrapper, this);
@@ -211,24 +208,14 @@ namespace WPEFramework
                 _powerManagerPlugin.Reset();
             }
 
-            LOGINFO("Disconnect from the COM-RPC socket\n");
-
-            // Disconnect from the COM-RPC socket
-            if (_communicatorClient.IsValid()) {
-                _communicatorClient->Close(RPC::CommunicationTimeOut);
-                _communicatorClient.Release();
-            }
-
-            if (_engine.IsValid()) {
-                _engine.Release();
-            }
             _registeredEventHandlers = false;
         }
 
-    const string FrontPanel::Initialize(PluginHost::IShell * /* service */)
+        const string FrontPanel::Initialize(PluginHost::IShell *service)
         {
-            InitializePowerManager();
+            InitializePowerManager(service);
             FrontPanel::_instance = this;
+            CFrontPanel::instance(service);
             CFrontPanel::instance()->start();
             CFrontPanel::instance()->addEventObserver(this);
             loadPreferences();
@@ -247,11 +234,10 @@ namespace WPEFramework
             patternUpdateTimer.Revoke(m_updateTimer);
         }
 
-        void FrontPanel::InitializePowerManager()
+        void FrontPanel::InitializePowerManager(PluginHost::IShell *service)
         {
-            _powerManagerPlugin = PowerManagerInterfaceBuilder(_communicatorClient, _T("org.rdk.PowerManager"))
-                                        .withVersion(~0)
-                                        .withTimeout(3000)
+            _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
+                                        .withIShell(service)
                                         .createInterface();
             registerEventHandlers();
         }
