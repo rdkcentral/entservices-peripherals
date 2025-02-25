@@ -137,7 +137,7 @@ namespace WPEFramework {
             void setClockTestPattern(bool show);
 
             void loadPreferences();
-            void InitializePowerManager();
+            void InitializePowerManager(PluginHost::IShell *service);
 
             //Begin methods
             uint32_t setBrightnessWrapper(const JsonObject& parameters, JsonObject& response);
@@ -179,8 +179,6 @@ namespace WPEFramework {
             TestPatternInfo m_updateTimer;
             bool           m_runUpdateTimer;
             std::mutex      m_updateTimerMutex;
-            Core::ProxyType<RPC::InvokeServerType<1, 0, 4> > _engine;
-            Core::ProxyType<RPC::CommunicatorClient> _communicatorClient;
             PowerManagerInterfaceRef _powerManagerPlugin;
             Core::Sink<PowerManagerNotification> _pwrMgrNotification;
             bool _registeredEventHandlers;
