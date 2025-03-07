@@ -191,7 +191,7 @@ namespace Plugin {
 
         const int retryCount() const
         {
-            return _callsign;
+            return _retry_count;
         }
 
         const std::string& callSign() const
