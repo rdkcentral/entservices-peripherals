@@ -85,7 +85,7 @@ namespace WPEFramework {
 		// will receive a JSONRPC message as a notification, in case this method is called.
         class FrontPanel : public PluginHost::IPlugin, public PluginHost::JSONRPC {
         private:
-            class PowerManagerNotification : public Exchange::IPowerManager::INotification {
+            class PowerManagerNotification : public Exchange::IPowerManager::IModeChangedNotification {
             private:
                 PowerManagerNotification(const PowerManagerNotification&) = delete;
                 PowerManagerNotification& operator=(const PowerManagerNotification&) = delete;
@@ -102,14 +102,16 @@ namespace WPEFramework {
                 {
                     _parent.onPowerModeChanged(currentState, newState);
                 }
-                void OnPowerModePreChange(const PowerState &currentState, const PowerState &newState) override {}
-                void OnDeepSleepTimeout(const int &wakeupTimeout) override {}
-                void OnNetworkStandbyModeChanged(const bool &enabled) override {}
-                void OnThermalModeChanged(const ThermalTemperature &currentThermalLevel, const ThermalTemperature &newThermalLevel, const float &currentTemperature) override {}
-                void OnRebootBegin(const string &rebootReasonCustom, const string &rebootReasonOther, const string &rebootRequestor) override {}
+
+                template <typename INTERFACE>
+                T* baseInterface()
+                {
+                    static_assert(std::is_base_of<T, Notification>(), "base type mismatch");
+                    return static_cast<T*>(this);
+                }
 
                 BEGIN_INTERFACE_MAP(PowerManagerNotification)
-                INTERFACE_ENTRY(Exchange::IPowerManager::INotification)
+                INTERFACE_ENTRY(Exchange::IPowerManager::IModeChangedNotification)
                 END_INTERFACE_MAP
             
             private:
