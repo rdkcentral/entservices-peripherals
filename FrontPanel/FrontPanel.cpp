@@ -65,7 +65,9 @@
 #define API_VERSION_NUMBER_MAJOR 1
 #define API_VERSION_NUMBER_MINOR 0
 #define API_VERSION_NUMBER_PATCH 6
-
+#define MAX_PARAM 2
+#define MIN_PARAM 1
+#define LED_MAX_PARAM 6
 
 using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
 
