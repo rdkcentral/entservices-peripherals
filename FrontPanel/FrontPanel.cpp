@@ -66,6 +66,7 @@
 #define API_VERSION_NUMBER_MINOR 0
 #define API_VERSION_NUMBER_PATCH 6
 
+
 using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
 
 
@@ -115,6 +116,22 @@ namespace
         }
         return name;
     }
+
+	// Function to count the number of keys in a JsonObject
+	size_t countKeys(const JsonObject& obj)
+	{
+	    size_t count = 0;
+	    try {
+	        JsonObject::Iterator it = obj.Variants();
+	        while (it.Next())
+	        {
+	            ++count;
+	        }
+	    } catch (const std::exception& e) {
+	        LOGWARN("Exception caught while counting keys: %s", e.what());
+	    }
+	    return count;
+	}
 
     JsonObject getFrontPanelIndicatorInfo(device::FrontPanelIndicator &indicator,JsonObject &indicatorInfo)
     {
@@ -301,6 +318,13 @@ namespace WPEFramework
             int brightness = -1;
             bool ok = false;
 
+ 	   // Check if parameters contain more than two keys
+	    if (countKeys(parameters) != MAX_PARAM)
+	    {
+	        LOGWARN("setBrightness RPC call only supports up to two parameters in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
+
             if (!parameters.HasLabel("brightness"))
             {
                 LOGERR("Parameter 'brightness' wasn't passed");
@@ -380,42 +404,48 @@ namespace WPEFramework
          * @return Returns a ServiceParams object containing brightness value and function result.
          * @ingroup SERVMGR_FRONTPANEL_API
          */
-        uint32_t FrontPanel::getBrightnessWrapper(const JsonObject& parameters, JsonObject& response)
-        {
-            int brightness = -1;
-            bool ok = false;
-            LOGWARN("calling getBrightness");
+     uint32_t FrontPanel::getBrightnessWrapper(const JsonObject& parameters, JsonObject& response)
+{
+    int brightness = -1;
+    bool ok = false;
+    LOGWARN("calling getBrightness");
 
-            if (parameters.HasLabel("index"))
-            {
-                string fp_ind;
-                fp_ind = svc2iarm(parameters["index"].String());
-                LOGWARN("FP3 calling getBrightness of %s", fp_ind.c_str());
+    // Check if parameters contain more than two keys
+    if (countKeys(parameters) != MIN_PARAM)
+    {
+        LOGWARN("getBrightness RPC call only supports up to one parameter in its request, but %zu are given", countKeys(parameters));
+        returnResponse(false);
+    }
+
+    if (parameters.HasLabel("index"))
+    {
+        string fp_ind;
+        fp_ind = svc2iarm(parameters["index"].String());
+        LOGWARN("FP3 calling getBrightness of %s", fp_ind.c_str());
 #ifdef CLOCK_BRIGHTNESS_ENABLED
-                if (TEXT_LED == fp_ind)
-                {
-                    brightness = getClockBrightness();
-                }
-                else
-#endif
-                    try
-                    {
-                        brightness = device::FrontPanelIndicator::getInstance(fp_ind.c_str()).getBrightness();
-                    }
-                    catch (...)
-                    {
-                        LOGWARN("Exception thrown from ds while calling getBrightness");
-                    }
-            }
-            else
-                brightness = getBrightness();
-
-            response["brightness"] = brightness;
-            ok = brightness >= 0 ? true : false;
-
-            returnResponse(ok);
+        if (TEXT_LED == fp_ind)
+        {
+            brightness = getClockBrightness();
         }
+        else
+#endif
+            try
+            {
+                brightness = device::FrontPanelIndicator::getInstance(fp_ind.c_str()).getBrightness();
+            }
+            catch (...)
+            {
+                LOGWARN("Exception thrown from ds while calling getBrightness");
+            }
+    }
+    else
+        brightness = getBrightness();
 
+    response["brightness"] = brightness;
+    ok = brightness >= 0 ? true : false;
+
+    returnResponse(ok);
+}
         /**
          * @brief This function is used to switches ON the particular LED. The LED must be powere ON
          * prior to setting its brightness. It is done by invoking the powerOnLed function of CFrontPanel.
@@ -434,6 +464,13 @@ namespace WPEFramework
         {
             string fp_ind;
             bool ok = false;
+
+  	   // Check if parameters contain more than two keys
+	    if (countKeys(parameters) != MIN_PARAM)
+	    {
+	        LOGWARN("powerledON RPC call only supports up to one parameter in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
 
             if (parameters.HasLabel("index"))
                 fp_ind = parameters["index"].String();
@@ -476,6 +513,13 @@ namespace WPEFramework
             string fp_ind;
             bool ok = false;
 
+  	   // Check if parameters contain more than one keys
+	    if (countKeys(parameters) != MIN_PARAM)
+	    {
+	        LOGWARN("powerledOff RPC call only supports up to one parameter in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
+
             if (parameters.HasLabel("index"))
                 fp_ind = parameters["index"].String();
             if (fp_ind.compare(DATA_LED) == 0)
@@ -510,6 +554,13 @@ namespace WPEFramework
         uint32_t FrontPanel::setClockBrightnessWrapper(const JsonObject& parameters, JsonObject& response)
         {
             bool ok = false;
+
+  // Check if parameters contain more than one keys
+    if (countKeys(parameters) != MIN_PARAM)
+    {
+        LOGWARN("setClockBrightnesss RPC call only supports up to one parameters in its request, but %zu are given", countKeys(parameters));
+        returnResponse(false);
+    }
 
 #ifdef CLOCK_BRIGHTNESS_ENABLED
             int brightness = -1;
@@ -719,7 +770,12 @@ namespace WPEFramework
         uint32_t FrontPanel::setPreferencesWrapper(const JsonObject& parameters, JsonObject& response)
         {
             bool success = false;
-
+   	    // Check if parameters contain more than one keys
+	    if (countKeys(parameters) != MIN_PARAM)
+	    {
+	        LOGWARN("setPreferences RPC call only supports up to two parameters in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
             if (parameters.HasLabel("preferences"))
             {
                 JsonObject preferences = parameters["preferences"].Object();
@@ -872,6 +928,13 @@ namespace WPEFramework
         {
             bool success = false;
 
+ 	   // Check if parameters contain more than two keys
+	    if (countKeys(parameters) != LED_MAX_PARAM)
+	    {
+	        LOGWARN("setLED RPC call only supports up to six parameters in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
+
             /*if (parameters.HasLabel("properties"))
             {
                 JsonObject properties = parameters["properties"].Object();
@@ -885,6 +948,13 @@ namespace WPEFramework
         {
             bool success = false;
 
+   	   // Check if parameters contain more than one keys
+	    if (countKeys(parameters) != MIN_PARAM)
+	    {
+	        LOGWARN("setBlink RPC call only supports up to two parameters in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
+
             if (parameters.HasLabel("blinkInfo"))
             {
                 JsonObject blinkInfo = parameters["blinkInfo"].Object();
@@ -897,6 +967,13 @@ namespace WPEFramework
         uint32_t FrontPanel::set24HourClockWrapper(const JsonObject& parameters, JsonObject& response)
         {
             bool success = false;
+
+           // Check if parameters contain more than two keys
+	    if (countKeys(parameters) != MIN_PARAM)
+	    {
+	        LOGWARN("set24HourClock RPC call only supports up to one parameter in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
 
             if (parameters.HasLabel("is24Hour"))
             {
@@ -917,6 +994,13 @@ namespace WPEFramework
 
         uint32_t FrontPanel::setClockTestPatternWrapper(const JsonObject& parameters, JsonObject& response)
         {
+	    // Check if parameters contain more than two keys
+	    if (countKeys(parameters) != MAX_PARAM)
+	    {
+	        LOGWARN("setClockTestPattern RPC call only supports up to two parameters in its request, but %zu are given", countKeys(parameters));
+	        returnResponse(false);
+	    }
+		
             if (!parameters.HasLabel("show"))
             {
                 LOGWARN("'show' parameter wasn't passed");
