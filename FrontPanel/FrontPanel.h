@@ -98,7 +98,7 @@ namespace WPEFramework {
                 ~PowerManagerNotification() override = default;
             
             public:
-                void OnPowerModeChanged(const PowerState &currentState, const PowerState &newState) override
+                void OnPowerModeChanged(const PowerState currentState, const PowerState newState) override
                 {
                     _parent.onPowerModeChanged(currentState, newState);
                 }
@@ -164,7 +164,7 @@ namespace WPEFramework {
             virtual const string Initialize(PluginHost::IShell* shell) override;
             virtual void Deinitialize(PluginHost::IShell* service) override;
             virtual string Information() const override { return {}; }
-            void onPowerModeChanged(const PowerState &currentState, const PowerState &newState);
+            void onPowerModeChanged(const PowerState currentState, const PowerState newState);
             void updateLedTextPattern();
             void registerEventHandlers();
 
