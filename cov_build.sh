@@ -114,6 +114,7 @@ mkdir -p headers/rdk/iarmmgrs-hal
 mkdir -p headers/ccec/drivers
 mkdir -p headers/network
 mkdir -p headers/proc
+mkdir -p headers/websocket
 echo "dir created successfully"
 echo "======================================================================================"
 
@@ -141,6 +142,9 @@ touch rdk/ds/videoOutputPort.hpp
 touch rdk/ds/videoOutputPortConfig.hpp
 touch rdk/ds/videoOutputPortType.hpp
 touch rdk/ds/videoResolution.hpp
+touch rdk/ds/frontPanelIndicator.hpp
+touch rdk/ds/frontPanelConfig.hpp
+touch rdk/ds/frontPanelTextDisplay.hpp
 touch rdk/iarmbus/libIARM.h
 touch rdk/iarmbus/libIBus.h
 touch rdk/iarmbus/libIBusDaemon.h
