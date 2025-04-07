@@ -173,6 +173,9 @@ touch rtObject.h
 touch rtError.h
 touch rtNotifier.h
 touch dsFPD.h
+touch ctrlm_ipc.h
+touch ctrlm_ipc_rcu.h
+touch ctrlm_ipc_ble.h
 echo "files created successfully"
 echo "======================================================================================"
 
