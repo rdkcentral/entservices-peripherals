@@ -159,6 +159,7 @@ touch pkg.h
 touch secure_wrapper.h
 touch wpa_ctrl.h
 touch btmgr.h
+touch proc/readproc.h
 touch rdk_logger_milestone.h
 touch gdialservice.h
 touch gdialservicecommon.h
@@ -200,6 +201,7 @@ cmake -G Ninja -S entservices-peripherals -B build/entservices-peripherals \
                       -include ${PWD}/entservices-testframework/Tests/mocks/gdialservice.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/wpa_ctrl_mock.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/secure_wrappermock.h \
+                      -include ${PWD}/entservices-testframework/Tests/mocks/readprocMockInterface.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/MotionDetection.h \
                       --coverage -Wall -Werror -Wno-error=format \
                       -Wl,-wrap,system -Wl,-wrap,popen -Wl,-wrap,syslog -Wl,-wrap,wpa_ctrl_open -Wl,-wrap,wpa_ctrl_request -Wl,-wrap,wpa_ctrl_close -Wl,-wrap,wpa_ctrl_pending -Wl,-wrap,wpa_ctrl_recv -Wl,-wrap,wpa_ctrl_attach \
