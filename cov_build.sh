@@ -195,7 +195,6 @@ cmake -G Ninja -S entservices-peripherals -B build/entservices-peripherals \
                       -I ${PWD}/entservices-testframework/Tests/headers/rdk/iarmmgrs-hal \
                       -I ${PWD}/entservices-testframework/Tests/headers/ccec/drivers \
                       -I ${PWD}/entservices-testframework/Tests/headers/network \
-                      -include ${PWD}/entservices-testframework/Tests/mocks/devicesettings.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/Iarm.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/Rfc.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/RBus.h \
