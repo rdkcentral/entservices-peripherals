@@ -220,7 +220,7 @@ cmake -G Ninja -S entservices-peripherals -B build/entservices-peripherals \
   -DRDK_SERVICES_COVERITY=ON \
   -DRDK_SERVICES_L1_TEST=ON \
   -DDS_FOUND=ON \
-  -DPLUGIN_LEDCONTROL=ON \
+  -DPLUGIN_REMOTECONTROL=ON \
   -DHIDE_NON_EXTERNAL_SYMBOLS=OFF \
 
 
