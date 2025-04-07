@@ -168,6 +168,11 @@ touch proc/readproc.h
 touch rdk_logger_milestone.h
 touch gdialservice.h
 touch gdialservicecommon.h
+touch rtRemote.h
+touch rtObject.h
+touch rtError.h
+touch rtNotifier.h
+touch dsFPD.h
 echo "files created successfully"
 echo "======================================================================================"
 
