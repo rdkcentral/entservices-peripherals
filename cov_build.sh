@@ -113,6 +113,7 @@ mkdir -p headers/rdk/iarmbus
 mkdir -p headers/rdk/iarmmgrs-hal
 mkdir -p headers/ccec/drivers
 mkdir -p headers/network
+mkdir -p headers/proc
 echo "dir created successfully"
 echo "======================================================================================"
 
