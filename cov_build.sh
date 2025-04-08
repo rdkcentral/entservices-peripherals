@@ -212,6 +212,7 @@ cmake -G Ninja -S entservices-peripherals -B build/entservices-peripherals \
                       -include ${PWD}/entservices-testframework/Tests/mocks/maintenanceMGR.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/secure_wrappermock.h \
                       -include ${PWD}/entservices-testframework/Tests/mocks/readprocMockInterface.h \
+                      -include ${PWD}/entservices-testframework/Tests/mocks/MotionDetection.h \
                       --coverage -Wall -Werror -Wno-error=format \
                       -Wl,-wrap,system -Wl,-wrap,popen -Wl,-wrap,syslog -Wl,-wrap,wpa_ctrl_open -Wl,-wrap,wpa_ctrl_request -Wl,-wrap,wpa_ctrl_close -Wl,-wrap,wpa_ctrl_pending -Wl,-wrap,wpa_ctrl_recv -Wl,-wrap,wpa_ctrl_attach \
                       -DENABLE_TELEMETRY_LOGGING -DUSE_IARMBUS \
@@ -220,7 +221,6 @@ cmake -G Ninja -S entservices-peripherals -B build/entservices-peripherals \
                       -DUSE_DRM_SCREENCAPTURE -DHAS_API_SYSTEM -DHAS_API_POWERSTATE \
                       -DHAS_RBUS -DDISABLE_SECURITY_TOKEN -DENABLE_DEVICE_MANUFACTURER_INFO -DUSE_THUNDER_R4=ON -DTHUNDER_VERSION=4 -DTHUNDER_VERSION_MAJOR=4 -DTHUNDER_VERSION_MINOR=4" \
   -DCOMCAST_CONFIG=OFF \
-  -DRDK_SERVICES_COVERITY=ON \
   -DRDK_SERVICES_L1_TEST=ON \
   -DDS_FOUND=ON \
   -DPLUGIN_MOTION_DETECTION=ON \
