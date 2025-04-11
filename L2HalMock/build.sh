@@ -85,6 +85,7 @@ cp -r $WORKSPACE/deps/rdk/SyscallWrapper/source/secure_wrapper.h /usr/include
 cp -r $WORKSPACE/deps/rdk/iarmmgrs/mfr/include/*.h /usr/include
 cp -r $WORKSPACE/deps/rdk/iarmmgrs/hal/include/*.h /usr/include
 cp -r $WORKSPACE/deps/rdk/iarmmgrs/sysmgr/include/*.h /usr/include
+cp -r $WORKSPACE/deps/rdk/rdkservices-apis/apis/PowerManager/IPowerManager.h /usr/include/interface
 set +e #exit on error
 
 
