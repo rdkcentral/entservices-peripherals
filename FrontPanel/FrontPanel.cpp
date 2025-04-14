@@ -244,7 +244,7 @@ namespace WPEFramework
             registerEventHandlers();
         }
 
-        void FrontPanel::onPowerModeChanged(const PowerState &currentState, const PowerState &newState)
+        void FrontPanel::onPowerModeChanged(const PowerState currentState, const PowerState newState)
         {
             if(newState == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
             {
