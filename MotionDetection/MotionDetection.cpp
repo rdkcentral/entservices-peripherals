@@ -59,7 +59,7 @@ namespace WPEFramework {
         MOTION_DETECTION_Result_t motiondetection_EventCallback (MOTION_DETECTION_EventMessage_t eventMsg)
         {
             if (!MotionDetection::_instance) {
-                LOGERR ("Invalid pointer. Motion Detector is not initialized (yet?). Event is ignored");
+                LOGERR ("Invalid pointer. Motion Detector is not initialized (yet?). Event %s is ignored");
                 return MOTION_DETECTION_RESULT_INTI_FAILURE;
             } else {
                 string index(eventMsg.m_sensorIndex);
