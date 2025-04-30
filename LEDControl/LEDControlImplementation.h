@@ -46,7 +46,10 @@ namespace WPEFramework
 
                 BEGIN_INTERFACE_MAP(LEDControlImplementation)
                 INTERFACE_ENTRY(Exchange::ILEDControl)
-                END_INTERFACE_MAP            
+                END_INTERFACE_MAP
+
+            private:
+                bool m_isPlatInitialized;
 
             public:
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates) override;
