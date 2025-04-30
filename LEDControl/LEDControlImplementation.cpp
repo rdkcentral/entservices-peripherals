@@ -43,15 +43,26 @@ namespace WPEFramework
     {
         SERVICE_REGISTRATION(LEDControlImplementation, 1, 0);
     
-        LEDControlImplementation::LEDControlImplementation()
+        LEDControlImplementation::LEDControlImplementation(): m_isPlatInitialized (false)
         {
             LOGINFO("LEDControlImplementation Constructor called");
-
+            if (!m_isPlatInitialized){
+                LOGINFO("Doing plat init");
+                if (dsERR_NONE != dsFPInit()){
+		    LOGERR("dsFPInit failed");
+		}
+                m_isPlatInitialized = true;
+            }
         }
 
         LEDControlImplementation::~LEDControlImplementation()
         {
 	    LOGINFO("LEDControlImplementation Destructor called");
+	    if (m_isPlatInitialized){
+                LOGINFO("Doing plat uninit");
+                dsFPTerm();
+                m_isPlatInitialized = false;
+            }
         }
 
         Core::hresult LEDControlImplementation::GetSupportedLEDStates(IStringIterator*& supportedLEDStates)
