@@ -141,13 +141,13 @@ namespace WPEFramework
                     }
                 } else {
                     LOGERR("dsFPGetLEDState returned error %d", err);
-                    return WPEFramework::Core::ERROR_ILLEGAL_STATE;
+                    return Core::ERROR_GENERAL;
                 }
             }
             catch(...)
             {
                 LOGERR("Exception in dsFPGetLEDState");
-                return WPEFramework::Core::ERROR_ILLEGAL_STATE;
+                return Core::ERROR_GENERAL;
             }
 
             return Core::ERROR_NONE;
@@ -200,14 +200,14 @@ namespace WPEFramework
                     dsError_t err = dsFPSetLEDState (LEDstate);
                     if (err) {
                         LOGERR("dsFPSetLEDState returned error %d", err);
-                        return WPEFramework::Core::ERROR_ILLEGAL_STATE;
+                        return Core::ERROR_GENERAL;
                     }
                 }
             }
             catch (...)
             {
                 LOGERR("Exception in dsFPSetLEDState");
-                return WPEFramework::Core::ERROR_ILLEGAL_STATE;
+                return Core::ERROR_GENERAL;
             }
 
             return Core::ERROR_NONE;
