@@ -65,7 +65,7 @@ namespace WPEFramework
             }
         }
 
-        Core::hresult LEDControlImplementation::GetSupportedLEDStates(IStringIterator*& supportedLEDStates)
+        Core::hresult LEDControlImplementation::GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success)
         {
 	    LOGINFO("");
  
@@ -87,13 +87,16 @@ namespace WPEFramework
                     
                 } else {
                         LOGERR("dsFPGetSupportedLEDStates returned error %d", err);
+                        success = false;
                 }
 
             } catch (...){
                 LOGERR("Exception in supportedLEDStates");
+                success = false;
             }
 
             supportedLEDStates = (Core::Service<RPC::StringIterator>::Create<RPC::IStringIterator>(supportedLEDStatesInfo));
+            success = true;
             return Core::ERROR_NONE;
         }
 
