@@ -52,7 +52,7 @@ namespace WPEFramework
                 bool m_isPlatInitialized;
 
             public:
-                Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates) override;
+                Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
                 Core::hresult GetLEDState(LEDControlState& ledState) override;
                 Core::hresult SetLEDState(const string& state) override;
 
