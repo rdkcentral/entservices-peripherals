@@ -88,11 +88,13 @@ namespace WPEFramework
                 } else {
                         LOGERR("dsFPGetSupportedLEDStates returned error %d", err);
                         success = false;
+                        return Core::ERROR_GENERAL;			
                 }
 
             } catch (...){
                 LOGERR("Exception in supportedLEDStates");
                 success = false;
+                return Core::ERROR_GENERAL;
             }
 
             supportedLEDStates = (Core::Service<RPC::StringIterator>::Create<RPC::IStringIterator>(supportedLEDStatesInfo));
