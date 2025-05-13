@@ -113,7 +113,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-testframework
           path: entservices-testframework
-          ref: feature/RDKEMW-2702
+          ref: develop
           token: ${{ secrets.RDKCM_RDKE }}
 
       - name: Checkout entservices-peripherals
@@ -216,6 +216,15 @@ jobs:
           touch
           audiocapturemgr/audiocapturemgr_iarm.h
           ccec/drivers/CecIARMBusMgr.h
+          ccec/FrameListener.hpp
+          ccec/Connection.hpp
+          ccec/Assert.hpp
+          ccec/Messages.hpp
+          ccec/MessageDecoder.hpp
+          ccec/MessageProcessor.hpp
+          ccec/CECFrame.hpp
+          ccec/MessageEncoder.hpp
+          ccec/host/RDK.hpp
           rdk/ds/audioOutputPort.hpp
           rdk/ds/compositeIn.hpp
           rdk/ds/dsDisplay.h
@@ -249,6 +258,7 @@ jobs:
           libudev.h
           rfcapi.h
           rbus.h
+          dsRpc.h
           motionDetector.h
           telemetry_busmessage_sender.h
           maintenanceMGR.h
@@ -308,6 +318,7 @@ jobs:
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/wpa_ctrl_mock.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/readprocMockInterface.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/gdialservice.h
+          -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/HdmiCec.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/MotionDetection.h
           --coverage
           -Wall -Wno-unused-result -Wno-deprecated-declarations -Wno-error=format=
@@ -383,6 +394,7 @@ jobs:
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/wpa_ctrl_mock.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/readprocMockInterface.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/gdialservice.h
+          -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/HdmiCec.h
           --coverage
           -Wall -Wno-unused-result -Wno-deprecated-declarations -Wno-error=format=
           -Wl,-wrap,system -Wl,-wrap,popen -Wl,-wrap,syslog
