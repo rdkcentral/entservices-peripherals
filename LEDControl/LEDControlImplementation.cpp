@@ -158,13 +158,14 @@ namespace WPEFramework
             return Core::ERROR_NONE;
         }
 
-        Core::hresult LEDControlImplementation::SetLEDState(const string& state)
+        Core::hresult LEDControlImplementation::SetLEDState(const string& state, bool& success)
         {
 	    LOGINFO("");
             
             if (state.empty())
             {
                 LOGERR("state is empty");
+                success = false;
                 return WPEFramework::Core::ERROR_BAD_REQUEST;
             }
             
@@ -198,6 +199,7 @@ namespace WPEFramework
                 } else {
                     //Invalid parameter
                     LOGERR("UNKNOWN state : %s", state.c_str());
+                    success = false;
                     return WPEFramework::Core::ERROR_BAD_REQUEST;
                 }
                 if (dsFPD_LED_DEVICE_NONE!=LEDstate) {
@@ -205,6 +207,7 @@ namespace WPEFramework
                     dsError_t err = dsFPSetLEDState (LEDstate);
                     if (err) {
                         LOGERR("dsFPSetLEDState returned error %d", err);
+                        success = false;
                         return Core::ERROR_GENERAL;
                     }
                 }
@@ -212,9 +215,11 @@ namespace WPEFramework
             catch (...)
             {
                 LOGERR("Exception in dsFPSetLEDState");
+                success = false;
                 return Core::ERROR_GENERAL;
             }
 
+            success = true;
             return Core::ERROR_NONE;
         }
 

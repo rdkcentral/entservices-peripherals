@@ -54,7 +54,7 @@ namespace WPEFramework
             public:
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
                 Core::hresult GetLEDState(LEDControlState& ledState) override;
-                Core::hresult SetLEDState(const string& state) override;
+                Core::hresult SetLEDState(const string& state, bool& success) override;
 
         };
     } // namespace Plugin
