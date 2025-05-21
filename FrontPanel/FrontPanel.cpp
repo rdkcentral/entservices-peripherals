@@ -205,6 +205,7 @@ namespace WPEFramework
         FrontPanel::~FrontPanel()
         {
             if (_powerManagerPlugin) {
+                _powerManagerPlugin->Unregister(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());
                 _powerManagerPlugin.Reset();
             }
 
