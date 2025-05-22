@@ -20,8 +20,6 @@
 #include "LEDControl.h"
 #include <algorithm>
 
-#include "rdk/iarmmgrs-hal/pwrMgr.h"
-
 #include "UtilsJsonRpc.h"
 #include "UtilsIarm.h"
 #include "dsFPD.h"
