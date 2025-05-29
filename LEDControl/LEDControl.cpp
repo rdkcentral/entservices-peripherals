@@ -2,7 +2,7 @@
 * If not stated otherwise in this file or this component's LICENSE
 * file the following copyright and licenses apply:
 *
-* Copyright 2020 RDK Management
+* Copyright 2025 RDK Management
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,34 +18,15 @@
 **/
 
 #include "LEDControl.h"
-#include <algorithm>
-
-#include "rdk/iarmmgrs-hal/pwrMgr.h"
-
-#include "UtilsJsonRpc.h"
-#include "UtilsIarm.h"
-#include "dsFPD.h"
 
 #define API_VERSION_NUMBER_MAJOR 1
 #define API_VERSION_NUMBER_MINOR 0
 #define API_VERSION_NUMBER_PATCH 1
 
-#define FPD_LED_DEVICE_NONE "NONE"
-#define FPD_LED_DEVICE_ACTIVE "ACTIVE"
-#define FPD_LED_DEVICE_STANDBY "STANDBY"
-#define FPD_LED_DEVICE_WPS_CONNECTING "WPS_CONNECTING"
-#define FPD_LED_DEVICE_WPS_CONNECTED "WPS_CONNECTED"
-#define FPD_LED_DEVICE_WPS_ERROR "WPS_ERROR"
-#define FPD_LED_DEVICE_FACTORY_RESET "FACTORY_RESET"
-#define FPD_LED_DEVICE_USB_UPGRADE "USB_UPGRADE"
-#define FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR "DOWNLOAD_ERROR"
-
-
 
 namespace WPEFramework
 {
     namespace {
-
         static Plugin::Metadata<Plugin::LEDControl> metadata(
             // Version (Major, Minor, Patch)
             API_VERSION_NUMBER_MAJOR, API_VERSION_NUMBER_MINOR, API_VERSION_NUMBER_PATCH,
@@ -60,238 +41,113 @@ namespace WPEFramework
 
     namespace Plugin
     {
+        /*
+         *Register Ledcontrol module as wpeframework plugin
+         **/
         SERVICE_REGISTRATION(LEDControl, API_VERSION_NUMBER_MAJOR, API_VERSION_NUMBER_MINOR, API_VERSION_NUMBER_PATCH);
 
-        LEDControl* LEDControl::_instance = nullptr;
-
-
-
-        LEDControl::LEDControl()
-        : PluginHost::JSONRPC(),
-        m_isPlatInitialized (false)
+        LEDControl::LEDControl() : _service(nullptr), _connectionId(0), _ledcontrol(nullptr)
         {
-           LOGWARN("ctor");
-           LEDControl::_instance = this;
-           Register("getSupportedLEDStates", &LEDControl::getSupportedLEDStates, this);
-           Register("getLEDState", &LEDControl::getLEDState, this);
-           Register("setLEDState", &LEDControl::setLEDState, this);
-
+            SYSLOG(Logging::Startup, (_T("LEDControl Constructor")));
         }
 
         LEDControl::~LEDControl()
         {
-
+            SYSLOG(Logging::Shutdown, (string(_T("LEDControl Destructor"))));
         }
 
-        const string LEDControl::Initialize(PluginHost::IShell* /* service */)
+        const string LEDControl::Initialize(PluginHost::IShell* service)
         {
-            string msg;
-            if (!m_isPlatInitialized){
-                LOGINFO("Doing plat init");
-                if (dsERR_NONE != dsFPInit()){
-                    msg = "dsFPInit failed";
-		    LOGERR("dsFPInit failed");
-		    return msg;
-		}
-                m_isPlatInitialized = true;
-            }
+            string message="";
 
-            // On success return empty, to indicate there is no error text.
-           return msg;
-        }
+            ASSERT(nullptr != service);
+            ASSERT(nullptr == _service);
+            ASSERT(nullptr == _ledcontrol);
+            ASSERT(0 == _connectionId);
 
-        void LEDControl::Deinitialize(PluginHost::IShell* /* service */)
-        {
-            LEDControl::_instance = nullptr;
+            SYSLOG(Logging::Startup, (_T("LEDControl::Initialize: PID=%u"), getpid()));
 
-            if (m_isPlatInitialized){
-                LOGINFO("Doing plat uninit");
-                dsFPTerm();
-                m_isPlatInitialized = false;
-            }
-        }
+            _service = service;
+            _service->AddRef();
+            _ledcontrol = _service->Root<Exchange::ILEDControl>(_connectionId, 5000, _T("LEDControlImplementation"));
 
-        void LEDControl::setResponseArray(JsonObject& response, const char* key, const vector<string>& items)
-        {
-            JsonArray arr;
-            for(auto& i : items) arr.Add(JsonValue(i));
-
-            response[key] = arr;
-
-            string json;
-            response.ToString(json);
-        }
-
-        /**
-         * @brief This method returns all the led states supported by the platform.
-         *
-         * @param: None.
-         * @return Returns the success code of underlying method.
-         */
-        uint32_t LEDControl::getSupportedLEDStates(const JsonObject& parameters, JsonObject& response)
-        {
-            bool success = false;
-            vector<string> supportedLEDStates;
-
-            try {
-                unsigned int states = dsFPD_LED_DEVICE_NONE;
-                dsError_t err = dsFPGetSupportedLEDStates (&states);
-                if (!err) {
-                    if(!states)supportedLEDStates.emplace_back(FPD_LED_DEVICE_NONE);
-                    if(states & (1<<dsFPD_LED_DEVICE_ACTIVE))supportedLEDStates.emplace_back(FPD_LED_DEVICE_ACTIVE);
-                    if(states & (1<<dsFPD_LED_DEVICE_STANDBY))supportedLEDStates.emplace_back(FPD_LED_DEVICE_STANDBY);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_CONNECTING))supportedLEDStates.emplace_back(FPD_LED_DEVICE_WPS_CONNECTING);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_CONNECTED))supportedLEDStates.emplace_back(FPD_LED_DEVICE_WPS_CONNECTED);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_ERROR))supportedLEDStates.emplace_back(FPD_LED_DEVICE_WPS_ERROR);
-                    if(states & (1<<dsFPD_LED_DEVICE_FACTORY_RESET))supportedLEDStates.emplace_back(FPD_LED_DEVICE_FACTORY_RESET);
-                    if(states & (1<<dsFPD_LED_DEVICE_USB_UPGRADE))supportedLEDStates.emplace_back(FPD_LED_DEVICE_USB_UPGRADE);
-                    if(states & (1<<dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR))supportedLEDStates.emplace_back(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR);
-                    success = true;
-                } else {
-                        LOGERR("dsFPGetSupportedLEDStates returned error %d", err);
-                }
-
-            } catch (...){
-                LOGERR("Exception in supportedLEDStates");
-            }
-            setResponseArray(response, "supportedLEDStates", supportedLEDStates);
-            returnResponse(success);
-        }
-
-        /**
-         * @brief This method returns current led state of the platform.
-         *
-         * @param: None.
-         * @return Returns the success code of underlying method.
-         */
-        uint32_t LEDControl::getLEDState(const JsonObject& parameters, JsonObject& response)
-        {
-            bool success = false;
-
-            try
+            if(nullptr != _ledcontrol)
             {
-                dsFPDLedState_t state;
-               dsError_t err = dsFPGetLEDState (&state);
-               if (!err) {
-                    success = true;
-                    switch (state) {
-                    case dsFPD_LED_DEVICE_NONE:
-                        response["state"] = FPD_LED_DEVICE_NONE;
-                        break;
-                    case dsFPD_LED_DEVICE_ACTIVE:
-                        response["state"] = FPD_LED_DEVICE_ACTIVE;
-                        break;
-                    case dsFPD_LED_DEVICE_STANDBY:
-                        response["state"] = FPD_LED_DEVICE_STANDBY;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_CONNECTING:
-                        response["state"] = FPD_LED_DEVICE_WPS_CONNECTING;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_CONNECTED:
-                        response["state"] = FPD_LED_DEVICE_WPS_CONNECTED;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_ERROR:
-                        response["state"] = FPD_LED_DEVICE_WPS_ERROR;
-                        break;
-                    case dsFPD_LED_DEVICE_FACTORY_RESET:
-                        response["state"] = FPD_LED_DEVICE_FACTORY_RESET;
-                        break;
-                    case dsFPD_LED_DEVICE_USB_UPGRADE:
-                        response["state"] = FPD_LED_DEVICE_USB_UPGRADE;
-                        break;
-                    case dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR:
-                        response["state"] = FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
-                        break;
+                // Invoking Plugin API register to wpeframework
+                Exchange::JLEDControl::Register(*this, _ledcontrol);
+            }
+            else
+            {
+                SYSLOG(Logging::Startup, (_T("Ledcontrol::Initialize: Failed to initialise LEDControl plugin")));
+                message = _T("LEDControl plugin could not be initialised");
+            }
 
-                    default :
-                        LOGERR("Unsupported LEDState %d", state);
-                        LOGTRACEMETHODFIN();
-                        return WPEFramework::Core::ERROR_BAD_REQUEST;
+            return message;
+        }
+
+        void LEDControl::Deinitialize(PluginHost::IShell* service)
+        {
+            ASSERT(_service == service);
+
+            SYSLOG(Logging::Shutdown, (string(_T("LEDControl::Deinitialize"))));
+
+            if (nullptr != _ledcontrol)
+            {
+
+                Exchange::JLEDControl::Unregister(*this);
+
+                // Stop processing:
+                RPC::IRemoteConnection* connection = service->RemoteConnection(_connectionId);
+                VARIABLE_IS_NOT_USED uint32_t result = _ledcontrol->Release();
+
+                _ledcontrol = nullptr;
+
+                // It should have been the last reference we are releasing,
+                // so it should endup in a DESTRUCTION_SUCCEEDED, if not we
+                // are leaking...
+                ASSERT(result == Core::ERROR_DESTRUCTION_SUCCEEDED);
+
+                // If this was running in a (container) process...
+                if (nullptr != connection)
+                {
+                    // Lets trigger the cleanup sequence for
+                    // out-of-process code. Which will guard
+                    // that unwilling processes, get shot if
+                    // not stopped friendly :-)
+                    try
+                    {
+                        connection->Terminate();
+                        // Log success if needed
+                        LOGWARN("Connection terminated successfully.");
                     }
-                } else {
-                    LOGERR("dsFPGetLEDState returned error %d", err);
-                    LOGTRACEMETHODFIN();
-                    return WPEFramework::Core::ERROR_ILLEGAL_STATE;
-                }
-            }
-            catch(...)
-            {
-                LOGERR("Exception in dsFPGetLEDState");
-                LOGTRACEMETHODFIN();
-                return WPEFramework::Core::ERROR_ILLEGAL_STATE;
-            }
-
-            returnResponse(success);
-        }
-
-        /**
-         * @brief This method changes the current led state to the one, mentioned by the user.
-         *
-         * @param[in] led state to apply.
-         * @return Returns the success code of underlying method.
-         * @ingroup SERVMGR_FRONTPANEL_API
-         */
-        uint32_t LEDControl::setLEDState(const JsonObject& parameters, JsonObject& response)
-        {
-            LOGINFOMETHOD();
-            returnIfParamNotFound(parameters, "state");
-            string strLedState = parameters["state"].String();
-            bool success = false;
-            try
-            {
-                dsFPDLedState_t state = dsFPD_LED_DEVICE_NONE;
-                if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_ACTIVE, strlen(FPD_LED_DEVICE_ACTIVE)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_ACTIVE)) ){
-                    state = dsFPD_LED_DEVICE_ACTIVE;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_STANDBY, strlen(FPD_LED_DEVICE_STANDBY)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_STANDBY)) ){
-                    state = dsFPD_LED_DEVICE_STANDBY;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_WPS_CONNECTING, strlen(FPD_LED_DEVICE_WPS_CONNECTING)) && 
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_WPS_CONNECTING))){
-                    state = dsFPD_LED_DEVICE_WPS_CONNECTING;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_WPS_CONNECTED, strlen(FPD_LED_DEVICE_WPS_CONNECTED)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_WPS_CONNECTED)) ){
-                    state = dsFPD_LED_DEVICE_WPS_CONNECTED;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_WPS_ERROR, strlen(FPD_LED_DEVICE_WPS_ERROR)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_WPS_ERROR)) ){
-                    state = dsFPD_LED_DEVICE_WPS_ERROR;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_FACTORY_RESET, strlen(FPD_LED_DEVICE_FACTORY_RESET)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_FACTORY_RESET)) ){
-                    state = dsFPD_LED_DEVICE_FACTORY_RESET;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_USB_UPGRADE, strlen(FPD_LED_DEVICE_USB_UPGRADE)) &&
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_USB_UPGRADE)) ){
-                    state = dsFPD_LED_DEVICE_USB_UPGRADE;
-                } else if (0==strncmp(strLedState.c_str(), FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR, strlen(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR)) && 
-				(strlen(strLedState.c_str()) == strlen(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR)) ){
-                    state = dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
-                } else {
-                    //Invalid parameter
-                    LOGERR("UNKNOWN state : %s", strLedState.c_str());
-                    LOGTRACEMETHODFIN();
-                    return WPEFramework::Core::ERROR_BAD_REQUEST;
-                }
-                if (dsFPD_LED_DEVICE_NONE!=state) {
-		    LOGINFO("dsFPSetLEDState state:%s state:%d", strLedState.c_str(), state);
-                    dsError_t err = dsFPSetLEDState (state);
-                    if (!err) {
-                        success = true;
-                    } else {
-                        LOGERR("dsFPSetLEDState returned error %d", err);
-                        LOGTRACEMETHODFIN();
-                        return WPEFramework::Core::ERROR_ILLEGAL_STATE;
+                    catch (const std::exception& e)
+                    {
+                        std::string errorMessage = "Failed to terminate connection: ";
+                        errorMessage += e.what();
+                        LOGWARN("%s",errorMessage.c_str());
                     }
+
+                    connection->Release();
                 }
             }
-            catch (...)
-            {
-                LOGERR("Exception in dsFPSetLEDState");
-                LOGTRACEMETHODFIN();
-                return WPEFramework::Core::ERROR_ILLEGAL_STATE;
-            }
 
-            returnResponse(success);
+            _connectionId = 0;
+            _service->Release();
+            _service = nullptr;
+            SYSLOG(Logging::Shutdown, (string(_T("LEDControl de-initialised"))));
         }
 
+        string LEDControl::Information() const
+        {
+            return string();
+        }
 
+        void LEDControl::Deactivated(RPC::IRemoteConnection* connection)
+        {
+            if (connection->Id() == _connectionId) {
+                ASSERT(nullptr != _service);
+                Core::IWorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(_service, PluginHost::IShell::DEACTIVATED, PluginHost::IShell::FAILURE));
+            }
+        }
     } // namespace Plugin
 } // namespace WPEFramework

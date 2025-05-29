@@ -2,7 +2,7 @@
 * If not stated otherwise in this file or this component's LICENSE
 * file the following copyright and licenses apply:
 *
-* Copyright 2020 RDK Management
+* Copyright 2025 RDK Management
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,59 +19,45 @@
 
 #pragma once
 
-#include <mutex>
-#include <vector>
-
 #include "Module.h"
+#include <interfaces/ILEDControl.h>
+#include <interfaces/json/JLEDControl.h>
+#include <interfaces/json/JsonData_LEDControl.h>
+#include "UtilsLogging.h"
+#include "tracing/Logging.h"
 
-#include "libIARM.h"
+namespace WPEFramework 
+{
+    namespace Plugin
+    {
+        class LEDControl : public PluginHost::IPlugin, public PluginHost::JSONRPC 
+        {
+            public:
+                LEDControl(const LEDControl&) = delete;
+                LEDControl& operator=(const LEDControl&) = delete;
 
-using std::vector;
-namespace WPEFramework {
+                LEDControl();
+                virtual ~LEDControl();
 
-    namespace Plugin {
+                BEGIN_INTERFACE_MAP(LEDControl)
+                INTERFACE_ENTRY(PluginHost::IPlugin)
+                INTERFACE_ENTRY(PluginHost::IDispatcher)
+                INTERFACE_AGGREGATE(Exchange::ILEDControl, _ledcontrol)
+                END_INTERFACE_MAP
 
+                //  IPlugin methods
+                // -------------------------------------------------------------------------------------------------------
+                const string Initialize(PluginHost::IShell* service) override;
+                void Deinitialize(PluginHost::IShell* service) override;
+                string Information() const override;
 
-		// This is a server for a JSONRPC communication channel.
-		// For a plugin to be capable to handle JSONRPC, inherit from PluginHost::JSONRPC.
-		// By inheriting from this class, the plugin realizes the interface PluginHost::IDispatcher.
-		// This realization of this interface implements, by default, the following methods on this plugin
-		// - exists
-		// - register
-		// - unregister
-		// Any other methood to be handled by this plugin  can be added can be added by using the
-		// templated methods Register on the PluginHost::JSONRPC class.
-		// As the registration/unregistration of notifications is realized by the class PluginHost::JSONRPC,
-		// this class exposes a public method called, Notify(), using this methods, all subscribed clients
-		// will receive a JSONRPC message as a notification, in case this method is called.
-        class LEDControl : public PluginHost::IPlugin, public PluginHost::JSONRPC {
-        private:
-            // We do not allow this plugin to be copied !!
-            LEDControl(const LEDControl&) = delete;
-            LEDControl& operator=(const LEDControl&) = delete;
+            private:
+                void Deactivated(RPC::IRemoteConnection* connection);
 
-        public:
-            LEDControl();
-            virtual ~LEDControl();
-            virtual const string Initialize(PluginHost::IShell* shell) override;
-            virtual void Deinitialize(PluginHost::IShell* service) override;
-            virtual string Information() const override { return {}; }
-
-            BEGIN_INTERFACE_MAP(LEDControl)
-            INTERFACE_ENTRY(PluginHost::IPlugin)
-            INTERFACE_ENTRY(PluginHost::IDispatcher)
-            END_INTERFACE_MAP
-        private:
-            bool m_isPlatInitialized;
-
-            void setResponseArray(JsonObject& response, const char* key, const vector<string>& items);
-            uint32_t getSupportedLEDStates(const JsonObject& parameters, JsonObject& response);
-            uint32_t getLEDState(const JsonObject& parameters, JsonObject& response);
-            uint32_t setLEDState(const JsonObject& parameters, JsonObject& response);
-
-        public:
-            static LEDControl* _instance;
-
-        };
-	} // namespace Plugin
+            private:
+                PluginHost::IShell* _service{};
+                uint32_t _connectionId{};
+                Exchange::ILEDControl* _ledcontrol{};
+       };
+    } // namespace Plugin
 } // namespace WPEFramework
