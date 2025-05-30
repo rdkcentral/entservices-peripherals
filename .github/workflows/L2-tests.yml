@@ -357,6 +357,7 @@ jobs:
           -I $GITHUB_WORKSPACE/entservices-testframework/Tests
           -I $GITHUB_WORKSPACE/Thunder/Source
           -I $GITHUB_WORKSPACE/Thunder/Source/core
+          -I $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/devicesettings.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/Iarm.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/Rfc.h
@@ -370,6 +371,7 @@ jobs:
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/readprocMockInterface.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/gdialservice.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/MotionDetection.h
+          -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/dsFPD.h
           --coverage
           -Wall -Wno-unused-result -Wno-deprecated-declarations -Wno-error=format=
           -Wl,-wrap,system -Wl,-wrap,popen -Wl,-wrap,syslog -Wl,-wrap,v_secure_system -Wl,-wrap,v_secure_popen -Wl,-wrap,v_secure_pclose -Wl,-wrap,unlink
