@@ -100,7 +100,6 @@ protected:
     testing::NiceMock<FrontPanelIndicatorMock> frontPanelIndicatorMock;
     testing::NiceMock<FrontPanelIndicatorMock> frontPanelTextDisplayIndicatorMock;
 
-    IARM_EventHandler_t dsFrontPanelModeChange;
 
     FrontPanelInitializedTest()
         : FrontPanelTest()
@@ -127,17 +126,6 @@ protected:
 
         ON_CALL(*p_frontPanelConfigImplMock, getIndicators())
             .WillByDefault(::testing::Return(device::List<device::FrontPanelIndicator>({ device::FrontPanelIndicator::getInstance() })));
-
-        ON_CALL(*p_iarmBusImplMock, IARM_Bus_RegisterEventHandler(::testing::_, ::testing::_, ::testing::_))
-            .WillByDefault(::testing::Invoke(
-                [&](const char* ownerName, IARM_EventId_t eventId, IARM_EventHandler_t handler) {
-                    if ((string(IARM_BUS_PWRMGR_NAME) == string(ownerName)) && (eventId == IARM_BUS_PWRMGR_EVENT_MODECHANGED)) {
-                        EXPECT_TRUE(handler != nullptr);
-                        dsFrontPanelModeChange = handler;
-                    }
-
-                    return IARM_RESULT_SUCCESS;
-                }));
 
         EXPECT_CALL(PowerManagerMock::Mock(), Register(::testing::Matcher<Exchange::IPowerManager::IModeChangedNotification*>(::testing::_)))
             .WillOnce(
