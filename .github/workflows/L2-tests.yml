@@ -63,7 +63,6 @@ jobs:
             sudo ninja -C build install
 
       - name: Checkout Thunder
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
           repository: rdkcentral/Thunder
@@ -71,12 +70,16 @@ jobs:
           ref: ${{env.THUNDER_REF}}
 
       - name: Checkout ThunderTools
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
           repository: rdkcentral/ThunderTools
           path: ThunderTools
           ref: R4.4.3
+          
+      - name: Checkout entservices-peripherals
+        uses: actions/checkout@v3
+        with:
+          path: entservices-peripherals                
 
       - name: Checkout entservices-testframework
         uses: actions/checkout@v3
@@ -86,11 +89,6 @@ jobs:
           ref: develop
           token: ${{ secrets.RDKCM_RDKE }}
 
-      - name: Checkout entservices-peripherals
-        uses: actions/checkout@v3
-        with:
-          path: entservices-peripherals
-
       - name: Apply patches ThunderTools
         run: |  
           cd $GITHUB_WORKSPACE/ThunderTools
@@ -98,7 +96,6 @@ jobs:
           cd -
 
       - name: Build ThunderTools
-        if: steps.cache.outputs.cache-hit != 'true'
         run: >
           cmake
           -S "$GITHUB_WORKSPACE/ThunderTools"
@@ -122,7 +119,6 @@ jobs:
           cd -
 
       - name: Build Thunder
-        if: steps.cache.outputs.cache-hit != 'true'
         run: >
           cmake
           -S "$GITHUB_WORKSPACE/Thunder"
@@ -141,13 +137,11 @@ jobs:
           cmake --install build/Thunder
 
       - name: Checkout entservices-apis
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
           repository: rdkcentral/entservices-apis
           path: entservices-apis
           ref: ${{env.INTERFACES_REF}}
-          #token : ${{ secrets.RDKCM_RDKE }}
           run: rm -rf $GITHUB_WORKSPACE/entservices-apis/jsonrpc/DTV.json
 
       - name: Apply patches entservices-apis
@@ -234,6 +228,10 @@ jobs:
           systemaudioplatform.h
           gdialservice.h
           gdialservicecommon.h
+          rdk/ds/audioOutputPort.hpp
+          rdk/ds/audioOutputPortType.hpp
+          rdk/ds/AudioStereoMode.hpp
+          rdk/ds/VideoDFC.hpp
           &&
           cp -r /usr/include/gstreamer-1.0/gst /usr/include/glib-2.0/* /usr/lib/x86_64-linux-gnu/glib-2.0/include/* /usr/local/include/trower-base64/base64.h .
 
@@ -404,7 +402,7 @@ jobs:
           -DCMAKE_DISABLE_FIND_PACKAGE_Udev=ON
           -DCMAKE_DISABLE_FIND_PACKAGE_RFC=ON
           -DCMAKE_DISABLE_FIND_PACKAGE_RBus=ON
-          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDS_FOUND=ON
           -DHAS_FRONT_PANEL=ON
           -DPLUGIN_LEDCONTROL=ON
