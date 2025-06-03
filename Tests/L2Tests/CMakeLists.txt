@@ -48,16 +48,6 @@ target_compile_definitions(${MODULE_NAME}
 target_compile_options(${MODULE_NAME} PRIVATE -Wno-error)
 target_link_libraries(${MODULE_NAME} PRIVATE gmock_main ${NAMESPACE}Plugins::${NAMESPACE}Plugins)
 
-if (RDK_SERVICES_L2_TEST)
-   find_library(TESTMOCKLIB_LIBRARIES NAMES TestMocklib)
-   if (TESTMOCKLIB_LIBRARIES)
-       message ("linking mock libraries ${TESTMOCKLIB_LIBRARIES} library")
-       target_link_libraries(${PLUGIN_IMPLEMENTATION} PRIVATE ${TESTMOCKLIB_LIBRARIES})
-   else (TESTMOCKLIB_LIBRARIES)
-       message ("Require ${TESTMOCKLIB_LIBRARIES} library")
-   endif (TESTMOCKLIB_LIBRARIES)
-endif (RDK_SERVICES_L2_TEST)
-
 if (NOT L2_TEST_OOP_RPC)
     find_library(TESTMOCKLIB_LIBRARIES NAMES TestMocklib)
     if (TESTMOCKLIB_LIBRARIES)
