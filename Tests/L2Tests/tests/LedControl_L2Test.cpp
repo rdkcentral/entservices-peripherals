@@ -1,22 +1,3 @@
-/*
-* If not stated otherwise in this file or this component's LICENSE file the
-* following copyright and licenses apply:
-*
-* Copyright 2025 RDK Management
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-
 #include "L2Tests.h"
 #include "L2TestsMock.h"
 #include <condition_variable>
@@ -161,13 +142,13 @@ TEST_F(LEDControl_L2test, JSONRPC_Set_LEDState_ACTIVE)
 {
     JSONRPC::LinkType<Core::JSON::IElement> jsonrpc(LED_CALLSIGN, LEDL2TEST_CALLSIGN);
     uint32_t status = Core::ERROR_GENERAL;
-    JsonObject param, result;
+    JsonObject param, response;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
     param["state"] = "ACTIVE";
-    status = InvokeServiceMethod("org.rdk.LEDControl.1", "setLEDState", param, result);
+    status = InvokeServiceMethod("org.rdk.LEDControl.1", "setLEDState", param, response);
     EXPECT_EQ(status, Core::ERROR_NONE);
 }
 
@@ -449,12 +430,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_ACTIVE)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "ACTIVE";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -485,12 +468,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_STANDBY)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "STANDBY";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -521,12 +506,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_WPSCONNECTING)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "WPS_CONNECTING";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -557,12 +544,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_CONNECTED)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "WPS_CONNECTED";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -593,12 +582,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_ERROR)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "WPS_ERROR";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -629,12 +620,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_FACTORYRESET)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "FACTORY_RESET";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -665,12 +658,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_USBUPGRADE)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "USB_UPGRADE";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -701,12 +696,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_DOWNLOADERROR)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "DOWNLOAD_ERROR";
+    bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_NONE));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    EXPECT_TRUE(success);
 }
 
 /************Test case Details **************************
@@ -757,9 +754,11 @@ TEST_F(LEDControl_L2test, Set_LEDState_NONE)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "NONE";
+    bool success = true;
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
+    EXPECT_FALSE(success);
 }
 
 /************Test case Details **************************
@@ -808,9 +807,11 @@ TEST_F(LEDControl_L2test, Set_LEDState_InvalidParameter)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "INVALID";
+    bool success = true;
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
+    EXPECT_FALSE(success);
 }
 
 /************Test case Details **************************
@@ -821,9 +822,11 @@ TEST_F(LEDControl_L2test, Set_LEDState_emptyParameter)
 {
     uint32_t status = Core::ERROR_NONE;
     string State;
+    bool success = true;
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
+    EXPECT_FALSE(success);
 }
 
 /************Test case Details **************************
@@ -834,12 +837,14 @@ TEST_F(LEDControl_L2test, Set_LEDState_dsFPSetLEDState_Error)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "DOWNLOAD_ERROR";
+    bool success = true;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Return(dsERR_GENERAL));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_GENERAL);
+    EXPECT_FALSE(success);
 }
 
 /************Test case Details **************************
@@ -891,6 +896,7 @@ TEST_F(LEDControl_L2test, dsFPSetLEDState_RaiseException)
 {
     uint32_t status = Core::ERROR_NONE;
     string State = "DOWNLOAD_ERROR";
+    bool success = true;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
         .WillOnce(::testing::Invoke([](dsFPDLedState_t states) {
@@ -898,6 +904,7 @@ TEST_F(LEDControl_L2test, dsFPSetLEDState_RaiseException)
             return dsERR_NONE;
         }));
 
-    status = m_LEDplugin->SetLEDState(State);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_GENERAL);
+    EXPECT_FALSE(success);
 }
