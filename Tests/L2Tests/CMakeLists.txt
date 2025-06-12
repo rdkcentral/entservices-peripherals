@@ -16,7 +16,7 @@
 # limitations under the License.
 
 
-set(PLUGIN_NAME L2TestsPH)
+set(PLUGIN_NAME L2TestsPE)
 set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(THUNDER_PORT 9998)
 find_package(${NAMESPACE}Plugins REQUIRED)
