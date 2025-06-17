@@ -6,14 +6,9 @@ SelectedPlugins="$1"
 echo "Building for Plugins: $SelectedPlugins"
 
 # Check for the presence of "string to find"
-if grep -q "HdmiCecSource" <<< "$SelectedPlugins"; then
+if grep -q "FrontPanel" <<< "$SelectedPlugins"; then
   echo "Found: $SelectedPlugins"
-  HdmiCecSource="ON"
-fi
-
-if grep -q "HdmiCecSink" <<< "$SelectedPlugins"; then
-  echo "Found: $SelectedPlugins"
-  HdmiCecSink="ON"
+  FrontPanel="ON"
 fi
 
 # Define ANSI color codes for green
