@@ -26,7 +26,6 @@
 import subprocess
 import Config
 from Utilities import Utils, ReportGenerator
-from HdmiCecSource import HdmiCecSourceApis
 from FrontPanel import FrontPanelApis
 import time
 
