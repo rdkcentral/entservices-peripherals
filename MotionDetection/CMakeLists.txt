@@ -33,7 +33,7 @@ set_target_properties(${MODULE_NAME} PROPERTIES
 target_include_directories(${MODULE_NAME} PRIVATE ../helpers)
 set_source_files_properties(MotionDetection.cpp PROPERTIES COMPILE_FLAGS "-fexceptions")
 
-if (NOT RDK_SERVICES_L1_TEST)
+if (NOT RDK_SERVICES_L1_TEST AND NOT RDK_SERVICE_L2_TEST)
 target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Plugins md-hal)
 else(RDK_SERVICES_L1_TEST)
         target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Plugins)
