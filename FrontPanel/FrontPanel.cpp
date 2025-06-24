@@ -30,8 +30,6 @@
 #define API_VERSION_NUMBER_MINOR 0
 #define API_VERSION_NUMBER_PATCH 6
 
-using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
-
 namespace WPEFramework
 {
     namespace {
@@ -65,13 +63,11 @@ namespace WPEFramework
 
            _service = service;
            _service->AddRef();
-           _service->Register();
            _frontPanel = _service->Root<Exchange::IFrontPanel>(_connectionId, 5000, _T("FrontPanelImplementation"));
 
            if(nullptr != _frontPanel)
             {
-                _frontPanel->Configure(service);
-                _frontPanel->Register();
+
                 Exchange::JFrontPanel::Register(*this, _frontPanel);
                 LOGINFO("HdmiCecSource plugin is available. Successfully activated FrontPanel Plugin");
             }
@@ -98,7 +94,6 @@ namespace WPEFramework
 
            if(nullptr != _frontPanel)
            {
-             _frontPanel->Unregister();
              Exchange::JFrontPanel::Unregister(*this);
              _frontPanel->Release();
              _frontPanel = nullptr;
@@ -121,7 +116,6 @@ namespace WPEFramework
            }
 
            _connectionId = 0;
-           _service->Unregister();
            _service->Release();
            _service = nullptr;
            LOGINFO("FrontPanel plugin is deactivated. Successfully deactivated FrontPanel Plugin");
