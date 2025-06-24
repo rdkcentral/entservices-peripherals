@@ -23,6 +23,10 @@
 #include "Module.h"
 #include "libIARM.h"
 
+#include <interfaces/IFrontPanel.h>
+#include <interfaces/json/JFrontPanel.h>
+#include <interfaces/json/JsonData_FrontPanel.h>
+
 using namespace WPEFramework;
 
 
@@ -70,7 +74,7 @@ namespace WPEFramework {
                 Exchange::IFrontPanel* _frontPanel;
                 uint32_t _connectionId;
 
-        }
+        };
         
 
 	} // namespace Plugin
