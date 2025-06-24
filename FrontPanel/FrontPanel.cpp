@@ -129,9 +129,7 @@ namespace WPEFramework
 
         string FrontPanel::Information() const
         {
-            return("This FrontPanel PLugin Facilitates the use of the front panel LEDs on the device. 
-                   It allows to set the brightness of the LEDs, turn them on/off, 
-                   set the clock brightness, and get information about the front panel lights.");
+            return("This FrontPanel PLugin Facilitates the use of the front panel LEDs on the device. It allows to set the brightness of the LEDs, turn them on/off, set the clock brightness, and get information about the front panel lights.");
         }
 
         void FrontPanel::Deactivated(RPC::IRemoteConnection* connection)

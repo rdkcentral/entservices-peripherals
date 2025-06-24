@@ -29,6 +29,7 @@ using namespace WPEFramework;
 namespace WPEFramework {
 
     namespace Plugin {
+        class FrontPanel : public PluginHost::IPlugin, public PluginHost::JSONRPC {
         public:
                 // We do not allow this plugin to be copied !!
                 FrontPanel(const FrontPanel&) = delete;
@@ -68,6 +69,8 @@ namespace WPEFramework {
                 PluginHost::IShell* _service{};
                 Exchange::IFrontPanel* _frontPanel;
                 uint32_t _connectionId;
+
+        }
         
 
 	} // namespace Plugin
