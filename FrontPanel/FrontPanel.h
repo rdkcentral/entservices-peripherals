@@ -44,7 +44,6 @@ namespace WPEFramework {
                 , PluginHost::JSONRPC()
                 , _service(nullptr)
                 , _frontPanel(nullptr)
-                , _notification(0)
                 , _connectionId(0)
                 {
 
@@ -74,7 +73,6 @@ namespace WPEFramework {
                 PluginHost::IShell* _service{};
                 Exchange::IFrontPanel* _frontPanel;
                 uint32_t _connectionId;
-                Core::Sink<Notification> _notification;
 
         };
         
