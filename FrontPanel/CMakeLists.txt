@@ -28,7 +28,7 @@ add_library(${MODULE_NAME} SHARED
         Module.cpp)
 
 add_library(${PLUGIN_IMPLEMENTATION} SHARED
-        FrontPanel.cpp
+        FrontPanelImplementation.cpp
         Module.cpp
         ../helpers/frontpanel.cpp)
 
