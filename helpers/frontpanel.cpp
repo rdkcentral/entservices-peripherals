@@ -253,7 +253,7 @@ namespace WPEFramework
             return lastError_;
         }
 
-        void CFrontPanel::addEventObserver(FrontPanel* o)
+        void CFrontPanel::addEventObserver(FrontPanelImplementation* o)
         {
 
             auto it = std::find(observers_.begin(), observers_.end(), o);
@@ -262,7 +262,7 @@ namespace WPEFramework
                 observers_.push_back(o);
         }
 
-        void CFrontPanel::removeEventObserver(FrontPanel* o)
+        void CFrontPanel::removeEventObserver(FrontPanelImplementation* o)
         {
             observers_.remove(o);
         }

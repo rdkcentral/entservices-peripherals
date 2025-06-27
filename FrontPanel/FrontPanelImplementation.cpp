@@ -181,6 +181,14 @@ namespace WPEFramework
             }
 
             _registeredEventHandlers = false;
+
+            FrontPanelImplementation::_instance = nullptr;
+
+            {
+                std::lock_guard<std::mutex> lock(m_updateTimerMutex);
+                m_runUpdateTimer = false;
+            }
+            patternUpdateTimer.Revoke(m_updateTimer);
         }
 
         Core::hresult FrontPanelImplementation::Configure(PluginHost::IShell* service)
@@ -192,19 +200,9 @@ namespace WPEFramework
             CFrontPanel::instance()->addEventObserver(this);
             loadPreferences();
 
-            return (string());
+            return Core::ERROR_NONE;
         }
 
-        void FrontPanelImplementation::Deinitialize(PluginHost::IShell* /* service */)
-        {
-            FrontPanelImplementation::_instance = nullptr;
-
-            {
-                std::lock_guard<std::mutex> lock(m_updateTimerMutex);
-                m_runUpdateTimer = false;
-            }
-            patternUpdateTimer.Revoke(m_updateTimer);
-        }
 
         void FrontPanelImplementation::InitializePowerManager(PluginHost::IShell *service)
         {
@@ -619,7 +617,7 @@ namespace WPEFramework
             properties["green"] = green;
             properties["blue"] = blue;
 
-            bool ok = setLED(properties);
+            bool ok = CFrontPanel::instance()->setLED(properties);
             success.success = ok;
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
         }

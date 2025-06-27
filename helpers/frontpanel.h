@@ -101,8 +101,8 @@ namespace WPEFramework
             bool start();
             bool stop();
             std::string getLastError();
-            void addEventObserver(FrontPanel* o);
-            void removeEventObserver(FrontPanel* o);
+            void addEventObserver(FrontPanelImplementation* o);
+            void removeEventObserver(FrontPanelImplementation* o);
             bool setBrightness(int fp_brighness);
             int getBrightness();
 #ifdef CLOCK_BRIGHTNESS_ENABLED
