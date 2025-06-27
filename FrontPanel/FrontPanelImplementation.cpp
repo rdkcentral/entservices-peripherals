@@ -183,7 +183,7 @@ namespace WPEFramework
             _registeredEventHandlers = false;
         }
 
-        Core::hresult Configure(PluginHost::IShell* service)
+        Core::hresult FrontPanelImplementation::Configure(PluginHost::IShell* service)
         {
             InitializePowerManager(service);
             FrontPanelImplementation::_instance = this;
