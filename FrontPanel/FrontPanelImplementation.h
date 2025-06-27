@@ -25,6 +25,7 @@
 #include "frontpanel.h"
 #include <interfaces/IPowerManager.h>
 #include "PowerManagerInterface.h"
+#include <interfaces/IHdmiCecSink.h>
 
 using namespace WPEFramework;
 using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
@@ -40,35 +41,6 @@ using ThermalTemperature = WPEFramework::Exchange::IPowerManager::ThermalTempera
 namespace WPEFramework {
 
     namespace Plugin {
-
-        class TestPatternInfo
-        {
-        private:
-            TestPatternInfo() = delete;
-            TestPatternInfo& operator=(const TestPatternInfo& RHS) = delete;
-
-        public:
-            TestPatternInfo(FrontPanelImplementation* fp)
-            : m_frontPanel(fp)
-            {
-            }
-            TestPatternInfo(const TestPatternInfo& copy)
-            : m_frontPanel(copy.m_frontPanel)
-            {
-            }
-            ~TestPatternInfo() {}
-
-            inline bool operator==(const TestPatternInfo& RHS) const
-            {
-                return(m_frontPanel == RHS.m_frontPanel);
-            }
-
-        public:
-            uint64_t Timed(const uint64_t scheduledTime);
-
-        private:
-            FrontPanelImplementation* m_frontPanel;
-        };
 
 
 		// This is a server for a JSONRPC communication channel.
@@ -182,6 +154,35 @@ namespace WPEFramework {
             Core::Sink<PowerManagerNotification> _pwrMgrNotification;
             bool _registeredEventHandlers;
 
+        };
+
+        class TestPatternInfo
+        {
+        private:
+            TestPatternInfo() = delete;
+            TestPatternInfo& operator=(const TestPatternInfo& RHS) = delete;
+
+        public:
+            TestPatternInfo(FrontPanelImplementation* fp)
+            : m_frontPanel(fp)
+            {
+            }
+            TestPatternInfo(const TestPatternInfo& copy)
+            : m_frontPanel(copy.m_frontPanel)
+            {
+            }
+            ~TestPatternInfo() {}
+
+            inline bool operator==(const TestPatternInfo& RHS) const
+            {
+                return(m_frontPanel == RHS.m_frontPanel);
+            }
+
+        public:
+            uint64_t Timed(const uint64_t scheduledTime);
+
+        private:
+            FrontPanelImplementation* m_frontPanel;
         };
 	} // namespace Plugin
 } // namespace WPEFramework

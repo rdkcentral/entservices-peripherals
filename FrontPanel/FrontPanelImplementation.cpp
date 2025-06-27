@@ -188,9 +188,9 @@ namespace WPEFramework
         {
             InitializePowerManager(service);
             FrontPanelImplementation::_instance = this;
-            CFrontPanelImplementation::instance(service);
-            CFrontPanelImplementation::instance()->start();
-            CFrontPanelImplementation::instance()->addEventObserver(this);
+            CFrontPanel::instance(service);
+            CFrontPanel::instance()->start();
+            CFrontPanel::instance()->addEventObserver(this);
             loadPreferences();
 
             return (string());
@@ -222,12 +222,12 @@ namespace WPEFramework
             if(newState == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
             {
                 LOGINFO("setPowerStatus true");
-                CFrontPanelImplementation::instance()->setPowerStatus(true);
+                CFrontPanel::instance()->setPowerStatus(true);
             }
             else
             {
                 LOGINFO("setPowerStatus false");
-                CFrontPanelImplementation::instance()->setPowerStatus(false);
+                CFrontPanel::instance()->setPowerStatus(false);
             }
             return;
         }
@@ -256,7 +256,7 @@ namespace WPEFramework
 
         Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success);
         {
-            CFrontPanelImplementation::instance()->stopBlinkTimer();
+            CFrontPanel::instance()->stopBlinkTimer();
             bool ok = false;
 
             string fp_ind = svc2iarm(index);
@@ -285,7 +285,7 @@ namespace WPEFramework
             else if (brightness >= 0 && brightness <= 100)
             {
                 LOGWARN("calling setBrightness");
-                ok = CFrontPanelImplementation::instance()->setBrightness(brightness);
+                ok = CFrontPanel::instance()->setBrightness(brightness);
                 ok = setBrightness(brightness);
             }
             else
@@ -336,7 +336,7 @@ namespace WPEFramework
             }
             else
             {
-                value = CFrontPanelImplementation::instance()->getBrightness();
+                value = CFrontPanel::instance()->getBrightness();
             }
 
             if (value >= 0)
@@ -358,11 +358,11 @@ namespace WPEFramework
         {
             bool ok = false;
             if (index == DATA_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOnLed(FRONT_PANEL_INDICATOR_MESSAGE);
+                ok = CFrontPanel::instance()->powerOnLed(FRONT_PANEL_INDICATOR_MESSAGE);
             } else if (index == RECORD_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOnLed(FRONT_PANEL_INDICATOR_RECORD);
+                ok = CFrontPanel::instance()->powerOnLed(FRONT_PANEL_INDICATOR_RECORD);
             } else if (index == POWER_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOnLed(FRONT_PANEL_INDICATOR_POWER); 
+                ok = CFrontPanel::instance()->powerOnLed(FRONT_PANEL_INDICATOR_POWER); 
             }
             success.success = ok;
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
@@ -373,11 +373,11 @@ namespace WPEFramework
         {
             bool ok = false;
             if (index == DATA_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOffLed(FRONT_PANEL_INDICATOR_MESSAGE); 
+                ok = CFrontPanel::instance()->powerOffLed(FRONT_PANEL_INDICATOR_MESSAGE); 
             } else if (index == RECORD_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOffLed(FRONT_PANEL_INDICATOR_RECORD); 
+                ok = CFrontPanel::instance()->powerOffLed(FRONT_PANEL_INDICATOR_RECORD); 
             } else if (index == POWER_LED) {
-                ok = CFrontPanelImplementation::instance()->powerOffLed(FRONT_PANEL_INDICATOR_POWER); 
+                ok = CFrontPanel::instance()->powerOffLed(FRONT_PANEL_INDICATOR_POWER); 
             }
             success.success = ok;
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
@@ -388,7 +388,7 @@ namespace WPEFramework
         {
 #ifdef CLOCK_BRIGHTNESS_ENABLED
             bool ok;
-            ok = CFrontPanelImplementation::instance()->setClockBrightness(brightness);
+            ok = CFrontPanel::instance()->setClockBrightness(brightness);
             return ok;
 #else
             return false;
@@ -421,7 +421,7 @@ namespace WPEFramework
         {
 #ifdef CLOCK_BRIGHTNESS_ENABLED
             int brightness = -1;
-            brightness = CFrontPanelImplementation::instance()->getClockBrightness();
+            brightness = CFrontPanel::instance()->getClockBrightness();
             return brightness;
 #else
             return -1;
@@ -560,12 +560,12 @@ namespace WPEFramework
 
         void FrontPanelImplementation::loadPreferences()
         {
-            CFrontPanelImplementation::instance()->loadPreferences();
+            CFrontPanel::instance()->loadPreferences();
         }
 
         Core::hresult FrontPanelImplementation::GetPreferences(string& preferences, bool& success)
         {
-            JsonObject prefs = CFrontPanelImplementation::instance()->getPreferences();;
+            JsonObject prefs = CFrontPanel::instance()->getPreferences();;
             string prefsStr;
             prefs.ToString(prefsStr);
             preferences = prefsStr;
@@ -589,7 +589,7 @@ namespace WPEFramework
             try {
                 JsonObject prefs;
                 if (prefs.FromString(preferences)) {
-                    CFrontPanelImplementation::instance()->setPreferences(preferences);
+                    CFrontPanel::instance()->setPreferences(preferences);
                     ok = true;
                 }
             } catch (...) {
@@ -635,7 +635,7 @@ namespace WPEFramework
          */
         void FrontPanelImplementation::setBlink(const JsonObject& blinkInfo)
         {
-            CFrontPanelImplementation::instance()->setBlink(blinkInfo);
+            CFrontPanel::instance()->setBlink(blinkInfo);
         }
 
         /**
@@ -646,7 +646,7 @@ namespace WPEFramework
          */
         void FrontPanelImplementation::set24HourClock(bool is24Hour)
         {
-            CFrontPanelImplementation::instance()->set24HourClock(is24Hour);
+            CFrontPanel::instance()->set24HourClock(is24Hour);
         }
 
         /**
@@ -658,7 +658,7 @@ namespace WPEFramework
         bool FrontPanelImplementation::is24HourClock()
         {
             bool is24Hour = false;
-            is24Hour = CFrontPanelImplementation::instance()->is24HourClock();
+            is24Hour = CFrontPanel::instance()->is24HourClock();
             return is24Hour;
         }
 
