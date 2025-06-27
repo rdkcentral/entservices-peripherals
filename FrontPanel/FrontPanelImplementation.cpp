@@ -163,8 +163,7 @@ namespace WPEFramework
         int FrontPanelImplementation::m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
 
         FrontPanelImplementation::FrontPanelImplementation()
-        : PluginHost::JSONRPC()
-        , m_updateTimer(this)
+        : m_updateTimer(this)
         , m_runUpdateTimer(false)
         , _pwrMgrNotification(*this)
         , _registeredEventHandlers(false)

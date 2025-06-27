@@ -140,20 +140,21 @@ namespace WPEFramework {
 
 
             //Begin methods
-            Core::hresult SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success);
-            Core::hresult GetBrightness(const string& index, int32_t& brightness, bool& success);
-            Core::hresult PowerLedOn(const string& index, FrontPanelSuccess& success);
-            Core::hresult PowerLedOff(const string& index, FrontPanelSuccess& success);
-            Core::hresult SetClockBrightness(const uint32_t& brightness, FrontPanelSuccess& success);
-            Core::hresult GetClockBrightness(uint32_t& brightness, bool& success);
-            Core::hresult GetFrontPanelLights(IFrontPanelLightsListIterator& supportedLights, string& supportedLightsInfo, bool& success);
-            Core::hresult GetPreferences(string& preferences, bool& success);
-            Core::hresult SetPreferences(const string& preferences, FrontPanelSuccess& success);
-            Core::hresult SetLED(const string& ledIndiciator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success);
-            Core::hresult SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success);
-            Core::hresult Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success);
-            Core::hresult Is24HourClock(bool& is24Hour, bool& success);
-            Core::hresult SetClockTestPattern(const bool& show, const uint32_t& timeInterval, FrontPanelSuccess& success);
+            Core::hresult SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success) override;
+            Core::hresult GetBrightness(const string& index, int32_t& brightness, bool& success) override;
+            Core::hresult PowerLedOn(const string& index, FrontPanelSuccess& success) override;
+            Core::hresult PowerLedOff(const string& index, FrontPanelSuccess& success) override;
+            Core::hresult SetClockBrightness(const uint32_t& brightness, FrontPanelSuccess& success) override;
+            Core::hresult GetClockBrightness(uint32_t& brightness, bool& success) override;
+            Core::hresult GetFrontPanelLights(IFrontPanelLightsListIterator& supportedLights, string& supportedLightsInfo, bool& success) override;
+            Core::hresult GetPreferences(string& preferences, bool& success) override;
+            Core::hresult SetPreferences(const string& preferences, FrontPanelSuccess& success) override;
+            Core::hresult SetLED(const string& ledIndiciator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success) override;
+            Core::hresult SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success) override;
+            Core::hresult Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success) override;
+            Core::hresult Is24HourClock(bool& is24Hour, bool& success) override;
+            Core::hresult SetClockTestPattern(const bool& show, const uint32_t& timeInterval, FrontPanelSuccess& success) override;
+            Core::hresult Configure(PluginHost::IShell* service) override;
             //End methods
 
         public:
