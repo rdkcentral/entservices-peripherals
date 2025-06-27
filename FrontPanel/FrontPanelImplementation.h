@@ -43,6 +43,8 @@ namespace WPEFramework {
     namespace Plugin {
 
 
+        class FrontPanelImplementation;
+
         class TestPatternInfo
         {
         private:
@@ -157,16 +159,12 @@ namespace WPEFramework {
         public:
             FrontPanelImplementation();
             virtual ~FrontPanelImplementation();
-            virtual const string Initialize(PluginHost::IShell* shell) override;
-            virtual void Deinitialize(PluginHost::IShell* service) override;
-            virtual string Information() const override { return {}; }
             void onPowerModeChanged(const PowerState currentState, const PowerState newState);
             void updateLedTextPattern();
             void registerEventHandlers();
 
             BEGIN_INTERFACE_MAP(FrontPanelImplementation)
-            INTERFACE_ENTRY(PluginHost::IPlugin)
-            INTERFACE_ENTRY(PluginHost::IDispatcher)
+                INTERFACE_ENTRY(Exchange::IFrontPanel)
             END_INTERFACE_MAP
         public:
             static FrontPanelImplementation* _instance;
