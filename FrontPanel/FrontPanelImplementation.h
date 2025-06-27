@@ -43,6 +43,36 @@ namespace WPEFramework {
     namespace Plugin {
 
 
+        class TestPatternInfo
+        {
+        private:
+            TestPatternInfo() = delete;
+            TestPatternInfo& operator=(const TestPatternInfo& RHS) = delete;
+
+        public:
+            TestPatternInfo(FrontPanelImplementation* fp)
+            : m_frontPanel(fp)
+            {
+            }
+            TestPatternInfo(const TestPatternInfo& copy)
+            : m_frontPanel(copy.m_frontPanel)
+            {
+            }
+            ~TestPatternInfo() {}
+
+            inline bool operator==(const TestPatternInfo& RHS) const
+            {
+                return(m_frontPanel == RHS.m_frontPanel);
+            }
+
+        public:
+            uint64_t Timed(const uint64_t scheduledTime);
+
+        private:
+            FrontPanelImplementation* m_frontPanel;
+        };
+
+
 		// This is a server for a JSONRPC communication channel.
 		// For a plugin to be capable to handle JSONRPC, inherit from PluginHost::JSONRPC.
 		// By inheriting from this class, the plugin realizes the interface PluginHost::IDispatcher.
@@ -122,9 +152,6 @@ namespace WPEFramework {
             Core::hresult Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success);
             Core::hresult Is24HourClock(bool& is24Hour, bool& success);
             Core::hresult SetClockTestPattern(const bool& show, const uint32_t& timeInterval, FrontPanelSuccess& success);
-            Core::hresult Configure(PluginHost::IShell* service) override;
-            Core::hresult Register() override;
-            Core::hresult Unregister() override;
             //End methods
 
         public:
@@ -156,33 +183,5 @@ namespace WPEFramework {
 
         };
 
-        class TestPatternInfo
-        {
-        private:
-            TestPatternInfo() = delete;
-            TestPatternInfo& operator=(const TestPatternInfo& RHS) = delete;
-
-        public:
-            TestPatternInfo(FrontPanelImplementation* fp)
-            : m_frontPanel(fp)
-            {
-            }
-            TestPatternInfo(const TestPatternInfo& copy)
-            : m_frontPanel(copy.m_frontPanel)
-            {
-            }
-            ~TestPatternInfo() {}
-
-            inline bool operator==(const TestPatternInfo& RHS) const
-            {
-                return(m_frontPanel == RHS.m_frontPanel);
-            }
-
-        public:
-            uint64_t Timed(const uint64_t scheduledTime);
-
-        private:
-            FrontPanelImplementation* m_frontPanel;
-        };
 	} // namespace Plugin
 } // namespace WPEFramework
