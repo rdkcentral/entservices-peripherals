@@ -25,7 +25,7 @@
 #include "frontpanel.h"
 #include <interfaces/IPowerManager.h>
 #include "PowerManagerInterface.h"
-#include <interfaces/IHdmiCecSink.h>
+#include <interfaces/IFrontPanel.h>
 
 using namespace WPEFramework;
 using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
@@ -55,7 +55,7 @@ namespace WPEFramework {
 		// As the registration/unregistration of notifications is realized by the class PluginHost::JSONRPC,
 		// this class exposes a public method called, Notify(), using this methods, all subscribed clients
 		// will receive a JSONRPC message as a notification, in case this method is called.
-        class FrontPanelImplementation  : public Exchange::IFrontPanel {
+        class FrontPanelImplementation : public Exchange::IFrontPanel {
         private:
             class PowerManagerNotification : public Exchange::IPowerManager::IModeChangedNotification {
             private:
