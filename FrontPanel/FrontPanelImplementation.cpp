@@ -251,7 +251,7 @@ namespace WPEFramework
             LOGINFO("%s: result json %s\n", __FUNCTION__, json.c_str());
         }
 
-        Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success);
+        Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success)
         {
             CFrontPanel::instance()->stopBlinkTimer();
             bool ok = false;
@@ -425,7 +425,7 @@ namespace WPEFramework
 #endif
         }
 
-        Core::hresult FrontPanelImplementation::getClockBrightness(uint32_t& brightness, bool& success)
+        Core::hresult FrontPanelImplementation::GetClockBrightness(uint32_t& brightness, bool& success)
         {
         #ifdef CLOCK_BRIGHTNESS_ENABLED
             int value = GetClockBrightness();
@@ -545,7 +545,7 @@ namespace WPEFramework
         {
             std::vector<std::string> lights = getFrontPanelLights();
             for (const auto& light : lights) {
-                supportedLights.Next(light);
+                supportedLights->Next(light);
             }
             JsonObject info = getFrontPanelLightsInfo();
             string infoStr;
