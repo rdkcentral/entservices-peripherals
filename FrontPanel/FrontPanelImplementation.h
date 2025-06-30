@@ -149,7 +149,7 @@ namespace WPEFramework {
             Core::hresult GetFrontPanelLights(IFrontPanelLightsListIterator*& supportedLights , string &supportedLightsInfo, bool &success) override;
             Core::hresult GetPreferences(string& preferences, bool& success) override;
             Core::hresult SetPreferences(const string& preferences, FrontPanelSuccess& success) override;
-            Core::hresult SetLED(const string& ledIndiciator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success) override;
+            Core::hresult SetLED(const string& ledIndicator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success) override;
             Core::hresult SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success) override;
             Core::hresult Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success) override;
             Core::hresult Is24HourClock(bool& is24Hour, bool& success) override;

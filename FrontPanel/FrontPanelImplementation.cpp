@@ -541,7 +541,7 @@ namespace WPEFramework
             return returnResult;
         }
 
-        Core::hresult FrontPanelImplementation::GetFrontPanelLights(IFrontPanelLightsListIterator& supportedLights, string& supportedLightsInfo, bool& success)
+        Core::hresult FrontPanelImplementation::GetFrontPanelLights(IFrontPanelLightsListIterator*& supportedLights , string &supportedLightsInfo, bool &success)
         {
             std::vector<std::string> lights = getFrontPanelLights();
             for (const auto& light : lights) {
@@ -740,26 +740,27 @@ namespace WPEFramework
         #endif
         }
         Core::hresult FrontPanelImplementation::SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success)
-        {
+        {   
             bool ok = false;
             try {
                 JsonObject blinkObj;
-                blinkObj["ledIndicator"] = blinkInfo.ledIndiciator;
+                blinkObj["ledIndicator"] = blinkInfo.ledIndicator;
                 blinkObj["iterations"] = blinkInfo.iterations;
-
+            
                 JsonArray patternArr;
-                for (const auto& pat : blinkInfo.pattern) {
+                // Updated for new structure: only one pattern
+                {
                     JsonObject patObj;
-                    patObj["brightness"] = pat.brightness;
-                    patObj["duration"] = pat.duration;
-                    patObj["color"] = pat.color;
-                    patObj["red"] = pat.red;
-                    patObj["green"] = pat.green;
-                    patObj["blue"] = pat.blue;
+                    patObj["brightness"] = blinkInfo.pattern.brightness;
+                    patObj["duration"] = blinkInfo.pattern.duration;
+                    patObj["color"] = blinkInfo.pattern.color;
+                    patObj["red"] = blinkInfo.pattern.red;
+                    patObj["green"] = blinkInfo.pattern.green;
+                    patObj["blue"] = blinkInfo.pattern.blue;
                     patternArr.Add(patObj);
                 }
                 blinkObj["pattern"] = patternArr;
-
+            
                 setBlink(blinkObj);
                 ok = true;
             } catch (...) {
