@@ -283,7 +283,6 @@ namespace WPEFramework
             {
                 LOGWARN("calling setBrightness");
                 ok = CFrontPanel::instance()->setBrightness(brightness);
-                ok = setBrightness(brightness);
             }
             else
             {
@@ -545,7 +544,8 @@ namespace WPEFramework
         {
             std::vector<std::string> lights = getFrontPanelLights();
             for (const auto& light : lights) {
-                supportedLights->Next(light);
+                std::string copy = light;
+                supportedLights->Next(copy);
             }
             JsonObject info = getFrontPanelLightsInfo();
             string infoStr;
