@@ -156,7 +156,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/entservices-apis
           patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/RDKEMW-1007.patch
-          cd -      
+          cd -
 
       - name: Build entservices-apis
         run: >
@@ -219,7 +219,6 @@ jobs:
           rdk/iarmbus/libIBusDaemon.h
           rdk/halif/deepsleep-manager/deepSleepMgr.h
           rdk/iarmmgrs-hal/mfrMgr.h
-          rdk/iarmmgrs-hal/pwrMgr.h
           rdk/iarmmgrs-hal/sysMgr.h
           network/wifiSrvMgrIarmIf.h
           network/netsrvmgrIarm.h
