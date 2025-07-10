@@ -115,17 +115,6 @@ set_source_files_properties(
         tests/test_FrontPanel.cpp
         PROPERTIES COMPILE_FLAGS "-fexceptions")
 
-if (RDK_SERVICES_L1_TEST)
-   find_library(TESTMOCKLIB_LIBRARIES NAMES L1TestMocklib)
-   if (TESTMOCKLIB_LIBRARIES)
-       message ("Found mock libraries ${TESTMOCKLIB_LIBRARIES} library")
-       target_link_libraries(${MODULE_NAME} ${TESTMOCKLIB_LIBRARIES})
-   else (TESTMOCKLIB_LIBRARIES)
-       message ("Require ${TESTMOCKLIB_LIBRARIES} library")
-   endif (TESTMOCKLIB_LIBRARIES)
-endif (RDK_SERVICES_L1_TEST)
-
-
 include_directories(${TEST_INC})
 
 target_link_directories(${MODULE_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib/wpeframework/plugins)
