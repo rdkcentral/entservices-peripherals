@@ -69,5 +69,3 @@ target_include_directories(
     )
 
 install(TARGETS ${MODULE_NAME} DESTINATION lib)
-
-write_config(${PLUGIN_NAME})
