@@ -180,7 +180,7 @@ namespace WPEFramework
 #endif
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
-
+#if 0
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
                         LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
@@ -189,7 +189,9 @@ namespace WPEFramework
 
                         device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
                     }
-
+#else
+    LOGWARN("GSK: NOT Initializing light %s since we continue with bootloader patern", fpIndicators.at(i).getName().c_str());
+#endif
                     if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
 
