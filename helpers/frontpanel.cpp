@@ -171,6 +171,7 @@ namespace WPEFramework
                                 if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
                                     powerStatus = true;
                             }
+                            LOGINFO(" pwrStateCur %d, pwrStatePrev %d powerStatus=%d", pwrStateCur, pwrStatePrev, powerStatus);
                         }
                     }
 #endif
@@ -180,7 +181,7 @@ namespace WPEFramework
 #endif
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
-#if 0
+#if 0 //Need to fix this logic based on the device type. 
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
                         LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
@@ -190,7 +191,7 @@ namespace WPEFramework
                         device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
                     }
 #else
-    LOGWARN("GSK: NOT Initializing light power since we continue with bootloader patern");
+                    LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
 #endif
                     if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
