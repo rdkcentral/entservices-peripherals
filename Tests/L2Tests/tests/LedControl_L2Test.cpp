@@ -103,8 +103,9 @@ LEDControl_L2test::~LEDControl_L2test()
 
     /* Deactivate plugin in destructor */
     status = DeactivateService("org.rdk.LEDControl");
-    sleep(3);
     EXPECT_EQ(Core::ERROR_NONE, status);
+
+    sleep(3);
 }
 
 uint32_t LEDControl_L2test::CreateDeviceLEDControlInterfaceObject()
