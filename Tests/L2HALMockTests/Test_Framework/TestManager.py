@@ -26,6 +26,7 @@ import time
 sys.path.append("../TestCases")
 from HdmiCecSource import CecUtils
 from FrontPanel import FPUtils
+from DisplayInfo import DIUtils
 from HDCPProfile import HdcpUtils
 from Utilities import Utils, ReportGenerator
 
@@ -34,6 +35,8 @@ sys.path.append("../TestCases/HdmiCecSource")
 sys.path.append("../TestCases/HdmiCecSink")
 sys.path.append("../TestCases/FrontPanel")
 sys.path.append("../TestCases/HDCPProfile")
+sys.path.append("../TestCases/DisplayInfo")
+
 
 # Define the build name of current build being tested
 build_name = "23Q4-HAL-MOCK-TEST"
@@ -80,7 +83,7 @@ tc_name = result
 flag = 0
 track = 0
 
-list_of_plugins = ['HdmiCecSource','HdmiCecSink','FrontPanel','HdcpProfile']
+list_of_plugins = ['HdmiCecSource','HdmiCecSink','FrontPanel','HdcpProfile','DisplayInfo']
 
 plugin_name = []
 
@@ -430,6 +433,17 @@ if track == 2 or track > 2:
       
     else:
         print("skipping HdcpProfile as no changes are required")
+
+    if "HdcpProfile" in plugin_name:
+        print("Detected change in DisplayInfo")
+        import TCID_001_DS_DeviceInfo_edid
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        import TCID_002_DS_DisplayInfo_widthincentimeters 
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        import TCID_003_DS_DisplayInfo_heightincentimeters
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+    else:
+        print("skipping DisplayInfo as no changes are required")
 else:
     track = 1
 if "HdmiCecSource" in argument or "HdmiCecSource" in result:
@@ -693,9 +707,7 @@ if "FrontPanel" in argument or "FrontPanel" in result:
         print("\033[32m------########################################################################################################################---------.\033[0m")
         import TCID_016_DS_FrontPanel_Deactivate
         
-# Activating the HdmiCecSource plugin using controller1.activate curl command
-        #CecUtils.activate_cec()
-        #time.sleep(5)
+
 if "HdcpProfile" in argument or "HdcpProfile" in result:
     if track < 2:
         flag = 4
@@ -713,6 +725,19 @@ if "HdcpProfile" in argument or "HdcpProfile" in result:
         time.sleep(28)
         import TCID_003_HDCPProfile_ActivateDeactivateSimulation
         #import TCID_003_HDCPProfile_ActivateDeactivateSimulation
+if "DisplayInfo" in argument or "DisplayInfo" in result:
+    if track < 2:
+        flag = 5
+        Utils.info_log("Executing DisplayInfo Test suite")
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        #Utils.initialize_flask()   #Flask initialization not required as its a static Mock
+        print("Executing Test Framework without HTTP server and Websocket")
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        import TCID_001_DS_DeviceInfo_edid
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        import TTCID_002_DS_DisplayInfo_widthincentimeters  
+        print("\033[32m------########################################################################################################################---------.\033[0m")
+        import TCID_003_DS_DisplayInfo_heightincentimeters
 
 if argument == "DeviceSettings":
     flag = 3
