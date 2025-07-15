@@ -190,7 +190,7 @@ namespace WPEFramework
                         device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
                     }
 #else
-    LOGWARN("GSK: NOT Initializing light %s since we continue with bootloader patern", fpIndicators.at(i).getName().c_str());
+    LOGWARN("GSK: NOT Initializing light power since we continue with bootloader patern");
 #endif
                     if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
