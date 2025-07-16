@@ -103,7 +103,7 @@ LEDControl_L2test::~LEDControl_L2test()
 
     /* Deactivate plugin in destructor */
     status = DeactivateService("org.rdk.LEDControl");
-    if (status != Core::ERROR_NONE) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    if (status != Core::ERROR_NONE) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     EXPECT_EQ(Core::ERROR_NONE, status);
 }
 
