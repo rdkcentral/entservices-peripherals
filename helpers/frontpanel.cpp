@@ -171,6 +171,7 @@ namespace WPEFramework
                                 if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
                                     powerStatus = true;
                             }
+                            LOGINFO(" pwrStateCur %d, pwrStatePrev %d powerStatus=%d", pwrStateCur, pwrStatePrev, powerStatus);
                         }
                     }
 #endif
@@ -185,9 +186,10 @@ namespace WPEFramework
                     {
                         LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
                         if (powerStatus)
+                        {
                             device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
-
-                        device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                            LOGINFO("Initialized light %s with brightness %d", fpIndicators.at(i).getName().c_str(), globalLedBrightness);
+                        }
                     }
 
                     if (powerStatus)
