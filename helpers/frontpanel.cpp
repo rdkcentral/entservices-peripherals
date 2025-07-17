@@ -181,6 +181,7 @@ namespace WPEFramework
 #endif
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
+
 #if 0 //Need to fix this logic based on the device type. 
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
