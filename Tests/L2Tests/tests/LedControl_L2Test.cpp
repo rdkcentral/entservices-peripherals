@@ -107,7 +107,7 @@ LEDControl_L2test::~LEDControl_L2test()
     if (status == Core::ERROR_NONE) {
         break;  // Success!
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     EXPECT_EQ(Core::ERROR_NONE, status);
 }
