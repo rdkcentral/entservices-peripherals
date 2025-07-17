@@ -182,18 +182,16 @@ namespace WPEFramework
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-#if 0 //Need to fix this logic based on the device type. 
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
                         LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
                         if (powerStatus)
+                        {
                             device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
-
-                        device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                            LOGINFO("Initialized light %s with brightness %d", fpIndicators.at(i).getName().c_str(), globalLedBrightness);
+                        }
                     }
-#else
-                    LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-#endif
+
                     if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
 
