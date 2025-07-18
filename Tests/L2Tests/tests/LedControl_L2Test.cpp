@@ -102,7 +102,7 @@ LEDControl_L2test::~LEDControl_L2test()
     uint32_t status = Core::ERROR_GENERAL;
 
     /* Deactivate plugin in destructor */
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 2; ++i) {
     status = DeactivateService("org.rdk.LEDControl");
     if (status == Core::ERROR_NONE) {
         break;  // Success!
