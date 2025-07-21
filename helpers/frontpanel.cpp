@@ -172,7 +172,7 @@ namespace WPEFramework
                                 if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
                                     powerStatus = true;
                             }
-                            LOGINFO(" pwrStateCur %d, pwrStatePrev %d powerStatus=%d", pwrStateCur, pwrStatePrev, powerStatus);
+                            LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
                         }
                     }
 #endif
