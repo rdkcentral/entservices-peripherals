@@ -33,10 +33,7 @@ using ThermalTemperature = WPEFramework::Exchange::IPowerManager::ThermalTempera
 
 #define DATA_LED  "data_led"
 #define RECORD_LED "record_led"
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-#define CLOCK_LED "clock_led"
-#define TEXT_LED "Text"
-#endif
+
 
 namespace WPEFramework {
 
@@ -126,15 +123,9 @@ namespace WPEFramework {
             FrontPanelImplementation(const FrontPanelImplementation&) = delete;
             FrontPanelImplementation& operator=(const FrontPanelImplementation&) = delete;
 
-            bool setClockBrightness(int brightness);
-            int getClockBrightness();
             std::vector<string> getFrontPanelLights();
             JsonObject getFrontPanelLightsInfo();
             void setBlink(const JsonObject& blinkInfo);
-            void set24HourClock(bool is24Hour);
-            bool is24HourClock();
-            void setClockTestPattern(bool show);
-
             void loadPreferences();
             void InitializePowerManager(PluginHost::IShell *service);
 
@@ -144,16 +135,9 @@ namespace WPEFramework {
             Core::hresult GetBrightness(const string& index, int32_t& brightness, bool& success) override;
             Core::hresult PowerLedOn(const string& index, FrontPanelSuccess& success) override;
             Core::hresult PowerLedOff(const string& index, FrontPanelSuccess& success) override;
-            Core::hresult SetClockBrightness(const uint32_t& brightness, FrontPanelSuccess& success) override;
-            Core::hresult GetClockBrightness(uint32_t& brightness, bool& success) override;
             Core::hresult GetFrontPanelLights(IFrontPanelLightsListIterator*& supportedLights , string &supportedLightsInfo, bool &success) override;
-            Core::hresult GetPreferences(string& preferences, bool& success) override;
-            Core::hresult SetPreferences(const string& preferences, FrontPanelSuccess& success) override;
             Core::hresult SetLED(const string& ledIndicator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success) override;
             Core::hresult SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success) override;
-            Core::hresult Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success) override;
-            Core::hresult Is24HourClock(bool& is24Hour, bool& success) override;
-            Core::hresult SetClockTestPattern(const bool& show, const uint32_t& timeInterval, FrontPanelSuccess& success) override;
             Core::hresult Configure(PluginHost::IShell* service) override;
             //End methods
 
@@ -170,8 +154,6 @@ namespace WPEFramework {
         public:
             static FrontPanelImplementation* _instance;
         private:
-            static int m_savedClockBrightness;
-            static int m_LedDisplayPatternUpdateTimerInterval;
 
             TestPatternInfo m_updateTimer;
             bool           m_runUpdateTimer;

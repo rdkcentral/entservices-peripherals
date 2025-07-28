@@ -35,24 +35,13 @@
 #define METHOD_FP_GET_BRIGHTNESS "getBrightness"
 #define METHOD_FP_POWER_LED_ON "powerLedOn"
 #define METHOD_FP_POWER_LED_OFF "powerLedOff"
-#define METHOD_CLOCK_SET_BRIGHTNESS "setClockBrightness"
-#define METHOD_CLOCK_GET_BRIGHTNESS "getClockBrightness"
 #define METHOD_GET_FRONT_PANEL_LIGHTS "getFrontPanelLights"
-#define METHOD_FP_GET_PREFERENCES "getPreferences"
-#define METHOD_FP_SET_PREFERENCES "setPreferences"
 #define METHOD_FP_SET_LED "setLED"
 #define METHOD_FP_SET_BLINK "setBlink"
-#define METHOD_FP_SET_24_HOUR_CLOCK "set24HourClock"
-#define METHOD_FP_IS_24_HOUR_CLOCK "is24HourClock"
-#define METHOD_FP_SET_CLOCKTESTPATTERN "setClockTestPattern"
 
 #define DATA_LED "data_led"
 #define RECORD_LED "record_led"
 #define POWER_LED "power_led"
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-#define CLOCK_LED "clock_led"
-#define TEXT_LED "Text"
-#endif
 
 #ifdef USE_EXTENDED_ALL_SEGMENTS_TEXT_PATTERN
 #define ALL_SEGMENTS_TEXT_PATTERN "88:88"
@@ -82,7 +71,6 @@ namespace
         { "Record" , "record_led"},
         { "Message" , "data_led"},
         { "Power" , "power_led"},
-        { "Text" , "clock_led"},
         // TODO: add your mappings here
         // { <IARM_NAME>, <SVC_MANAGER_API_NAME> },
         { 0,  0}
@@ -159,8 +147,6 @@ namespace WPEFramework
         FrontPanelImplementation* FrontPanelImplementation::_instance = nullptr;
 
         static Core::TimerType<TestPatternInfo> patternUpdateTimer(64 * 1024, "PatternUpdateTimer");
-        int FrontPanelImplementation::m_savedClockBrightness = -1;
-        int FrontPanelImplementation::m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
 
         FrontPanelImplementation::FrontPanelImplementation()
         : m_updateTimer(this)
@@ -253,30 +239,22 @@ namespace WPEFramework
 
         Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success)
         {
+            LOGINFO("SetBrightness called with index: %s, brightness: %d", index.c_str(), brightness);
             CFrontPanel::instance()->stopBlinkTimer();
             bool ok = false;
 
             string fp_ind = svc2iarm(index);
             if (!fp_ind.empty())
-                {
+            {
                 
-    #ifdef CLOCK_BRIGHTNESS_ENABLED
-                if (TEXT_LED == fp_ind)
+                try
                 {
-                ok = setClockBrightness(int(brightness));
+                    device::FrontPanelIndicator::getInstance(fp_ind.c_str()).setBrightness(int(brightness));
+                    ok = true;
                 }
-                else
-    #endif
+                catch (...)
                 {
-                    try
-                    {
-                        device::FrontPanelIndicator::getInstance(fp_ind.c_str()).setBrightness(int(brightness));
-                        ok = true;
-                    }
-                    catch (...)
-                    {
-                        ok = false;
-                    }
+                    ok = false;
                 }
             }
             else if (brightness >= 0 && brightness <= 100)
@@ -304,6 +282,7 @@ namespace WPEFramework
          */
         Core::hresult FrontPanelImplementation::GetBrightness(const string& index, int32_t& brightness, bool& success)
         {
+            LOGINFO("GetBrightness called with index: %s", index.c_str());
             bool ok = false;
             int value = -1;
             
@@ -312,26 +291,21 @@ namespace WPEFramework
 
             if (!fp_ind.empty())
             {
-        #ifdef CLOCK_BRIGHTNESS_ENABLED
-                if (TEXT_LED == fp_ind)
+
+                
+                try
                 {
-                    value = getClockBrightness();
+                    value = device::FrontPanelIndicator::getInstance(fp_ind.c_str()).getBrightness();
                 }
-                else
-        #endif
+                catch (...)
                 {
-                    try
-                    {
-                        value = device::FrontPanelIndicator::getInstance(fp_ind.c_str()).getBrightness();
-                    }
-                    catch (...)
-                    {
-                        LOGWARN("Exception thrown from ds while calling getBrightness");
-                    }
+                    LOGWARN("Exception thrown from ds while calling getBrightness");
                 }
+                
             }
             else
             {
+                LOGWARN("calling getBrightness");
                 value = CFrontPanel::instance()->getBrightness();
             }
 
@@ -380,72 +354,6 @@ namespace WPEFramework
         }
 
 
-        bool FrontPanelImplementation::setClockBrightness(int brightness )
-        {
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-            bool ok;
-            ok = CFrontPanel::instance()->setClockBrightness(brightness);
-            return ok;
-#else
-            return false;
-#endif
-        }
-
-        Core::hresult FrontPanelImplementation::SetClockBrightness(const uint32_t& brightness, FrontPanelSuccess& success)
-        {
-        #ifdef CLOCK_BRIGHTNESS_ENABLED
-            bool ok = false;
-            if (brightness <= 100) {
-                ok = setClockBrightness(static_cast<int>(brightness));
-            }
-            success.success = ok;
-            return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
-        #else
-            success.success = false;
-            return Core::ERROR_UNAVAILABLE;
-        #endif
-        }
-
-
-        /**
-         * @brief get the clock brightness of the specified LED. Brightness must be a value support by the
-         * LED and the value of the brightness for this led must be persisted.
-         *
-         * @return The brightness integer value if clock brightness enable macro is true else it will return -1.
-         */
-        int FrontPanelImplementation::getClockBrightness()
-        {
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-            int brightness = -1;
-            brightness = CFrontPanel::instance()->getClockBrightness();
-            return brightness;
-#else
-            return -1;
-#endif
-        }
-
-        Core::hresult FrontPanelImplementation::GetClockBrightness(uint32_t& brightness, bool& success)
-        {
-        #ifdef CLOCK_BRIGHTNESS_ENABLED
-            int value = GetClockBrightness();
-            if (value >= 0) {
-                brightness = static_cast<uint32_t>(value);
-                success = true;
-                return Core::ERROR_NONE;
-            } else {
-                brightness = 0;
-                success = false;
-                return Core::ERROR_GENERAL;
-            }
-        #else
-            brightness = 0;
-            success = false;
-            LOGERR("Clock brightness is not enabled");
-            return Core::ERROR_GENERAL;
-        #endif
-        }
-
-
         /**
          * @brief getFrontPanelLights This returns an object containing attributes of front panel
          * light: success, supportedLights, and supportedLightsInfo.
@@ -466,25 +374,6 @@ namespace WPEFramework
                 string MappedName = iarm2svc(IndicatorNameIarm);
                 if (MappedName != IndicatorNameIarm) lights.push_back(MappedName);
             }
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-            try
-            {
-                device::List <device::FrontPanelTextDisplay> fpTextDisplays = device::FrontPanelConfig::getInstance().getTextDisplays();
-                for (uint i = 0; i < fpTextDisplays.size(); i++)
-                {
-                    string TextDisplayNameIarm = fpTextDisplays.at(i).getName();
-                    string MappedName = iarm2svc(TextDisplayNameIarm);
-                    if (MappedName != TextDisplayNameIarm)
-                    {
-                        lights.push_back(MappedName);
-                    }
-                }
-            }
-            catch (...)
-            {
-                LOGERR("Exception while getFrontPanelLights");
-            }
-#endif
             return lights;
         }
 
@@ -526,17 +415,6 @@ namespace WPEFramework
                 }		    
             }
 
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-            try
-            {
-                getFrontPanelIndicatorInfo(device::FrontPanelConfig::getInstance().getTextDisplay(0),indicatorInfo);
-                returnResult[CLOCK_LED] = indicatorInfo;
-            }
-            catch (...)
-            {
-                LOGERR("Exception while getFrontPanelLightsInfo");
-            }
-#endif
             return returnResult;
         }
 
@@ -560,41 +438,6 @@ namespace WPEFramework
             CFrontPanel::instance()->loadPreferences();
         }
 
-        Core::hresult FrontPanelImplementation::GetPreferences(string& preferences, bool& success)
-        {
-            JsonObject prefs = CFrontPanel::instance()->getPreferences();;
-            string prefsStr;
-            prefs.ToString(prefsStr);
-            preferences = prefsStr;
-            success = true;
-            return Core::ERROR_NONE;
-        }
-
-        /**
-         * @brief This method stores the preferences into persistent storage.
-         * It does not change the color of any LEDs. The preferences object is not validated.
-         * It is up to the client of this API to ensure that preference values are valid.
-         *
-         * @param[in] argList List of preferences.
-         * @return Returns the success code of underlying method.
-         * @ingroup SERVMGR_FRONTPANEL_API
-         */
-
-        Core::hresult FrontPanelImplementation::SetPreferences(const string& preferences, FrontPanelSuccess& success)
-        {
-            bool ok = false;
-            try {
-                JsonObject prefs;
-                if (prefs.FromString(preferences)) {
-                    CFrontPanel::instance()->setPreferences(preferences);
-                    ok = true;
-                }
-            } catch (...) {
-                ok = false;
-            }
-            success.success = ok;
-            return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
-        }
 
         /**
          * @brief Sets the brightness and color properties of the specified LED.
@@ -635,110 +478,7 @@ namespace WPEFramework
             CFrontPanel::instance()->setBlink(blinkInfo);
         }
 
-        /**
-         * @brief Specifies the 24 hour clock format.
-         *
-         * @param[in] is24Hour true if 24 hour clock format.
-         * @ingroup SERVMGR_FRONTPANEL_API
-         */
-        void FrontPanelImplementation::set24HourClock(bool is24Hour)
-        {
-            CFrontPanel::instance()->set24HourClock(is24Hour);
-        }
-
-        /**
-         * @brief Get the 24 hour clock format.
-         *
-         * @return true if 24 hour clock format is used.
-         * @ingroup SERVMGR_FRONTPANEL_API
-         */
-        bool FrontPanelImplementation::is24HourClock()
-        {
-            bool is24Hour = false;
-            is24Hour = CFrontPanel::instance()->is24HourClock();
-            return is24Hour;
-        }
-
-
-        /**
-         * @brief Enable or disable showing test pattern 88:88 on stbs with clock displays.
-         *
-         * @param[in] show true to show pattern, false to restore display to default behavior, usual it's clock.
-         * @param[in] interval (optional) interval in seconds to check and update LED display with pattern, when it's overridden by external API.
-         *            from 1 to 60 seconds. 0 and other outbound values mean that timer isn't used and isn't activated by this call.
-         *            Optionally the timer is enabled for 5 seconds interval.
-         * @return true if method succeeded.
-         * @ingroup SERVMGR_FRONTPANEL_API
-         */
-        void FrontPanelImplementation::setClockTestPattern(bool show)
-        {
-        #ifdef CLOCK_BRIGHTNESS_ENABLED
-            try{
-                device::FrontPanelTextDisplay& display = device::FrontPanelConfig::getInstance().getTextDisplay("Text");
-
-                if (show)
-                {
-                    if (m_LedDisplayPatternUpdateTimerInterval > 0 && m_LedDisplayPatternUpdateTimerInterval < 61)
-                    {
-                        {
-                            std::lock_guard<std::mutex> lock(m_updateTimerMutex);
-                            m_runUpdateTimer = true;
-                        }
-                        patternUpdateTimer.Schedule(Core::Time::Now().Add(m_LedDisplayPatternUpdateTimerInterval * 1000), m_updateTimer);
-
-                        LOGWARN("%s: LED FP display update timer activated with interval %ds", __FUNCTION__, m_LedDisplayPatternUpdateTimerInterval);
-                    }
-                    else
-                    {
-                        LOGWARN("%s: LED FP display update timer didn't used for interval value %d. To activate it, interval should be in bound of values from 1 till 60"
-                                , __FUNCTION__, m_LedDisplayPatternUpdateTimerInterval);
-
-                        {
-                            std::lock_guard<std::mutex> lock(m_updateTimerMutex);
-                            m_runUpdateTimer = false;
-                        }
-                        patternUpdateTimer.Revoke(m_updateTimer);
-                    }
-
-                    if (-1 == m_savedClockBrightness)
-                    {
-                        m_savedClockBrightness = getClockBrightness();
-                        LOGWARN("%s: brightness of LED FP display %d was saved", __FUNCTION__, m_savedClockBrightness);
-                    }
-
-                    display.setMode(1); //Set Front Panel Display to Text Mode
-                    display.setText(ALL_SEGMENTS_TEXT_PATTERN);
-                    setClockBrightness(100);
-                    LOGWARN("%s: pattern " ALL_SEGMENTS_TEXT_PATTERN " activated on LED FP display with max brightness", __FUNCTION__);
-                }
-                else
-                {
-                    {
-                        std::lock_guard<std::mutex> lock(m_updateTimerMutex);
-                        m_runUpdateTimer = false;
-                    }
-                    patternUpdateTimer.Revoke(m_updateTimer);
-
-                    display.setMode(0);//Set Front Panel Display to Default Mode
-                    display.setText("    ");
-                    LOGWARN("%s: pattern " ALL_SEGMENTS_TEXT_PATTERN " deactivated on LED FP display", __FUNCTION__);
-
-                    if (-1 != m_savedClockBrightness)
-                    {
-                        setClockBrightness(m_savedClockBrightness);
-                        LOGWARN("%s: brightness %d of LED FP display restored", __FUNCTION__, m_savedClockBrightness);
-                        m_savedClockBrightness = -1;
-                    }
-                }
-            }
-            catch (...)
-            {
-                LOGERR("Exception while getTextDisplay");
-            }
-        #else
-            LOGWARN("%s: disabled for this platform", __FUNCTION__);
-        #endif
-        }
+       
         Core::hresult FrontPanelImplementation::SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success)
         {   
             bool ok = false;
@@ -769,87 +509,6 @@ namespace WPEFramework
             success.success = ok;
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
         }
-
-        Core::hresult FrontPanelImplementation::Set24HourClock(const bool& is24Hour, FrontPanelSuccess& success)
-        {
-            try{
-                set24HourClock(is24Hour);
-                success.success = true;
-                return Core::ERROR_NONE;
-            }
-            catch (...)
-            {
-                LOGERR("Exception while set24HourClock");
-                success.success = false;
-                return Core::ERROR_GENERAL;
-            }
-            
-        }
-
-        Core::hresult FrontPanelImplementation::Is24HourClock(bool& is24Hour, bool& success)
-        {
-            try {
-                is24Hour = is24HourClock();
-                success = true;
-                return Core::ERROR_NONE;
-            }
-            catch (...) {
-                LOGERR("Exception while checking is24HourClock");
-                success = false;
-                return Core::ERROR_GENERAL;
-            }
-        }
-
-        Core::hresult FrontPanelImplementation::SetClockTestPattern(const bool& show, const uint32_t& timeInterval, FrontPanelSuccess& success)
-        {
-        #ifdef CLOCK_BRIGHTNESS_ENABLED
-            try {
-                if (timeInterval > 0 && timeInterval < 61) {
-                    m_LedDisplayPatternUpdateTimerInterval = static_cast<int>(timeInterval);
-                } else {
-                    m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
-                }
-                setClockTestPattern(show);
-                success.success = true;
-                return Core::ERROR_NONE;
-            } catch (...) {
-                LOGERR("Exception while SetClockTestPattern");
-                success.success = false;
-                return Core::ERROR_GENERAL;
-            }
-        #else
-            LOGWARN("%s: disabled for this platform", __FUNCTION__);
-            success.success = false;
-            return Core::ERROR_UNAVAILABLE;
-        #endif
-        }
-
-        void FrontPanelImplementation::updateLedTextPattern()
-        {
-            LOGWARN("%s: override FP LED display with text pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
-
-            if (getClockBrightness() != 100)
-            {
-                setClockBrightness(100);
-            }
-
-            device::FrontPanelConfig::getInstance().getTextDisplay("Text").setText(ALL_SEGMENTS_TEXT_PATTERN);
-            LOGWARN("%s: LED display updated by pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
-
-            {
-                std::lock_guard<std::mutex> lock(m_updateTimerMutex);
-                if (m_runUpdateTimer)
-                    patternUpdateTimer.Schedule(Core::Time::Now().Add(m_LedDisplayPatternUpdateTimerInterval * 1000), m_updateTimer);
-            }
-        }
-
-        uint64_t TestPatternInfo::Timed(const uint64_t scheduledTime)
-        {
-            uint64_t result = 0;
-            m_frontPanel->updateLedTextPattern();
-            return(result);
-        }
-
 
     } // namespace Plugin
 } // namespace WPEFramework
