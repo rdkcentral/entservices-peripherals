@@ -98,6 +98,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-peripherals
           path: entservices-peripherals
+          ref: develop
 
       - name: Checkout entservices-testframework
         uses: actions/checkout@v3
