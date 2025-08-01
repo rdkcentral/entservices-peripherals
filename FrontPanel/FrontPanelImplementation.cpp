@@ -420,16 +420,17 @@ namespace WPEFramework
 
         Core::hresult FrontPanelImplementation::GetFrontPanelLights(IFrontPanelLightsListIterator*& supportedLights , string &supportedLightsInfo, bool &success)
         {
-            std::vector<std::string> lights = getFrontPanelLights();
-            for (const auto& light : lights) {
-                std::string copy = light;
-                supportedLights->Next(copy);
-            }
+            LOGINFO("[%s][%d]GetFrontPanelLights called", __FUNCTION__, __LINE__);
+            std::vector<Exchange::IFrontPPanel::IFrontPanelLightsListIterator> frontPanelLights;
+            frontPanelLights = getFrontPanelLights();
+            
             JsonObject info = getFrontPanelLightsInfo();
             string infoStr;
             info.ToString(infoStr);
             supportedLightsInfo = infoStr;
             success = true;
+
+            supportedLights = (Core::Service<RPC::IteratorType<Exchange::IFrontPPanel::IFrontPanelLightsListIterator>>::Create<Exchange::IFrontPPanel::IFrontPanelLightsListIterator>(frontPanelLights));
             return Core::ERROR_NONE;
         }
 
