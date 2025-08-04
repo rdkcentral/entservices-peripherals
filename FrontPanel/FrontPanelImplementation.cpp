@@ -430,7 +430,7 @@ namespace WPEFramework
             supportedLightsInfo = infoStr;
             success = true;
 
-            supportedLights = Core::Service<RPC::IteratorType<std::string>>::Create<Exchange::IFrontPanel::IFrontPanelLightsListIterator>(frontPanelLights);
+            supportedLights = (Core::Service<RPC::IteratorType<Exchange::IFrontPPanel::IFrontPanelLightsListIterator>>::Create<Exchange::IFrontPPanel::IFrontPanelLightsListIterator>(frontPanelLights));
             return Core::ERROR_NONE;
         }
 
