@@ -480,28 +480,29 @@ namespace WPEFramework
         }
 
        
-        Core::hresult FrontPanelImplementation::SetBlink(const FrontPanelBlinkInfo& blinkInfo, FrontPanelSuccess& success)
-        {   
+        Core::hresult FrontPanelImplementation::SetBlink(const string& blinkInfo, FrontPanelSuccess& success)
+        {
+            LOGINFO("SetBlink called with blinkInfo: %s", blinkInfo.c_str());
             bool ok = false;
             try {
-                JsonObject blinkObj;
-                blinkObj["ledIndicator"] = blinkInfo.ledIndicator;
-                blinkObj["iterations"] = blinkInfo.iterations;
+                // Parse the input string as JSON
+                JsonObject inputObj;
+                inputObj.FromString(blinkInfo);
             
-                JsonArray patternArr;
-                // Updated for new structure: only one pattern
-                {
-                    JsonObject patObj;
-                    patObj["brightness"] = blinkInfo.pattern.brightness;
-                    patObj["duration"] = blinkInfo.pattern.duration;
-                    patObj["color"] = blinkInfo.pattern.color;
-                    patObj["red"] = blinkInfo.pattern.red;
-                    patObj["green"] = blinkInfo.pattern.green;
-                    patObj["blue"] = blinkInfo.pattern.blue;
-                    patternArr.Add(patObj);
+                // Extract the "blinkInfo" object
+                if (!inputObj.HasLabel("blinkInfo")) {
+                    success.success = false;
+                    return Core::ERROR_GENERAL;
                 }
-                blinkObj["pattern"] = patternArr;
+                JsonObject blinkObj = inputObj["blinkInfo"].Object();
             
+                // Validate and extract pattern array
+                if (!blinkObj.HasLabel("pattern")) {
+                    success.success = false;
+                    return Core::ERROR_GENERAL;
+                }
+            
+                // Call setBlink with the parsed object
                 setBlink(blinkObj);
                 ok = true;
             } catch (...) {
