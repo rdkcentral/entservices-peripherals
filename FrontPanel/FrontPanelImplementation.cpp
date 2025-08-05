@@ -488,16 +488,12 @@ namespace WPEFramework
                 // Parse the input string as JSON
                 JsonObject inputObj;
                 inputObj.FromString(blinkInfo);
-            
-                // Extract the "blinkInfo" object
-                if (!inputObj.HasLabel("blinkInfo")) {
-                    success.success = false;
-                    return Core::ERROR_GENERAL;
-                }
+
                 JsonObject blinkObj = inputObj["blinkInfo"].Object();
             
                 // Validate and extract pattern array
                 if (!blinkObj.HasLabel("pattern")) {
+                    LOGINFO("SetBlink: 'pattern' field is missing");
                     success.success = false;
                     return Core::ERROR_GENERAL;
                 }
