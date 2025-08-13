@@ -40,7 +40,7 @@ namespace WPEFramework
     namespace Plugin
     {
 
-        class FrontPanel;
+        class FrontPanelImplementation;
         class CFrontPanel;
 
         class BlinkInfo
@@ -101,8 +101,8 @@ namespace WPEFramework
             bool start();
             bool stop();
             std::string getLastError();
-            void addEventObserver(FrontPanel* o);
-            void removeEventObserver(FrontPanel* o);
+            void addEventObserver(FrontPanelImplementation* o);
+            void removeEventObserver(FrontPanelImplementation* o);
             bool setBrightness(int fp_brighness);
             int getBrightness();
 #ifdef CLOCK_BRIGHTNESS_ENABLED
@@ -136,7 +136,7 @@ namespace WPEFramework
             BlinkInfo m_blinkTimer;
             bool m_isBlinking;
             std::vector<FrontPanelBlinkInfo> m_blinkList;
-            std::list<FrontPanel*> observers_;
+            std::list<FrontPanelImplementation*> observers_;
 
             std::string lastError_;
         };
