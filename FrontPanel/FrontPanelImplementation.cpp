@@ -452,11 +452,12 @@ namespace WPEFramework
          * @return Returns success value of the helper method, returns false in case of failure.
          */
 
-        Core::hresult FrontPanelImplementation::SetLED(const string& ledIndicator, const uint32_t& brightness, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::SetLED(const string& ledIndicator, const uint32_t& brightness, const string& color, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success)
         {
             JsonObject properties;
             properties["name"] = ledIndicator;
             properties["brightness"] = brightness;
+            properties["color"] = color;
             properties["red"] = red;
             properties["green"] = green;
             properties["blue"] = blue;
