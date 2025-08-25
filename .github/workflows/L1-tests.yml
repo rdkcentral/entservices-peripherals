@@ -165,7 +165,7 @@ jobs:
           -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
           -DGENERIC_CMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
           &&
-          cmake --build build/ThunderTools -j8
+          cmake --build build/ThunderTools
           &&
           cmake --install build/ThunderTools
 
@@ -193,7 +193,7 @@ jobs:
           -DPORT=55555
           -DEXCEPTIONS_ENABLE=ON
           &&
-          cmake --build build/Thunder -j8
+          cmake --build build/Thunder
           &&
           cmake --install build/Thunder
 
@@ -216,7 +216,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr"
           -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
           &&
-          cmake --build build/entservices-apis -j8
+          cmake --build build/entservices-apis
           &&
           cmake --install build/entservices-apis
 
@@ -309,7 +309,7 @@ jobs:
           -DBUILD_SHARED_LIBS=OFF
           -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           &&
-          cmake --build build/googletest -j8
+          cmake --build build/googletest
           &&
           cmake --install build/googletest
 
@@ -373,7 +373,7 @@ jobs:
           -DHAS_RBUS
           -DENABLE_DEVICE_MANUFACTURER_INFO"
           &&
-          cmake --build build/mocks -j8
+          cmake --build build/mocks
           &&
           cmake --install build/mocks
 
@@ -449,7 +449,7 @@ jobs:
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
           &&
-          cmake --build build/entservices-peripherals -j8
+          cmake --build build/entservices-peripherals
           &&
           cmake --install build/entservices-peripherals
 
@@ -525,7 +525,7 @@ jobs:
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
           &&
-          cmake --build build/entservices-testframework -j8
+          cmake --build build/entservices-testframework
           &&
           cmake --install build/entservices-testframework
 
