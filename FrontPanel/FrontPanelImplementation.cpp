@@ -455,7 +455,7 @@ namespace WPEFramework
         Core::hresult FrontPanelImplementation::SetLED(const string& ledIndicator, const uint32_t& brightness, const string& color, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success)
         {
             JsonObject properties;
-            properties["name"] = ledIndicator;
+            properties["ledIndicator"] = ledIndicator;
             properties["brightness"] = brightness;
             properties["color"] = color;
             properties["red"] = red;
