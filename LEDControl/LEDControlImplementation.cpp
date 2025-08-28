@@ -127,16 +127,11 @@ namespace WPEFramework
             LOGINFO("");
 
             std::list<std::string> supportedLEDStatesInfo;
-            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
-            using WPEFramework::Exchange::ILEDControl::LEDControlStateToString;
-
-            constexpr int first = static_cast<int>(LEDControlState::LEDSTATE_NONE);
-            // Exclude  UNKNOWN from supported. See ILEDControl.h enum class LEDControlState.
-            constexpr int last = static_cast<int>(LEDControlState::LEDSTATE_UNKNOWN) - 1;
+            constexpr int first = static_cast<int>(WPEFramework::Exchange::ILEDControl::LEDControlState::LEDSTATE_NONE);
+            constexpr int last = static_cast<int>(WPEFramework::Exchange::ILEDControl::LEDControlState::LEDSTATE_UNKNOWN) - 1;
             for (int i = first; i <= last; ++i) {
-                LEDControlState state = static_cast<LEDControlState>(i);
-                const char* stateStr = LEDControlStateToString(state);
-                // Exclude empty and UNKNOWN
+                WPEFramework::Exchange::ILEDControl::LEDControlState state = static_cast<WPEFramework::Exchange::ILEDControl::LEDControlState>(i);
+                const char* stateStr = WPEFramework::Exchange::ILEDControl::LEDControlStateToString(state);
                 if (stateStr && *stateStr && std::string(stateStr) != "UNKNOWN") {
                     supportedLEDStatesInfo.emplace_back(stateStr);
                 }
@@ -180,7 +175,7 @@ namespace WPEFramework
             LOGINFO("");
             dsFPDLedState_t dsLEDState;
             try {
-                dsLEDState = MapToDsFPDLedState(state);
+                dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
             } catch (const std::invalid_argument& e) {
                 LOGERR("Invalid dsFPDLedState_t value: %s", e.what());
                 success = false;
