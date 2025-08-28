@@ -25,7 +25,6 @@
 #include "UtilsIarm.h"
 #include "dsFPD.h"
 
-
 namespace WPEFramework
 {
     namespace Plugin
@@ -62,8 +61,9 @@ namespace WPEFramework
          * @param[in] state The LED control state
          * @return Corresponding dsFPDLedState_t
          */
-        static dsFPDLedState_t mapFromLEDControlStateToDsFPDLedState(LEDControlState state)
+        static dsFPDLedState_t mapFromLEDControlStateToDsFPDLedState(WPEFramework::Exchange::ILEDControl::LEDControlState state)
         {
+            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
             switch (state) {
                 case LEDControlState::LEDSTATE_NONE:
                     return dsFPD_LED_DEVICE_NONE;
@@ -93,8 +93,9 @@ namespace WPEFramework
          * @param[in] state The dsFPDLedState_t state
          * @return Corresponding ILEDControl::LEDControlState, default LEDControlState::LEDSTATE_NONE
          */
-        static LEDControlState mapFromDsFPDLedStateToLEDControlState(dsFPDLedState_t state)
+        static WPEFramework::Exchange::ILEDControl::LEDControlState mapFromDsFPDLedStateToLEDControlState(dsFPDLedState_t state)
         {
+            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
             switch (state) {
                 case dsFPD_LED_DEVICE_NONE:
                     return LEDControlState::LEDSTATE_NONE;
@@ -130,7 +131,8 @@ namespace WPEFramework
             using WPEFramework::Exchange::ILEDControl::LEDControlStateToString;
 
             constexpr int first = static_cast<int>(LEDControlState::LEDSTATE_NONE);
-            constexpr int last = static_cast<int>(LEDControlState::LEDSTATE_UNKNOWN) - 1; // Exclude  UNKNOWN from supported. See ILEDControl.h enum class LEDControlState.
+            // Exclude  UNKNOWN from supported. See ILEDControl.h enum class LEDControlState.
+            constexpr int last = static_cast<int>(LEDControlState::LEDSTATE_UNKNOWN) - 1;
             for (int i = first; i <= last; ++i) {
                 LEDControlState state = static_cast<LEDControlState>(i);
                 const char* stateStr = LEDControlStateToString(state);

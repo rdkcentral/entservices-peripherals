@@ -50,8 +50,6 @@ namespace WPEFramework
 
             private:
                 bool m_isPlatInitialized;
-                static dsFPDLedState_t mapFromLEDControlStateToDsFPDLedState(LEDControlState state);
-                static LEDControlState mapFromDsFPDLedStateToLEDControlState(dsFPDLedState_t state);
 
             public:
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
