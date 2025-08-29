@@ -168,7 +168,7 @@ namespace WPEFramework
                         rc = Core::ERROR_ILLEGAL_STATE;
                         break;
                     case dsERR_OPERATION_NOT_SUPPORTED:
-                        rc = Core::ERROR_UNSUPPORTED;
+                        rc = Core::ERROR_NOT_SUPPORTED;
                         break;
                     case dsERR_RESOURCE_NOT_AVAILABLE:
                         rc = Core::ERROR_UNAVAILABLE;
