@@ -29,6 +29,9 @@
 #include <com/com.h>
 #include <core/core.h>
 
+// debug
+#include "dsFPDTypes.h"
+
 namespace WPEFramework
 {
     namespace Plugin
@@ -50,6 +53,8 @@ namespace WPEFramework
 
             private:
                 bool m_isPlatInitialized;
+				dsFPDLedState_t m_dsLEDStateDebug; // Test
+				int m_dsLEDStateBitMaskDebug; // Test
 
             public:
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
