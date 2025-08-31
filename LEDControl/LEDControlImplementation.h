@@ -20,16 +20,12 @@
 #pragma once
 
 #include "Module.h"
-#include <interfaces/Ids.h>
-#include <interfaces/ILEDControl.h>
-
-#include <mutex>
-#include "libIARM.h"
 
 #include <com/com.h>
 #include <core/core.h>
+#include <interfaces/Ids.h>
+#include <interfaces/ILEDControl.h>
 
-// debug
 #include "dsFPDTypes.h"
 
 namespace WPEFramework
@@ -43,23 +39,25 @@ namespace WPEFramework
                 LEDControlImplementation();
                 ~LEDControlImplementation() override;
 
-                // We do not allow this plugin to be copied !!
+                // We do not allow this plugin to be copied or moved !!
                 LEDControlImplementation(const LEDControlImplementation&) = delete;
                 LEDControlImplementation& operator=(const LEDControlImplementation&) = delete;
+                LEDControlImplementation(LEDControlImplementation&&) = delete;
+                LEDControlImplementation& operator=(LEDControlImplementation&&) = delete;
 
                 BEGIN_INTERFACE_MAP(LEDControlImplementation)
                 INTERFACE_ENTRY(Exchange::ILEDControl)
                 END_INTERFACE_MAP
 
-            private:
-                bool m_isPlatInitialized;
-				dsFPDLedState_t m_dsLEDStateDebug; // Test
-				int m_dsLEDStateBitMaskDebug; // Test
-
-            public:
+                // Begin methods
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
                 Core::hresult GetLEDState(LEDControlState& ledState) override;
                 Core::hresult SetLEDState(const LEDControlState& state, bool& success) override;
+                // End methods
+
+            private:
+                mutable Core::CriticalSection _adminLock;
+                bool m_isPlatInitialized;
         };
     } // namespace Plugin
 } // namespace WPEFramework

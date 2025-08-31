@@ -18,19 +18,14 @@
 **/
 
 #include "LEDControlImplementation.h"
+
 #include <core/Portability.h>
 #include <interfaces/ILEDControl.h>
 
-#include <algorithm>
-
-#include "UtilsJsonRpc.h"
-#include "UtilsIarm.h"
 #include "dsFPD.h"
 #include "dsError.h"
 #include "dsFPDTypes.h"
-
-#define TESTRUN 1
-#define LOGDEBUG(fmt, ...) LOGINFO("DEBUG LEDControlImplementation: " fmt, ##__VA_ARGS__)
+#include "UtilsLogging.h"
 
 namespace WPEFramework
 {
@@ -47,8 +42,6 @@ namespace WPEFramework
                     LOGERR("dsFPInit failed\n");
                 }
                 m_isPlatInitialized = true;
-				m_dsLEDStateDebug = dsFPD_LED_DEVICE_NONE; // Test
-				m_dsLEDStateBitMaskDebug = 0; // Test
             }
         }
 
@@ -144,7 +137,6 @@ namespace WPEFramework
          */
         Core::hresult getCoreErrorFromDSError(dsError_t err)
         {
-            LOGDEBUG("getCoreErrorFromDSError: err=%d\n", err); // Test
             switch (err) {
                 case dsERR_NONE:
                     return Core::ERROR_NONE;
@@ -172,39 +164,18 @@ namespace WPEFramework
         {
             LOGINFO("");
             unsigned int halSupportedLEDStates = (unsigned int)dsFPD_LED_DEVICE_MAX;
-            try {
-#ifndef TESTRUN // !TESTRUN
-                dsError_t err = dsFPGetSupportedLEDStates(&halSupportedLEDStates);
-                if (dsERR_NONE != err) {
-                    LOGERR("dsFPGetSupportedLEDStates error %d\n", err);
-                    return getCoreErrorFromDSError(err);
-                }
-#else // TESTRUN
-                if (m_dsLEDStateBitMaskDebug) { // Test
-                    m_dsLEDStateBitMaskDebug++;
-                    halSupportedLEDStates = 0;
-                    // Enable one more bit each time to test the logic.
-                    int maxStates = dsFPD_LED_DEVICE_MAX + 2; // Last + 2
-                    for (int i = dsFPD_LED_DEVICE_NONE; i < m_dsLEDStateBitMaskDebug && i < maxStates; ++i) {
-                        halSupportedLEDStates |= (1u << i);
-                    }
-                    if (m_dsLEDStateBitMaskDebug > maxStates) {
-                        m_dsLEDStateBitMaskDebug = 0;
-                    }
-                    LOGDEBUG("GetSupportedLEDStates: m_dsLEDStateBitMaskDebug=%d, halSupportedLEDStates=0x%X\n", m_dsLEDStateBitMaskDebug, halSupportedLEDStates);
-                } else {
-                    LOGDEBUG("m_dsLEDStateBitMaskDebug is 0, try HAL\n");
-                    m_dsLEDStateBitMaskDebug = 1;
+            {
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
                     dsError_t err = dsFPGetSupportedLEDStates(&halSupportedLEDStates);
                     if (dsERR_NONE != err) {
                         LOGERR("dsFPGetSupportedLEDStates error %d\n", err);
                         return getCoreErrorFromDSError(err);
                     }
+                } catch (...) {
+                    LOGERR("Exception in dsFPGetSupportedLEDStates.\n");
+                    return Core::ERROR_GENERAL;
                 }
-#endif // TESTRUN
-            } catch (...) {
-                LOGERR("Exception in dsFPGetSupportedLEDStates.\n");
-                return Core::ERROR_GENERAL;
             }
             std::list<std::string> stateNames;
             using State = WPEFramework::Exchange::ILEDControl::LEDControlState;
@@ -229,35 +200,22 @@ namespace WPEFramework
             LOGINFO("");
             dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
 
-            try {
-#ifndef TESTRUN // !TESTRUN
-                dsError_t err = dsFPGetLEDState(&dsLEDState);
-                if (err != dsERR_NONE) {
-                    LOGERR("dsFPGetLEDState returned error: %d\n", err);
-                    return getCoreErrorFromDSError(err);
-                }
-#else // TESTRUN
-                if (m_dsLEDStateBitMaskDebug) {
-                    dsLEDState = static_cast<dsFPDLedState_t>(m_dsLEDStateBitMaskDebug);
-                    LOGDEBUG("GetLEDState: m_dsLEDStateBitMaskDebug=%d, dsLEDState=0x%X\n", m_dsLEDStateBitMaskDebug, dsLEDState);
-                } else {
-                    LOGDEBUG("GetLEDState: m_dsLEDStateBitMaskDebug is 0, try HAL\n");
-                    m_dsLEDStateBitMaskDebug = 1;
+            {
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
                     dsError_t err = dsFPGetLEDState(&dsLEDState);
-                    if (dsERR_NONE != err) {
-                        LOGERR("dsFPGetLEDState error %d\n", err);
+                    if (err != dsERR_NONE) {
+                        LOGERR("dsFPGetLEDState returned error: %d\n", err);
                         return getCoreErrorFromDSError(err);
                     }
+                } catch (...) {
+                    LOGERR("Exception in dsFPGetLEDState.\n");
+                    return Core::ERROR_GENERAL;
                 }
-#endif // TESTRUN
-            } catch (...) {
-                LOGERR("Exception in dsFPGetLEDState.\n");
-                return Core::ERROR_GENERAL;
             }
 
             try {
                 ledState = mapFromDsFPDLedStateToLEDControlState(dsLEDState);
-                LOGDEBUG("GetLEDState: returning ledState = %d\n", static_cast<int>(ledState));
             } catch (const std::invalid_argument& e) {
                 LOGERR("Exception in mapFromDsFPDLedStateToLEDControlState dsFPDLedState_t value: %s\n", e.what());
                 return Core::ERROR_READ_ERROR;
@@ -270,7 +228,6 @@ namespace WPEFramework
             LOGINFO("");
             dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
             try {
-                LOGDEBUG("Got LEDControlState %d\n", static_cast<int>(state));
                 dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
             } catch (const std::invalid_argument& e) {
                 LOGERR("Invalid dsFPDLedState_t value: %s\n", e.what());
@@ -278,22 +235,14 @@ namespace WPEFramework
             }
 
             dsError_t err = dsERR_NONE;
-            try {
-                LOGDEBUG("Setting dsFPSetLEDState to %d\n", dsLEDState);
-#ifndef TESTRUN // !TESTRUN
-                err = dsFPSetLEDState(dsLEDState);
-#else // TESTRUN
-                if (m_dsLEDStateBitMaskDebug) {
-                    LOGDEBUG("Setting dsFPSetLEDState to %d\n", static_cast<dsFPDLedState_t>(m_dsLEDStateBitMaskDebug));
-                    err = dsFPSetLEDState(static_cast<dsFPDLedState_t>(m_dsLEDStateBitMaskDebug));
-                } else {
-                    LOGDEBUG("Setting dsFPSetLEDState to %d\n", dsLEDState);
+            {
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
                     err = dsFPSetLEDState(dsLEDState);
+                } catch (...) {
+                    LOGERR("Exception in dsFPSetLEDState\n");
+                    return Core::ERROR_GENERAL;
                 }
-#endif // TESTRUN
-            } catch (...) {
-                LOGERR("Exception in dsFPSetLEDState\n");
-                return Core::ERROR_GENERAL;
             }
             if (err != dsERR_NONE) {
                 Core::hresult rc = getCoreErrorFromDSError(err);
