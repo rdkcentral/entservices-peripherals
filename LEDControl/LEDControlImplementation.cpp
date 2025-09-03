@@ -33,15 +33,45 @@ namespace WPEFramework
     {
         SERVICE_REGISTRATION(LEDControlImplementation, 1, 0);
 
-        LEDControlImplementation::LEDControlImplementation(): m_isPlatInitialized (false)
+        LEDControlImplementation::LEDControlImplementation()
+        : m_isPlatInitialized(false)
+        , m_SupportedLEDStates((unsigned int)dsFPD_LED_DEVICE_NONE)
         {
             LOGINFO("LEDControlImplementation Constructor called\n");
             if (!m_isPlatInitialized) {
                 LOGINFO("Doing plat init; dsFPInit\n");
-                if (dsERR_NONE != dsFPInit()){
-                    LOGERR("dsFPInit failed\n");
+                try {
+                    dsError_t err = dsERR_NONE;
+                    if ((err = dsFPInit()) != dsERR_NONE) {
+                        LOGERR("dsFPInit failed: %d\n", err);
+                    } else {
+                        m_isPlatInitialized = true;
+                        // Start a worker JOB to update the m_SupportedLEDStates using WPEFramework's worker pool
+                        class UpdateSupportedLEDStatesJob : public Core::IDispatch {
+                        public:
+                            UpdateSupportedLEDStatesJob(LEDControlImplementation* parent) : _parent(parent) {}
+                            void Dispatch() override {
+                                try {
+                                    unsigned int supported = (unsigned int)dsFPD_LED_DEVICE_NONE;
+                                    dsError_t err = dsFPGetSupportedLEDStates(&supported);
+                                    if (err == dsERR_NONE) {
+                                        _parent->m_SupportedLEDStates = supported;
+                                        LOGINFO("Worker m_SupportedLEDStates updated: 0x%X\n", supported);
+                                    } else {
+                                        LOGERR("Worker dsFPGetSupportedLEDStates failed: %d\n", err);
+                                    }
+                                } catch (...) {
+                                    LOGERR("Worker got exception updating m_SupportedLEDStates\n");
+                                }
+                            }
+                        private:
+                            LEDControlImplementation* _parent;
+                        };
+                        Core::IWorkerPool::Instance().Submit(Core::ProxyType<Core::IDispatch>(Core::ProxyType<UpdateSupportedLEDStatesJob>::Create(this)));
+                    }
+                } catch (...) {
+                    LOGERR("Exception caught during dsFPInit");
                 }
-                m_isPlatInitialized = true;
             }
         }
 
@@ -50,10 +80,15 @@ namespace WPEFramework
             LOGINFO("LEDControlImplementation Destructor called\n");
             if (m_isPlatInitialized) {
                 LOGINFO("Doing plat uninit; dsFPTerm\n");
-                if (dsERR_NONE != dsFPTerm()) {
-                    LOGERR("dsFPTerm failed\n");
+                try {
+                    dsError_t err = dsFPTerm();
+                    if (dsERR_NONE != err) {
+                        LOGERR("dsFPTerm failed\n");
+                    }
+                    m_isPlatInitialized = false;
+                } catch (...) {
+                    LOGERR("Exception caught during dsFPTerm");
                 }
-                m_isPlatInitialized = false;
             }
         }
 
@@ -171,6 +206,9 @@ namespace WPEFramework
                     if (dsERR_NONE != err) {
                         LOGERR("dsFPGetSupportedLEDStates error %d\n", err);
                         return getCoreErrorFromDSError(err);
+                    } else {
+                        // Refresh the cached supported LED states
+                        m_SupportedLEDStates = halSupportedLEDStates;
                     }
                 } catch (...) {
                     LOGERR("Exception in dsFPGetSupportedLEDStates.\n");
@@ -233,6 +271,12 @@ namespace WPEFramework
                 LOGERR("Invalid dsFPDLedState_t value: %s\n", e.what());
                 return Core::ERROR_READ_ERROR;
             }
+            // return error if requested state is unsupported
+            if (!(m_SupportedLEDStates & (1 << static_cast<int>(dsLEDState)))) {
+                LOGERR("Requested LED state 0x%X(dsLEDState 0x%x) is unsupported, supported states: 0x%X\n",
+                        (1 << static_cast<int>(state)), static_cast<int>(dsLEDState), m_SupportedLEDStates);
+                return Core::ERROR_NOT_SUPPORTED;
+            }
 
             dsError_t err = dsERR_NONE;
             {
@@ -246,7 +290,8 @@ namespace WPEFramework
             }
             if (err != dsERR_NONE) {
                 Core::hresult rc = getCoreErrorFromDSError(err);
-                LOGERR("Failed to set LED state to %d,dsFPGetLEDState returned error: %d\n", static_cast<int>(state),err);
+                LOGERR("Failed to set LED state to 0x%X (dsLEDState 0x%x), dsFPGetLEDState returned error: %d\n",
+                        (1 << static_cast<int>(state)), static_cast<int>(dsLEDState), err);
                 return rc;
             }
             success = true;

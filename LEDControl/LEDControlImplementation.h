@@ -58,6 +58,7 @@ namespace WPEFramework
             private:
                 mutable Core::CriticalSection _adminLock;
                 bool m_isPlatInitialized;
+                unsigned int m_SupportedLEDStates;
         };
     } // namespace Plugin
 } // namespace WPEFramework
