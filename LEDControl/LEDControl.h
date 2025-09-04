@@ -23,14 +23,15 @@
 #include <interfaces/ILEDControl.h>
 #include <interfaces/json/JLEDControl.h>
 #include <interfaces/json/JsonData_LEDControl.h>
+
 #include "UtilsLogging.h"
 #include "tracing/Logging.h"
 
-namespace WPEFramework 
+namespace WPEFramework
 {
     namespace Plugin
     {
-        class LEDControl : public PluginHost::IPlugin, public PluginHost::JSONRPC 
+        class LEDControl : public PluginHost::IPlugin, public PluginHost::JSONRPC
         {
             public:
                 LEDControl(const LEDControl&) = delete;
