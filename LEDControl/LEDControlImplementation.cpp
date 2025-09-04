@@ -198,6 +198,11 @@ namespace WPEFramework
         Core::hresult LEDControlImplementation::GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success)
         {
             LOGINFO("");
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
+            }
+
             unsigned int halSupportedLEDStates = (unsigned int)dsFPD_LED_DEVICE_MAX;
             {
                 Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
@@ -236,8 +241,12 @@ namespace WPEFramework
         Core::hresult LEDControlImplementation::GetLEDState(WPEFramework::Exchange::ILEDControl::LEDControlState& ledState)
         {
             LOGINFO("");
-            dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
+            }
 
+            dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
             {
                 Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
                 try {
@@ -264,6 +273,11 @@ namespace WPEFramework
         Core::hresult LEDControlImplementation::SetLEDState(const WPEFramework::Exchange::ILEDControl::LEDControlState& state, bool& success)
         {
             LOGINFO("");
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
+            }
+
             dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
             try {
                 dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
