@@ -51,7 +51,7 @@ namespace WPEFramework
 
         const string FrontPanel::Initialize(PluginHost::IShell *service)
         {
-           LOGWARN("Initlaizing FrontPanel plugin \n");
+           SYSLOG("Initlaizing FrontPanel plugin \n");
 
            string msg = "";
 
@@ -77,18 +77,13 @@ namespace WPEFramework
                 LOGINFO("FrontPanel plugin is not available. Failed to activate FrontPanel Plugin");
             }
 
-            if (0 != msg.length())
-            {
-                Deinitialize(service);
-            }
-
            // On success return empty, to indicate there is no error text.
            return msg;
         }
 
         void FrontPanel::Deinitialize(PluginHost::IShell* service)
         {
-           LOGWARN("Deinitialize FrontPanel plugin \n");
+           SYSLOG("Deinitialize FrontPanel plugin \n");
 
            ASSERT(nullptr != service);
 

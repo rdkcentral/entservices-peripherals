@@ -104,7 +104,7 @@ namespace
         return name;
     }
 
-    JsonObject getFrontPanelIndicatorInfo(device::FrontPanelIndicator &indicator,JsonObject &indicatorInfo)
+    void getFrontPanelIndicatorInfo(device::FrontPanelIndicator &indicator,JsonObject &indicatorInfo)
     {
         JsonObject returnResult;
         int levels=0, min=0, max=0;
@@ -133,7 +133,6 @@ namespace
         }
 
         indicatorInfo["colorMode"] = indicator.getColorMode();
-        return indicatorInfo;
     }
 }
 
@@ -223,18 +222,6 @@ namespace WPEFramework
                 _registeredEventHandlers = true;
                 _powerManagerPlugin->Register(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());
             }
-        }
-
-        void setResponseArray(JsonObject& response, const char* key, const std::vector<std::string>& items)
-        {
-            JsonArray arr;
-            for (auto& i : items) arr.Add(JsonValue(i));
-
-            response[key] = arr;
-
-            string json;
-            response.ToString(json);
-            LOGINFO("%s: result json %s\n", __FUNCTION__, json.c_str());
         }
 
         Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success)
