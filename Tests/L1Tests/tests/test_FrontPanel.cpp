@@ -60,7 +60,6 @@ protected:
     ServiceMock  *p_serviceMock  = nullptr;
     WrapsImplMock* p_wrapsImplMock = nullptr;
     FrontPanelMock* p_frontPanelMock = nullptr;
-    IarmBusImplMock   *p_iarmBusImplMock = nullptr ;
     
     FrontPanelTest()
         : plugin(Core::ProxyType<Plugin::FrontPanel>::Create())
@@ -102,14 +101,30 @@ protected:
             workerPool->Run();
 
     }
+
     virtual ~FrontPanelTest()
     {
-        dispatcher->Release();
-        workerPool->Stop();
+        // Ensure we deactivate dispatcher before releasing it
+        if (dispatcher != nullptr) {
+            // Deactivate if it was activated (safe even if not)
+            dispatcher->Deactivate();
+            dispatcher->Release();
+            dispatcher = nullptr;
+        }
+
+        // Stop worker pool and clear global assignment
+        if (workerPool.get() != nullptr) {
+            workerPool->Stop();
+        }
         Core::IWorkerPool::Assign(nullptr);
 
+        // Reset any plugin proxy held by the fixture (release references)
+        FrontPanelImplem.Release(); // explicit reset of Core::ProxyType
+
+        // Restore global factory hooks
         PluginHost::IFactories::Assign(nullptr);
 
+        // Clear Wraps implementation and delete allocated mocks
         Wraps::setImpl(nullptr);
         delete p_wrapsImplMock;
         p_wrapsImplMock = nullptr;
@@ -119,6 +134,7 @@ protected:
 
         delete p_serviceMock;
         p_serviceMock = nullptr;
+
     }
 };
 
