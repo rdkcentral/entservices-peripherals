@@ -20,7 +20,13 @@
 #include <gtest/gtest.h>
 
 #include "FrontPanel.h"
+#include "FrontPanelImplementation.h"
 #include "frontpanel.h"
+#include "frontpanel.cpp"
+#include "FrontPanelMock.h"
+#include "WorkerPoolImplementation.h"
+#include "WrapsMock.h"
+#include "COMLinkMock.h"
 
 #include "FactoriesImplementation.h"
 
@@ -43,50 +49,60 @@ protected:
     Core::ProxyType<Plugin::FrontPanel> plugin;
     Core::JSONRPC::Handler& handler;
     DECL_CORE_JSONRPC_CONX connection;
+    NiceMock<ServiceMock> service;
+    NiceMock<COMLinkMock> comLinkMock;
+    Core::ProxyType<WorkerPoolImplementation> workerPool;
+    Core::ProxyType<Plugin::FrontPanelImplementation> FrontPanelImplem;
+    NiceMock<FactoriesImplementation> factoriesImplementation;
+    PLUGINHOST_DISPATCHER *dispatcher;
     string response;
-
+    Core::JSONRPC::Message message;
+    ServiceMock  *p_serviceMock  = nullptr;
+    WrapsImplMock* p_wrapsImplMock = nullptr;
+    FrontPanelMock* p_frontPanelMock = nullptr;
+    IarmBusImplMock   *p_iarmBusImplMock = nullptr ;
+    
     FrontPanelTest()
         : plugin(Core::ProxyType<Plugin::FrontPanel>::Create())
-        , handler(*(plugin))
-        , INIT_CONX(1, 0)
+        , handler(*plugin)
+        , connection(0,1,"")
+        , workerPool(Core::ProxyType<WorkerPoolImplementation>::Create(
+            2, Core::Thread::DefaultStackSize(), 16))
     {
+        
+        p_serviceMock = new NiceMock <ServiceMock>;
+
+        p_frontPanelMock  = new NiceMock <FrontPanelMock>;
+
+        p_wrapsImplMock = new NiceMock<WrapsImplMock>;
+        Wraps::setImpl(p_wrapsImplMock);
+
+        PluginHost::IFactories::Assign(&factoriesImplementation);
+
+        dispatcher = static_cast<PLUGINHOST_DISPATCHER*>(
+        plugin->QueryInterface(PLUGINHOST_DISPATCHER_ID));
+        dispatcher->Activate(&service);
+
+
+        ON_CALL(service, COMLink())
+            .WillByDefault(::testing::Invoke(
+                  [this]() {
+                        TEST_LOG("Pass created comLinkMock: %p ", &comLinkMock);
+                        return &comLinkMock;
+                    }));
+
+        ON_CALL(comLinkMock, Instantiate(::testing::_, ::testing::_, ::testing::_))
+                .WillByDefault(::testing::Invoke(
+                    [&](const RPC::Object& object, const uint32_t waitTime, uint32_t& connectionId) {
+                        FrontPanelImplem = Core::ProxyType<Plugin::FrontPanelImplementation>::Create();
+                        return &FrontPanelImplem;
+                    }));
+
+        Core::IWorkerPool::Assign(&(*workerPool));
+            workerPool->Run();
+
     }
     virtual ~FrontPanelTest() = default;
-};
-
-class FrontPanelDsTest : public FrontPanelTest {
-protected:
-    testing::NiceMock<FrontPanelIndicatorMock> frontPanelIndicatorMock;
-    testing::NiceMock<FrontPanelIndicatorMock> frontPanelTextDisplayIndicatorMock;
-    FrontPanelConfigMock   *p_frontPanelConfigImplMock = nullptr;
-    FrontPanelTextDisplayMock   *p_frontPanelTextDisplayMock = nullptr;
-    FrontPanelDsTest()
-        : FrontPanelTest()
-    {
-        device::FrontPanelIndicator::getInstance().impl = &frontPanelIndicatorMock;
-        p_frontPanelConfigImplMock  = new testing::NiceMock <FrontPanelConfigMock>;
-        device::FrontPanelConfig::setImpl(p_frontPanelConfigImplMock);
-        p_frontPanelTextDisplayMock  = new testing::NiceMock <FrontPanelTextDisplayMock>;
-        device::FrontPanelTextDisplay::setImpl(p_frontPanelTextDisplayMock);
-        device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = &frontPanelTextDisplayIndicatorMock;
-
-    }
-    virtual ~FrontPanelDsTest() override
-    {
-        device::FrontPanelIndicator::getInstance().impl = nullptr;
-        device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = nullptr;
-        if (p_frontPanelTextDisplayMock != nullptr)
-        {
-            delete p_frontPanelTextDisplayMock;
-            p_frontPanelTextDisplayMock = nullptr;
-        }
-        if (p_frontPanelConfigImplMock != nullptr)
-        {
-            delete p_frontPanelConfigImplMock;
-            p_frontPanelConfigImplMock = nullptr;
-        }
-
-    }
 };
 
 class FrontPanelInitializedTest : public FrontPanelTest {
@@ -137,14 +153,14 @@ protected:
         // This CFrontPanel::instance() is never destroyed
         // ::testing::Mock::AllowLeak(PowerManagerMock::Get());
 
-        EXPECT_EQ(string(""), plugin->Initialize(nullptr));
+        EXPECT_EQ(string(""), plugin->Initialize(&service));
     }
     virtual ~FrontPanelInitializedTest() override
     {
         device::FrontPanelIndicator::getInstance().impl = nullptr;
         device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = nullptr;
 
-        plugin->Deinitialize(nullptr);
+        plugin->Deinitialize(&service);
 
         _notification = nullptr;
         PowerManagerMock::Delete();
@@ -225,22 +241,15 @@ protected:
     }
 };
 
-TEST_F(FrontPanelTest, RegisteredMethods)
+TEST_F(FrontPanelInitializedTest, RegisteredMethods)
 {
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setBrightness")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("getBrightness")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("powerLedOn")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("powerLedOff")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setClockBrightness")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("getClockBrightness")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("getFrontPanelLights")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("getPreferences")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setPreferences")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setLED")));
     EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setBlink")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("set24HourClock")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("is24HourClock")));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Exists(_T("setClockTestPattern")));
 }
 
 TEST_F(FrontPanelInitializedEventDsTest, setBrightnessWIndex)
