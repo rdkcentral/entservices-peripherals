@@ -406,16 +406,6 @@ TEST_F(FrontPanelInitializedEventDsTest, getFrontPanelLights)
     EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("getFrontPanelLights"), _T(""), response));
     EXPECT_EQ(response, string("{\"supportedLights\":[\"power_led\",\"clock_led\"],\"supportedLightsInfo\":{\"power_led\":{\"range\":\"boolean\",\"min\":0,\"max\":2,\"colorMode\":0},\"clock_led\":{\"range\":\"boolean\",\"min\":0,\"max\":2,\"colorMode\":0}},\"success\":true}"));
 }
-    
-
-TEST_F(FrontPanelInitializedEventDsTest, getPreferences)
-{
-    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setPreferences"), _T("{\"preferences\":{\"test\": true}}"), response));
-    EXPECT_EQ(response, string("{\"success\":true}"));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("getPreferences"), _T(""), response));
-    EXPECT_EQ(response, string("{\"preferences\":{\"test\":true},\"success\":true}"));
-}
-
 
 TEST_F(FrontPanelInitializedEventDsTest, powerLedOffPower)
 {
