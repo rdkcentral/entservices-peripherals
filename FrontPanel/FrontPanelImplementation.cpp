@@ -490,7 +490,7 @@ namespace WPEFramework
         }
 
 
-        void FrontPanel::updateLedTextPattern()
+        void FrontPanelImplementation::updateLedTextPattern()
         {
             LOGWARN("%s: override FP LED display with text pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
 
