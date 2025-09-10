@@ -102,7 +102,24 @@ protected:
             workerPool->Run();
 
     }
-    virtual ~FrontPanelTest() = default;
+    virtual ~FrontPanelTest()
+    {
+        dispatcher->Release();
+        workerPool->Stop();
+        Core::IWorkerPool::Assign(nullptr);
+
+        PluginHost::IFactories::Assign(nullptr);
+
+        Wraps::setImpl(nullptr);
+        delete p_wrapsImplMock;
+        p_wrapsImplMock = nullptr;
+
+        delete p_frontPanelMock;
+        p_frontPanelMock = nullptr;
+
+        delete p_serviceMock;
+        p_serviceMock = nullptr;
+    }
 };
 
 class FrontPanelInitializedTest : public FrontPanelTest {
