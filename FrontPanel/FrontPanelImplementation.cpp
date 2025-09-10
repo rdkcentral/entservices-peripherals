@@ -489,5 +489,13 @@ namespace WPEFramework
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
         }
 
+
+        uint64_t TestPatternInfo::Timed(const uint64_t scheduledTime)
+        {
+            uint64_t result = 0;
+            m_frontPanel->updateLedTextPattern();
+            return(result);
+        }
+
     } // namespace Plugin
 } // namespace WPEFramework
