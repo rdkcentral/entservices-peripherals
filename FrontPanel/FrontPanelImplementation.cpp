@@ -490,6 +490,27 @@ namespace WPEFramework
         }
 
 
+        void FrontPanel::updateLedTextPattern()
+        {
+            LOGWARN("%s: override FP LED display with text pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
+
+            if (getClockBrightness() != 100)
+            {
+                setClockBrightness(100);
+            }
+
+            device::FrontPanelConfig::getInstance().getTextDisplay("Text").setText(ALL_SEGMENTS_TEXT_PATTERN);
+            LOGWARN("%s: LED display updated by pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
+
+            {
+                std::lock_guard<std::mutex> lock(m_updateTimerMutex);
+                if (m_runUpdateTimer)
+                    patternUpdateTimer.Schedule(Core::Time::Now().Add(m_LedDisplayPatternUpdateTimerInterval * 1000), m_updateTimer);
+            }
+        }
+
+
+
         uint64_t TestPatternInfo::Timed(const uint64_t scheduledTime)
         {
             uint64_t result = 0;
