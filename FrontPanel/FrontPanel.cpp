@@ -51,7 +51,7 @@ namespace WPEFramework
 
         const string FrontPanel::Initialize(PluginHost::IShell *service)
         {
-           SYSLOG("Initlaizing FrontPanel plugin \n");
+           SYSLOG(Logging::Startup, "Initializing FrontPanel plugin \n");
 
            string msg = "";
 
@@ -83,7 +83,7 @@ namespace WPEFramework
 
         void FrontPanel::Deinitialize(PluginHost::IShell* service)
         {
-           SYSLOG("Deinitialize FrontPanel plugin \n");
+           SYSLOG(Logging::Shutdown, "Deinitialize FrontPanel plugin \n");
 
            ASSERT(nullptr != service);
 
