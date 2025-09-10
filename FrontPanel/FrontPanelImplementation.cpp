@@ -146,6 +146,7 @@ namespace WPEFramework
         FrontPanelImplementation* FrontPanelImplementation::_instance = nullptr;
 
         static Core::TimerType<TestPatternInfo> patternUpdateTimer(64 * 1024, "PatternUpdateTimer");
+        int FrontPanel::m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
 
         FrontPanelImplementation::FrontPanelImplementation()
         : m_updateTimer(this)
@@ -493,10 +494,6 @@ namespace WPEFramework
         {
             LOGWARN("%s: override FP LED display with text pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
 
-            if (getClockBrightness() != 100)
-            {
-                setClockBrightness(100);
-            }
 
             device::FrontPanelConfig::getInstance().getTextDisplay("Text").setText(ALL_SEGMENTS_TEXT_PATTERN);
             LOGWARN("%s: LED display updated by pattern " ALL_SEGMENTS_TEXT_PATTERN, __FUNCTION__);
