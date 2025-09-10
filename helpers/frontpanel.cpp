@@ -461,7 +461,7 @@ namespace WPEFramework
                 getNumberParameter("brightness", brightness);
 
             unsigned int color = 0;
-            if (parameters.HasLabel("color")) //color mode 2
+            if (parameters.HasLabel("color") && !parameters["color"].String().empty()) //color mode 2
             {
                 string colorString = parameters["color"].String();
                 try
