@@ -132,13 +132,13 @@ namespace WPEFramework {
 
 
             //Begin methods
-            Core::hresult SetBrightness(const string& index, const int32_t& brightness, FrontPanelSuccess& success) override;
-            Core::hresult GetBrightness(const string& index, int32_t& brightness, bool& success) override;
-            Core::hresult PowerLedOn(const string& index, FrontPanelSuccess& success) override;
-            Core::hresult PowerLedOff(const string& index, FrontPanelSuccess& success) override;
+            Core::hresult SetBrightness(const string index, const uint32_t brightness, FrontPanelSuccess& success) override;
+            Core::hresult GetBrightness(const string index, uint32_t& brightness, bool& success) override;
+            Core::hresult PowerLedOn(const string index, FrontPanelSuccess& success) override;
+            Core::hresult PowerLedOff(const string index, FrontPanelSuccess& success) override;
             Core::hresult GetFrontPanelLights(IFrontPanelLightsListIterator*& supportedLights , string &supportedLightsInfo, bool &success) override;
-            Core::hresult SetLED(const string& ledIndicator, const uint32_t& brightness, const string& color, const uint32_t& red, const uint32_t& green, const uint32_t& blue, FrontPanelSuccess& success) override;
-            Core::hresult SetBlink(const string& blinkInfo, FrontPanelSuccess& success) override;
+            Core::hresult SetLED(const string ledIndicator, const uint32_t brightness, const string color, const uint32_t red, const uint32_t green, const uint32_t blue, FrontPanelSuccess& success) override;
+            Core::hresult SetBlink(const string blinkInfo, FrontPanelSuccess& success) override;
             Core::hresult Configure(PluginHost::IShell* service) override;
             //End methods
 
