@@ -154,6 +154,7 @@ namespace WPEFramework {
         public:
             static FrontPanelImplementation* _instance;
         private:
+            static int m_LedDisplayPatternUpdateTimerInterval;
 
             TestPatternInfo m_updateTimer;
             bool           m_runUpdateTimer;
