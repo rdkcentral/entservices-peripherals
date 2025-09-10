@@ -146,7 +146,7 @@ namespace WPEFramework
         FrontPanelImplementation* FrontPanelImplementation::_instance = nullptr;
 
         static Core::TimerType<TestPatternInfo> patternUpdateTimer(64 * 1024, "PatternUpdateTimer");
-        int FrontPanel::m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
+        int FrontPanelImplementation::m_LedDisplayPatternUpdateTimerInterval = DEFAULT_TEXT_PATTERN_UPDATE_INTERVAL;
 
         FrontPanelImplementation::FrontPanelImplementation()
         : m_updateTimer(this)
