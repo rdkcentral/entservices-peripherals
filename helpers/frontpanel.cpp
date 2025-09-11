@@ -143,81 +143,90 @@ namespace WPEFramework
                 if (!s_instance)
                     s_instance = new CFrontPanel;
 #ifdef USE_DS
-		unsigned int retryCount = 1;
-		    do
-		    {
-                try
+                unsigned int retryCount = 1;
+                do
                 {
-                    LOGINFO("Front panel init");
-                    fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
-                    LOGINFO(" so continue with other initialization \r\n");
-                    for (uint i = 0; i < fpIndicators.size(); i++)
+                    try
                     {
-                        std::string IndicatorNameIarm = fpIndicators.at(i).getName();
-
-                        auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
-                        if (m_lights.end() == it)
-                        {
-                            m_lights.push_back(IndicatorNameIarm);
-                        }
-                    }
-
-#if defined(HAS_API_POWERSTATE)
-                    {
-                        Core::hresult res = Core::ERROR_GENERAL;
-                        PowerState pwrStateCur = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
-                        PowerState pwrStatePrev = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
-                        ASSERT (_powerManagerPlugin);
-                        if (_powerManagerPlugin) {
-                            res = _powerManagerPlugin->GetPowerState(pwrStateCur, pwrStatePrev);
-                            if (Core::ERROR_NONE == res)
-                            {
-                                if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
-                                    powerStatus = true;
-                            }
-                            LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
-                        }
-                    }
-#endif
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                    clockBrightness =  device::FrontPanelTextDisplay::getInstance("Text").getTextBrightness();
-                    device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
-#endif
-                    globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
-                    LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
-
-		    profileType = searchRdkProfile();
-		    if (TV != profileType)
-		    {
+                        LOGINFO("TRACE:: Front panel init at %d", retryCount);
+                        LOGINFO("Front panel init");
+                        fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
+                        LOGINFO(" so continue with other initialization \r\n");
                         for (uint i = 0; i < fpIndicators.size(); i++)
-			{
-                            LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
-			    if (powerStatus)
-                                device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
+                        {
+                            LOGINFO("TRACE:: Before getName for %d at %d", i, retryCount);
+                            std::string IndicatorNameIarm = fpIndicators.at(i).getName();
+                            LOGINFO("TRACE:: After getName[%s] for %d at %d", IndicatorNameIarm.c_str(), i, retryCount);
 
-			    device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
-			}
-		    }
-		    else
-		    {
-                        LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-		    }
+                            auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
+                            if (m_lights.end() == it)
+                            {
+                                m_lights.push_back(IndicatorNameIarm);
+                            }
+                        }
+                        LOGINFO("TRACE:: Front panel init done with %d lights at %d", (int)m_lights.size(), retryCount);
 
-		    if (powerStatus)
-                        device::FrontPanelIndicator::getInstance("Power").setState(true);
+    #if defined(HAS_API_POWERSTATE)
+                        {
+                            Core::hresult res = Core::ERROR_GENERAL;
+                            PowerState pwrStateCur = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
+                            PowerState pwrStatePrev = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
+                            ASSERT (_powerManagerPlugin);
+                            if (_powerManagerPlugin) {
+                                LOGINFO("TRACE:: Before GetPowerState at %d", retryCount);
+                                res = _powerManagerPlugin->GetPowerState(pwrStateCur, pwrStatePrev);
+                                if (Core::ERROR_NONE == res)
+                                {
+                                    if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
+                                        powerStatus = true;
+                                }
+                                LOGINFO("TRACE:: After GetPowerState at %d", retryCount);
+                                LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
+                            }
+                        }
+    #endif
+    #ifdef CLOCK_BRIGHTNESS_ENABLED
+                        clockBrightness =  device::FrontPanelTextDisplay::getInstance("Text").getTextBrightness();
+                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
+    #endif
+                        LOGINFO("TRACE:: Before getBrightness at %d", retryCount);
+                        globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
+                        LOGINFO("TRACE:: After getBrightness at %d", retryCount);
+                        LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-		    initDone=1;
-		    }
+                        profileType = searchRdkProfile();
+                        if (TV != profileType)
+                        {
+                            for (uint i = 0; i < fpIndicators.size(); i++)
+                            {
+                                LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
+                                if (powerStatus)
+                                    device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
+                                device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                            }
+                        }
+                        else
+                        {
+                            LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
+                        }
+
+                        LOGINFO("TRACE:: Before setState at %d", retryCount);
+                        if (powerStatus)
+                            device::FrontPanelIndicator::getInstance("Power").setState(true);
+
+                        LOGINFO("TRACE:: After setState at %d", retryCount);
+                        initDone=1;
+                    }
+                    catch (...)
+                    {
+                        LOGERR("Exception Caught during [CFrontPanel::instance]\r\n");
+                        LOGINFO("TRACE:: Retry will happen in 50ms");
+                        usleep(50000); // Sleep for 50ms before retrying
+                    }
                 }
-                catch (...)
-                {
-                    LOGERR("Exception Caught during [CFrontPanel::instance]\r\n");
-			    usleep(50000); // Sleep for 50ms before retrying
-                }
-	        }while((retryCount++ <= 20) && (initDone == 0) );
+                while((retryCount++ <= 20) && (initDone == 0) );
 #endif
             }
-
             return s_instance;
         }
 
