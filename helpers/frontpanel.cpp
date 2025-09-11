@@ -220,8 +220,9 @@ namespace WPEFramework
                     catch (...)
                     {
                         LOGERR("Exception Caught during [CFrontPanel::instance]\r\n");
-                        LOGINFO("TRACE:: Retry will happen in 50ms");
-                        usleep(50000); // Sleep for 50ms before retrying
+                        LOGINFO("TRACE:: Retry will happen in 2s");
+                        //usleep(50000); // Sleep for 50ms before retrying
+						sleep(2); // Sleep for 50ms before retrying
                     }
                 }
                 while((retryCount++ <= 20) && (initDone == 0) );
