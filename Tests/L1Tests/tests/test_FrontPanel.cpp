@@ -186,8 +186,18 @@ protected:
 
         plugin->Deinitialize(&service);
 
-        _notification = nullptr;
+        // Unregister the notification captured in the EXPECT_CALL and clear the pointer.
+        if (_notification != nullptr) {
+            // Call the appropriate mock API to unregister/deregister the listener.
+            // Replace `Unregister` with the actual method name if different.
+            PowerManagerMock::Mock().Unregister(_notification);
+            _notification = nullptr;
+        }
+
         PowerManagerMock::Delete();
+        
+        //_notification = nullptr;
+        //PowerManagerMock::Delete();
 
         //Clearing out out of scope variables, and setting initDone to 0.
         Plugin::CFrontPanel::initDone = 0;
