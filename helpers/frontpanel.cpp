@@ -143,11 +143,14 @@ namespace WPEFramework
                 if (!s_instance)
                     s_instance = new CFrontPanel;
 #ifdef USE_DS
+		unsigned int retryCount = 1;
+		    do
+		    {
                 try
                 {
                     LOGINFO("Front panel init");
                     fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
-
+                    LOGINFO(" so continue with other initialization \r\n");
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
                         std::string IndicatorNameIarm = fpIndicators.at(i).getName();
@@ -203,12 +206,15 @@ namespace WPEFramework
 		    if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
 
+		    initDone=1;
+		    }
                 }
                 catch (...)
                 {
                     LOGERR("Exception Caught during [CFrontPanel::instance]\r\n");
+			    usleep(50000); // Sleep for 50ms before retrying
                 }
-                initDone=1;
+	        }while((retryCount++ <= 20) && (initDone == 0) );
 #endif
             }
 
