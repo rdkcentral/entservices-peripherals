@@ -647,7 +647,7 @@ jobs:
           rm -rf $(pwd)/rdkL1TestResults.json
 
       - name: Generate coverage
-        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT }}
+#        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT }}
         run: >
           cp $GITHUB_WORKSPACE/entservices-testframework/Tests/L1Tests/.lcovrc_l1 ~/.lcovrc
           &&
@@ -672,14 +672,14 @@ jobs:
           filtered_coverage.info
 
       - name: Upload artifacts
-        if: ${{ !env.ACT }}
+#        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-L1-peripherals
           path: |
             coverage/
             valgrind_log
-            rdkL1TestResultsWithoutValgrind.json
+            rdkL1TestResultsWithoutValgrind.json2
             rdkL1TestResultsWithValgrind.json
           if-no-files-found: warn
           

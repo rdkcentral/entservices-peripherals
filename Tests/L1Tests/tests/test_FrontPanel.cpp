@@ -175,7 +175,7 @@ protected:
                 });
 
         // This CFrontPanel::instance() is never destroyed
-        // ::testing::Mock::AllowLeak(PowerManagerMock::Get());
+        ::testing::Mock::AllowLeak(PowerManagerMock::Get());
 
         EXPECT_EQ(string(""), plugin->Initialize(&service));
     }
@@ -186,15 +186,7 @@ protected:
 
         plugin->Deinitialize(&service);
 
-        // Unregister the notification captured in the EXPECT_CALL and clear the pointer.
-        if (_notification != nullptr) {
-            // Call the appropriate mock API to unregister/deregister the listener.
-            // Replace `Unregister` with the actual method name if different.
-            PowerManagerMock::Mock().Unregister(_notification);
-            _notification = nullptr;
-        }
-
-        PowerManagerMock::Delete();
+        delete Plugin::CFrontPanel::instance(&service);
         
         //_notification = nullptr;
         //PowerManagerMock::Delete();
