@@ -225,7 +225,7 @@ namespace WPEFramework
             }
         }
 
-        Core::hresult FrontPanelImplementation::SetBrightness(const string index, const uint32_t brightness, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::SetBrightness(const string& index, const uint32_t brightness, FrontPanelSuccess& success)
         {
             LOGINFO("SetBrightness called with index: %s, brightness: %d", index.c_str(), brightness);
             CFrontPanel::instance()->stopBlinkTimer();
@@ -268,7 +268,7 @@ namespace WPEFramework
          * @return Returns a ServiceParams object containing brightness value and function result.
          * @ingroup SERVMGR_FRONTPANEL_API
          */
-        Core::hresult FrontPanelImplementation::GetBrightness(const string index, uint32_t& brightness, bool& success)
+        Core::hresult FrontPanelImplementation::GetBrightness(const string& index, uint32_t& brightness, bool& success)
         {
             LOGINFO("GetBrightness called with index: %s", index.c_str());
             bool ok = false;
@@ -312,7 +312,7 @@ namespace WPEFramework
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
         }
 
-        Core::hresult FrontPanelImplementation::PowerLedOn(const string index, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::PowerLedOn(const string& index, FrontPanelSuccess& success)
         {
             bool ok = false;
             if (index == DATA_LED) {
@@ -327,7 +327,7 @@ namespace WPEFramework
         }
 
 
-        Core::hresult FrontPanelImplementation::PowerLedOff(const string index, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::PowerLedOff(const string& index, FrontPanelSuccess& success)
         {
             bool ok = false;
             if (index == DATA_LED) {
@@ -440,7 +440,7 @@ namespace WPEFramework
          * @return Returns success value of the helper method, returns false in case of failure.
          */
 
-        Core::hresult FrontPanelImplementation::SetLED(const string ledIndicator, const uint32_t brightness, const string color, const uint32_t red, const uint32_t green, const uint32_t blue, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::SetLED(const string& ledIndicator, const uint32_t brightness, const string& color, const uint32_t red, const uint32_t green, const uint32_t blue, FrontPanelSuccess& success)
         {
             LOGINFO("[%s][%d]SetLED called - LED Indicator: %s, Brightness: %d, Color: %s, Red: %d, Green: %d, Blue: %d", __FUNCTION__, __LINE__, ledIndicator.c_str(), brightness, color.c_str(), red, green, blue);
 
@@ -471,7 +471,7 @@ namespace WPEFramework
         }
 
        
-        Core::hresult FrontPanelImplementation::SetBlink(const string blinkInfo, FrontPanelSuccess& success)
+        Core::hresult FrontPanelImplementation::SetBlink(const string& blinkInfo, FrontPanelSuccess& success)
         {
             LOGINFO("SetBlink called with blinkInfo: %s", blinkInfo.c_str());
             bool ok = false;
