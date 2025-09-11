@@ -112,15 +112,6 @@ protected:
             dispatcher = nullptr;
         }
 
-        // Stop worker pool and clear global assignment
-        if (workerPool.get() != nullptr) {
-            workerPool->Stop();
-        }
-        Core::IWorkerPool::Assign(nullptr);
-
-        // Reset any plugin proxy held by the fixture (release references)
-        FrontPanelImplem.Release(); // explicit reset of Core::ProxyType
-
         // Restore global factory hooks
         PluginHost::IFactories::Assign(nullptr);
 
