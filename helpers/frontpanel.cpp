@@ -517,41 +517,6 @@ namespace WPEFramework
             startBlinkTimer(iterations);
         }
 
-        JsonObject CFrontPanel::getPreferences()
-        {
-            return m_preferencesHash;
-        }
-
-        void CFrontPanel::setPreferences(const JsonObject& preferences)
-        {
-            m_preferencesHash = preferences;
-
-            Core::File file;
-            file = FP_SETTINGS_FILE_JSON;
-
-            file.Open(false);
-            if (!file.IsOpen())
-                file.Create();
-
-            m_preferencesHash.IElement::ToFile(file);
-
-            file.Close();
-            Utils::syncPersistFile (FP_SETTINGS_FILE_JSON);
-        }
-
-        void CFrontPanel::loadPreferences()
-        {
-            m_preferencesHash.Clear();
-
-            Core::File file;
-            file = FP_SETTINGS_FILE_JSON;
-
-            file.Open();
-            m_preferencesHash.IElement::FromFile(file);
-
-            file.Close();
-        }
-
         void CFrontPanel::startBlinkTimer(int numberOfBlinkRepeats)
         {
             LOGWARN("startBlinkTimer numberOfBlinkRepeats: %d m_blinkList.length : %zu", numberOfBlinkRepeats, m_blinkList.size());

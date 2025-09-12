@@ -591,3 +591,86 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDMode2)
         EXPECT_EQ(response, string("{\"success\":true}"));
 }
 
+// --- Negative Test Cases ---
+
+TEST_F(FrontPanelInitializedEventDsTest, setBrightnessInvalidIndex)
+{
+    // Expect the underlying implementation to throw when an invalid indicator is requested.
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("non_existent_led", name);
+                throw std::runtime_error("Invalid indicator");
+            }));
+
+    // The handler should catch the exception and return success:false.
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 50,\"index\": \"non_existent_led\"}"), response));
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBrightnessMalformedJson)
+{
+    // Malformed JSON should result in a JSON-RPC parsing error.
+    EXPECT_EQ(Core::ERROR_RPC_INVALID_PARAMS, handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 50,"), response));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, getBrightnessInvalidIndex)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("invalid_led", name);
+                throw std::runtime_error("Invalid indicator");
+            }));
+
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("getBrightness"), _T("{\"index\": \"invalid_led\"}"), response));
+    EXPECT_EQ(response, string("{\"brightness\":0,\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, powerLedOffInvalidIndex)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("invalid_led", name);
+                throw std::runtime_error("Invalid indicator");
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setState(::testing::_))
+        .Times(0);
+
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("powerLedOff"), _T("{\"index\": \"invalid_led\"}"), response));
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setLEDFailure)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    // Simulate a failure in the underlying driver call.
+    EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Throw(std::runtime_error("Driver failure")));
+
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"red\": 1, \"green\": 2, \"blue\":3}"), response));
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkMalformedJson)
+{
+    // The FromString method in the implementation should throw, leading to success:false.
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"iterations\": 10, \"pattern\": [{\"brightness\": 50}}"), response));
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkMissingPattern)
+{
+    // A valid JSON but with a missing 'pattern' key should be handled gracefully.
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"iterations\": 10}}"), response));
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
