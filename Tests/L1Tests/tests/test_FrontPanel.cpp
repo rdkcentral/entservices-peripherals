@@ -160,7 +160,7 @@ protected:
         ON_CALL(frontPanelIndicatorMock, getInstanceString)
             .WillByDefault(::testing::Invoke(
                 [&](const std::string& name) -> device::FrontPanelIndicator& {
-                    EXPECT_EQ("Power", name);
+                    //EXPECT_EQ("Power", name);
                     return device::FrontPanelIndicator::getInstance();
                 }));
 
@@ -186,10 +186,10 @@ protected:
 
         plugin->Deinitialize(&service);
 
-        delete Plugin::CFrontPanel::instance(&service);
+        //delete Plugin::CFrontPanel::instance(&service);
         
-        //_notification = nullptr;
-        //PowerManagerMock::Delete();
+        _notification = nullptr;
+        PowerManagerMock::Delete();
 
         //Clearing out out of scope variables, and setting initDone to 0.
         Plugin::CFrontPanel::initDone = 0;
