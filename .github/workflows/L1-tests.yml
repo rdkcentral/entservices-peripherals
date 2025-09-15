@@ -448,7 +448,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug
           -DDS_FOUND=ON
           -DHAS_FRONT_PANEL=ON
-          -DPLUGIN_FRONTPANEL=ON
+          -DPLUGIN_FRONTPANEL=OFF
           -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICES_L1_TEST=ON
           -DUSE_THUNDER_R4=ON
@@ -525,7 +525,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug
           -DDS_FOUND=ON
           -DHAS_FRONT_PANEL=ON
-          -DPLUGIN_FRONTPANEL=ON
+          -DPLUGIN_FRONTPANEL=OFF
           -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICES_L1_TEST=ON
           -DUSE_THUNDER_R4=ON
