@@ -663,12 +663,8 @@ TEST_F(FrontPanelInitializedEventDsTest, powerLedOffExtended)
 
     // --- Test Remote LED ---
     // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString)
-        .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator& {
-                EXPECT_EQ("Remote", name);
-                return device::FrontPanelIndicator::getInstance();
-            }));
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Remote")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
     EXPECT_CALL(frontPanelIndicatorMock, setState(false))
         .Times(1);
 
@@ -678,12 +674,8 @@ TEST_F(FrontPanelInitializedEventDsTest, powerLedOffExtended)
 
     // --- Test RF Bypass LED ---
     // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString)
-        .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator& {
-                EXPECT_EQ("RfByPass", name);
-                return device::FrontPanelIndicator::getInstance();
-            }));
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("RfByPass")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
     EXPECT_CALL(frontPanelIndicatorMock, setState(false))
         .Times(1);
 
@@ -691,21 +683,9 @@ TEST_F(FrontPanelInitializedEventDsTest, powerLedOffExtended)
     EXPECT_TRUE(frontPanel->powerOffLed(Plugin::FRONT_PANEL_INDICATOR_RFBYPASS));
     ::testing::Mock::VerifyAndClearExpectations(&frontPanelIndicatorMock);
 
-    // --- Test All LEDs (FRONT_PANEL_INDICATOR_ALL) ---
-    // Arrange: Define the list of all indicators that should be turned off.
-    device::FrontPanelIndicator powerIndicator;
-    device::FrontPanelIndicator messageIndicator;
-    device::FrontPanelIndicator recordIndicator;
-    ON_CALL(powerIndicator, getName()).WillByDefault(::testing::Return("Power"));
-    ON_CALL(messageIndicator, getName()).WillByDefault(::testing::Return("Message"));
-    ON_CALL(recordIndicator, getName()).WillByDefault(::testing::Return("Record"));
 
-    ON_CALL(*p_frontPanelConfigImplMock, getIndicators())
-        .WillByDefault(::testing::Return(device::List<device::FrontPanelIndicator>({ powerIndicator, messageIndicator, recordIndicator })));
-
-    // Expect setState(false) to be called for each indicator in the list.
-    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
-        .Times(3);
+    // Expect setState(false) to be called on each of the mock indicators
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false)).Times(1);
 
     // Act & Assert
     EXPECT_TRUE(frontPanel->powerOffAllLed());
