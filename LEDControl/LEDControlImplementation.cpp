@@ -294,7 +294,7 @@ namespace WPEFramework
                 dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
             } catch (const std::invalid_argument& e) {
                 LOGERR("Invalid dsFPDLedState_t value: %s\n", e.what());
-                return Core::ERROR_READ_ERROR;
+                return Core::ERROR_BAD_REQUEST;
             }
             // return error if requested state is unsupported
             if (!(m_SupportedLEDStates & (1 << static_cast<int>(dsLEDState)))) {
