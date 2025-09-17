@@ -273,6 +273,7 @@ namespace WPEFramework
         // New overload of GetLEDState to maintain backward compatibility
         Core::hresult LEDControlImplementation::GetLEDState(WPEFramework::Exchange::ILEDControl::LEDState& ledState)
         {
+            LOGINFO("");
             WPEFramework::Exchange::ILEDControl::LEDControlState state = WPEFramework::Exchange::ILEDControl::LEDSTATE_MAX;
             Core::hresult hr = GetLEDState(state);
             if (hr == Core::ERROR_NONE) {
