@@ -713,12 +713,12 @@ TEST_F(FrontPanelInitializedEventDsTest, powerLedOnExtended)
 
     // Expect setState(false) to be called on each of the mock indicators
      EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
-        .Times(1)
+        .Times(3)
         .WillOnce(::testing::Invoke(
             [&](const std::string& name) -> device::FrontPanelIndicator& {
                 return device::FrontPanelIndicator::getInstance();
             }));
-    EXPECT_CALL(frontPanelIndicatorMock, setState(true)).Times(1);
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true)).Times(3);
 
     // Act & Assert
     EXPECT_TRUE(frontPanel->powerOnAllLed());
