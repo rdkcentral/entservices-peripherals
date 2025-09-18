@@ -105,23 +105,15 @@ namespace WPEFramework
             void removeEventObserver(FrontPanelImplementation* o);
             bool setBrightness(int fp_brighness);
             int getBrightness();
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-            bool setClockBrightness(int brightness);
-            int getClockBrightness();
-#endif
             bool powerOffLed(frontPanelIndicator fp_indicator);
             bool powerOnLed(frontPanelIndicator fp_indicator);
             bool powerOffAllLed();
             bool powerOnAllLed();
             void setPowerStatus(bool powerStatus);
-            JsonObject getPreferences();
-            void setPreferences(const JsonObject& preferences);
             bool setLED(const JsonObject& blinkInfo);
             void setBlink(const JsonObject& blinkInfo);
             void loadPreferences();
             void stopBlinkTimer();
-            void set24HourClock(bool is24Hour);
-            bool is24HourClock();
 
             void onBlinkTimer();
             static int initDone;

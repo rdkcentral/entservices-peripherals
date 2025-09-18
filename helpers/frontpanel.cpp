@@ -69,15 +69,11 @@ namespace WPEFramework
     {
         CFrontPanel* CFrontPanel::s_instance = NULL;
         static int globalLedBrightness = 100;
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-        static int clockBrightness = 100;
-#endif
+
         int CFrontPanel::initDone = 0;
         static bool isMessageLedOn = false;
         static bool isRecordLedOn = false;
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-        static bool isClockOn;
-#endif
+
         static bool powerStatus = false;     //Check how this works on xi3 and rng's
         static bool started = false;
         static int m_numberOfBlinks = 0;
@@ -176,10 +172,7 @@ namespace WPEFramework
                         }
                     }
 #endif
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                    clockBrightness =  device::FrontPanelTextDisplay::getInstance("Text").getTextBrightness();
-                    device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
-#endif
+
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
@@ -313,29 +306,6 @@ namespace WPEFramework
             return globalLedBrightness;
         }
 
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-        bool CFrontPanel::setClockBrightness(int brightness)
-        {
-            clockBrightness = brightness;
-            powerOnLed(FRONT_PANEL_INDICATOR_CLOCK);
-            return true;
-        }
-
-        int CFrontPanel::getClockBrightness()
-        {
-            try
-            {
-                clockBrightness =  device::FrontPanelTextDisplay::getInstance("Text").getTextBrightness();
-            }
-            catch (...)
-            {
-                LOGERR("FrontPanel Exception Caught during [%s]\r\n", __func__);
-            }
-
-            return clockBrightness;
-        }
-#endif
-
         bool CFrontPanel::powerOnLed(frontPanelIndicator fp_indicator)
         {
             stopBlinkTimer();
@@ -345,12 +315,6 @@ namespace WPEFramework
                 {
                     switch (fp_indicator)
                     {
-                    case FRONT_PANEL_INDICATOR_CLOCK:
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                        isClockOn = true;
-                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
-#endif
-                        break;
                     case FRONT_PANEL_INDICATOR_MESSAGE:
                         isMessageLedOn = true;
                         device::FrontPanelIndicator::getInstance("Message").setState(true);
@@ -394,12 +358,6 @@ namespace WPEFramework
             {
                 switch (fp_indicator)
                 {
-                case FRONT_PANEL_INDICATOR_CLOCK:
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                    isClockOn = false;
-                    device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(0);
-#endif
-                    break;
                 case FRONT_PANEL_INDICATOR_MESSAGE:
                     isMessageLedOn = false;
                     device::FrontPanelIndicator::getInstance("Message").setState(false);
@@ -559,41 +517,6 @@ namespace WPEFramework
             startBlinkTimer(iterations);
         }
 
-        JsonObject CFrontPanel::getPreferences()
-        {
-            return m_preferencesHash;
-        }
-
-        void CFrontPanel::setPreferences(const JsonObject& preferences)
-        {
-            m_preferencesHash = preferences;
-
-            Core::File file;
-            file = FP_SETTINGS_FILE_JSON;
-
-            file.Open(false);
-            if (!file.IsOpen())
-                file.Create();
-
-            m_preferencesHash.IElement::ToFile(file);
-
-            file.Close();
-            Utils::syncPersistFile (FP_SETTINGS_FILE_JSON);
-        }
-
-        void CFrontPanel::loadPreferences()
-        {
-            m_preferencesHash.Clear();
-
-            Core::File file;
-            file = FP_SETTINGS_FILE_JSON;
-
-            file.Open();
-            m_preferencesHash.IElement::FromFile(file);
-
-            file.Close();
-        }
-
         void CFrontPanel::startBlinkTimer(int numberOfBlinkRepeats)
         {
             LOGWARN("startBlinkTimer numberOfBlinkRepeats: %d m_blinkList.length : %zu", numberOfBlinkRepeats, m_blinkList.size());
@@ -671,41 +594,6 @@ namespace WPEFramework
             }
 
             //if not blink again then the led color should stay on the LAST element in the array as stated in the spec
-        }
-
-        void CFrontPanel::set24HourClock(bool is24Hour)
-        {
-            try
-            {
-                int newFormat = is24Hour ? device::FrontPanelTextDisplay::kModeClock24Hr : device::FrontPanelTextDisplay::kModeClock12Hr;
-                device::FrontPanelTextDisplay &textDisplay = device::FrontPanelConfig::getInstance().getTextDisplay("Text");
-                int currentFormat = textDisplay.getCurrentTimeFormat();
-                LOGINFO("set24HourClock - Before setting %d - Time zone read from DS is %d", newFormat, currentFormat);
-                textDisplay.setTimeFormat(newFormat);
-                currentFormat = textDisplay.getCurrentTimeFormat();
-                LOGINFO("set24HourClock - After setting %d - Time zone read from DS is %d", newFormat, currentFormat);
-            }
-            catch (...)
-            {
-                LOGERR("Exception Caught during set24HourClock");
-            }
-        }
-
-        bool CFrontPanel::is24HourClock()
-        {
-            bool is24Hour = false;
-            try
-            {
-                device::FrontPanelTextDisplay &textDisplay = device::FrontPanelConfig::getInstance().getTextDisplay("Text");
-                int currentFormat = textDisplay.getCurrentTimeFormat();
-                LOGINFO("is24HourClock - Time zone read from DS is %d", currentFormat);
-                is24Hour = currentFormat == device::FrontPanelTextDisplay::kModeClock24Hr;
-            }
-            catch (...)
-            {
-                LOGERR("Exception Caught during is24HourClock");
-            }
-            return is24Hour;
         }
 
         uint64_t BlinkInfo::Timed(const uint64_t scheduledTime)
