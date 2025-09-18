@@ -218,6 +218,7 @@ jobs:
           rdk/ds/dsError.h
           rdk/ds/dsMgr.h
           rdk/ds/dsTypes.h
+          rdk/ds/dsFPDTypes.h
           rdk/ds/dsUtl.h
           rdk/ds/exception.hpp
           rdk/ds/hdmiIn.hpp
