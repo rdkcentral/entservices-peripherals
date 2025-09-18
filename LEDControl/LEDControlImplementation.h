@@ -51,7 +51,7 @@ namespace WPEFramework
 
                 // Begin methods
                 Core::hresult GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success) override;
-                Core::hresult GetLEDState(LEDControlState& ledState) override;
+                Core::hresult GetLEDState(LEDState& ledState) override;
                 Core::hresult SetLEDState(const LEDControlState& state, bool& success) override;
                 // End methods
 
@@ -59,6 +59,9 @@ namespace WPEFramework
                 mutable Core::CriticalSection _adminLock;
                 bool m_isPlatInitialized;
                 unsigned int m_SupportedLEDStates;
+
+                // New method used by GetLEDState but not exposed in the interface.
+                Core::hresult GetLEDState(LEDControlState& ledState);
         };
     } // namespace Plugin
 } // namespace WPEFramework

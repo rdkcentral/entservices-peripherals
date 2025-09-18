@@ -270,6 +270,18 @@ namespace WPEFramework
             return Core::ERROR_NONE;
         }
 
+        // New overload of GetLEDState to maintain backward compatibility
+        Core::hresult LEDControlImplementation::GetLEDState(WPEFramework::Exchange::ILEDControl::LEDState& ledState)
+        {
+            LOGINFO("");
+            WPEFramework::Exchange::ILEDControl::LEDControlState state = WPEFramework::Exchange::ILEDControl::LEDSTATE_MAX;
+            Core::hresult hr = GetLEDState(state);
+            if (hr == Core::ERROR_NONE) {
+                ledState.state = state;
+            }
+            return hr;
+        }
+
         Core::hresult LEDControlImplementation::SetLEDState(const WPEFramework::Exchange::ILEDControl::LEDControlState& state, bool& success)
         {
             LOGINFO("");
@@ -283,7 +295,7 @@ namespace WPEFramework
                 dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
             } catch (const std::invalid_argument& e) {
                 LOGERR("Invalid dsFPDLedState_t value: %s\n", e.what());
-                return Core::ERROR_READ_ERROR;
+                return Core::ERROR_BAD_REQUEST;
             }
             // return error if requested state is unsupported
             if (!(m_SupportedLEDStates & (1 << static_cast<int>(dsLEDState)))) {
