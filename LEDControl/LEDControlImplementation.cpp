@@ -19,207 +19,309 @@
 
 #include "LEDControlImplementation.h"
 
-#include <algorithm>
+#include <core/Portability.h>
+#include <interfaces/ILEDControl.h>
 
-#include "UtilsJsonRpc.h"
-#include "UtilsIarm.h"
 #include "dsFPD.h"
-
-#define FPD_LED_DEVICE_NONE "NONE"
-#define FPD_LED_DEVICE_ACTIVE "ACTIVE"
-#define FPD_LED_DEVICE_STANDBY "STANDBY"
-#define FPD_LED_DEVICE_WPS_CONNECTING "WPS_CONNECTING"
-#define FPD_LED_DEVICE_WPS_CONNECTED "WPS_CONNECTED"
-#define FPD_LED_DEVICE_WPS_ERROR "WPS_ERROR"
-#define FPD_LED_DEVICE_FACTORY_RESET "FACTORY_RESET"
-#define FPD_LED_DEVICE_USB_UPGRADE "USB_UPGRADE"
-#define FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR "DOWNLOAD_ERROR"
+#include "dsError.h"
+#include "dsFPDTypes.h"
+#include "UtilsLogging.h"
 
 namespace WPEFramework
 {
     namespace Plugin
     {
         SERVICE_REGISTRATION(LEDControlImplementation, 1, 0);
-    
-        LEDControlImplementation::LEDControlImplementation(): m_isPlatInitialized (false)
+
+        LEDControlImplementation::LEDControlImplementation()
+        : m_isPlatInitialized(false)
+        , m_SupportedLEDStates((unsigned int)dsFPD_LED_DEVICE_NONE)
         {
-            LOGINFO("LEDControlImplementation Constructor called");
-            if (!m_isPlatInitialized){
-                LOGINFO("Doing plat init");
-                if (dsERR_NONE != dsFPInit()){
-		    LOGERR("dsFPInit failed");
-		}
-                m_isPlatInitialized = true;
+            LOGINFO("LEDControlImplementation Constructor called\n");
+            if (!m_isPlatInitialized) {
+                LOGINFO("Doing plat init; dsFPInit\n");
+                try {
+                    dsError_t err = dsERR_NONE;
+                    if ((err = dsFPInit()) != dsERR_NONE) {
+                        LOGERR("dsFPInit failed: %d\n", err);
+                    } else {
+                        m_isPlatInitialized = true;
+                        // Start a worker JOB to update the m_SupportedLEDStates using WPEFramework's worker pool
+                        class UpdateSupportedLEDStatesJob : public Core::IDispatch {
+                        public:
+                            UpdateSupportedLEDStatesJob(LEDControlImplementation* parent) : _parent(parent) {}
+                            void Dispatch() override {
+                                try {
+                                    unsigned int supported = (unsigned int)dsFPD_LED_DEVICE_NONE;
+                                    dsError_t err = dsFPGetSupportedLEDStates(&supported);
+                                    if (err == dsERR_NONE) {
+                                        _parent->m_SupportedLEDStates = supported;
+                                        LOGINFO("Worker m_SupportedLEDStates updated: 0x%X\n", supported);
+                                    } else {
+                                        LOGERR("Worker dsFPGetSupportedLEDStates failed: %d\n", err);
+                                    }
+                                } catch (...) {
+                                    LOGERR("Worker got exception updating m_SupportedLEDStates\n");
+                                }
+                            }
+                        private:
+                            LEDControlImplementation* _parent;
+                        };
+                        Core::IWorkerPool::Instance().Submit(Core::ProxyType<Core::IDispatch>(Core::ProxyType<UpdateSupportedLEDStatesJob>::Create(this)));
+                    }
+                } catch (...) {
+                    LOGERR("Exception caught during dsFPInit");
+                }
             }
         }
 
         LEDControlImplementation::~LEDControlImplementation()
         {
-	    LOGINFO("LEDControlImplementation Destructor called");
-	    if (m_isPlatInitialized){
-                LOGINFO("Doing plat uninit");
-                dsFPTerm();
-                m_isPlatInitialized = false;
+            LOGINFO("LEDControlImplementation Destructor called\n");
+            if (m_isPlatInitialized) {
+                LOGINFO("Doing plat uninit; dsFPTerm\n");
+                try {
+                    dsError_t err = dsFPTerm();
+                    if (dsERR_NONE != err) {
+                        LOGERR("dsFPTerm failed\n");
+                    }
+                    m_isPlatInitialized = false;
+                } catch (...) {
+                    LOGERR("Exception caught during dsFPTerm");
+                }
             }
         }
+
+        /************************ Helper Functions *************************/
+        /***
+         * @brief: Map ILEDControl::LEDControlState to dsFPDLedState_t
+         * @param[in] state The LED control state
+         * @return Corresponding dsFPDLedState_t
+         */
+        static dsFPDLedState_t mapFromLEDControlStateToDsFPDLedState(WPEFramework::Exchange::ILEDControl::LEDControlState state)
+        {
+            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
+            switch (state) {
+                case LEDControlState::LEDSTATE_NONE: return dsFPD_LED_DEVICE_NONE;
+                case LEDControlState::LEDSTATE_ACTIVE: return dsFPD_LED_DEVICE_ACTIVE;
+                case LEDControlState::LEDSTATE_STANDBY: return dsFPD_LED_DEVICE_STANDBY;
+                case LEDControlState::LEDSTATE_WPS_CONNECTING: return dsFPD_LED_DEVICE_WPS_CONNECTING;
+                case LEDControlState::LEDSTATE_WPS_CONNECTED: return dsFPD_LED_DEVICE_WPS_CONNECTED;
+                case LEDControlState::LEDSTATE_WPS_ERROR: return dsFPD_LED_DEVICE_WPS_ERROR;
+                case LEDControlState::LEDSTATE_FACTORY_RESET: return dsFPD_LED_DEVICE_FACTORY_RESET;
+                case LEDControlState::LEDSTATE_USB_UPGRADE: return dsFPD_LED_DEVICE_USB_UPGRADE;
+                case LEDControlState::LEDSTATE_DOWNLOAD_ERROR: return dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
+                /* The ILEDControl.h's LEDControlState has LEDSTATE_MAX defined but do not use it */
+                default:
+                    throw std::invalid_argument("Invalid LEDControlState for mapping to dsFPDLedState_t");
+            }
+        }
+
+        /***
+         * @brief: Map dsFPDLedState_t to ILEDControl::LEDControlState
+         * @param[in] state The dsFPDLedState_t state
+         * @return Corresponding ILEDControl::LEDControlState
+         */
+        static WPEFramework::Exchange::ILEDControl::LEDControlState mapFromDsFPDLedStateToLEDControlState(dsFPDLedState_t state)
+        {
+            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
+            switch (state) {
+                case dsFPD_LED_DEVICE_NONE: return LEDControlState::LEDSTATE_NONE;
+                case dsFPD_LED_DEVICE_ACTIVE: return LEDControlState::LEDSTATE_ACTIVE;
+                case dsFPD_LED_DEVICE_STANDBY: return LEDControlState::LEDSTATE_STANDBY;
+                case dsFPD_LED_DEVICE_WPS_CONNECTING: return LEDControlState::LEDSTATE_WPS_CONNECTING;
+                case dsFPD_LED_DEVICE_WPS_CONNECTED: return LEDControlState::LEDSTATE_WPS_CONNECTED;
+                case dsFPD_LED_DEVICE_WPS_ERROR: return LEDControlState::LEDSTATE_WPS_ERROR;
+                case dsFPD_LED_DEVICE_FACTORY_RESET: return LEDControlState::LEDSTATE_FACTORY_RESET;
+                case dsFPD_LED_DEVICE_USB_UPGRADE: return LEDControlState::LEDSTATE_USB_UPGRADE;
+                case dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR: return LEDControlState::LEDSTATE_DOWNLOAD_ERROR;
+                case dsFPD_LED_DEVICE_MAX:
+                default:
+                    throw std::invalid_argument("Invalid dsFPDLedState_t for mapping to LEDControlState");
+            }
+        }
+
+        /***
+         * @brief: Map LEDControlState to string
+         * @param[in] state The LEDControlState
+         * @return Corresponding string representation if valid, otherwise nullptr
+         */
+        static const char* LEDControlStateToString(WPEFramework::Exchange::ILEDControl::LEDControlState state)
+        {
+            using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
+            switch (state) {
+                case LEDControlState::LEDSTATE_NONE: return "NONE";
+                case LEDControlState::LEDSTATE_ACTIVE: return "ACTIVE";
+                case LEDControlState::LEDSTATE_STANDBY: return "STANDBY";
+                case LEDControlState::LEDSTATE_WPS_CONNECTING: return "WPS_CONNECTING";
+                case LEDControlState::LEDSTATE_WPS_CONNECTED: return "WPS_CONNECTED";
+                case LEDControlState::LEDSTATE_WPS_ERROR: return "WPS_ERROR";
+                case LEDControlState::LEDSTATE_FACTORY_RESET: return "FACTORY_RESET";
+                case LEDControlState::LEDSTATE_USB_UPGRADE: return "USB_UPGRADE";
+                case LEDControlState::LEDSTATE_DOWNLOAD_ERROR: return "DOWNLOAD_ERROR";
+                // Treat LEDSTATE_MAX and greater as invalid
+                case LEDControlState::LEDSTATE_MAX:
+                default: return nullptr;
+            }
+        }
+
+        /***
+         * @brief: Map dsError_t to Core::hresult
+         * @param[in] err The dsError_t error code
+         * @return Corresponding Core::hresult, defaulting to Core::ERROR_GENERAL
+         */
+        Core::hresult getCoreErrorFromDSError(dsError_t err)
+        {
+            switch (err) {
+                case dsERR_NONE:
+                    return Core::ERROR_NONE;
+                case dsERR_GENERAL:
+                case dsERR_OPERATION_FAILED:
+                    return Core::ERROR_GENERAL;
+                case dsERR_INVALID_PARAM:
+                    return Core::ERROR_INVALID_PARAMETER;
+                case dsERR_INVALID_STATE:
+                case dsERR_ALREADY_INITIALIZED:
+                case dsERR_NOT_INITIALIZED:
+                    return Core::ERROR_ILLEGAL_STATE;
+                case dsERR_OPERATION_NOT_SUPPORTED:
+                    return Core::ERROR_NOT_SUPPORTED;
+                case dsERR_RESOURCE_NOT_AVAILABLE:
+                    return Core::ERROR_UNAVAILABLE;
+                default:
+                    return Core::ERROR_GENERAL;
+            }
+        }
+
+        /************************ Plugin Methods ************************/
 
         Core::hresult LEDControlImplementation::GetSupportedLEDStates(IStringIterator*& supportedLEDStates, bool& success)
         {
-	    LOGINFO("");
- 
-            std::list<string> supportedLEDStatesInfo;
-
-            try {
-                unsigned int states = dsFPD_LED_DEVICE_NONE;
-                dsError_t err = dsFPGetSupportedLEDStates (&states);
-                if (!err) {
-                    if(!states)supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_NONE);
-                    if(states & (1<<dsFPD_LED_DEVICE_ACTIVE))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_ACTIVE);
-                    if(states & (1<<dsFPD_LED_DEVICE_STANDBY))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_STANDBY);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_CONNECTING))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_WPS_CONNECTING);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_CONNECTED))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_WPS_CONNECTED);
-                    if(states & (1<<dsFPD_LED_DEVICE_WPS_ERROR))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_WPS_ERROR);
-                    if(states & (1<<dsFPD_LED_DEVICE_FACTORY_RESET))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_FACTORY_RESET);
-                    if(states & (1<<dsFPD_LED_DEVICE_USB_UPGRADE))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_USB_UPGRADE);
-                    if(states & (1<<dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR))supportedLEDStatesInfo.emplace_back(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR);
-                    
-                } else {
-                        LOGERR("dsFPGetSupportedLEDStates returned error %d", err);
-                        success = false;
-                        return Core::ERROR_GENERAL;			
-                }
-
-            } catch (...){
-                LOGERR("Exception in supportedLEDStates");
-                success = false;
-                return Core::ERROR_GENERAL;
+            LOGINFO("");
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
             }
 
-            supportedLEDStates = (Core::Service<RPC::StringIterator>::Create<RPC::IStringIterator>(supportedLEDStatesInfo));
-            success = true;
-            return Core::ERROR_NONE;
-        }
-
-        Core::hresult LEDControlImplementation::GetLEDState(LEDControlState& state)
-        {
-	    LOGINFO("");
-
-            try
+            unsigned int halSupportedLEDStates = (unsigned int)dsFPD_LED_DEVICE_MAX;
             {
-                dsFPDLedState_t Ledstate;
-                dsError_t err = dsFPGetLEDState (&Ledstate);
-                if (!err) {
-                    switch (Ledstate) {
-                    case dsFPD_LED_DEVICE_NONE:
-		        state.state = FPD_LED_DEVICE_NONE;
-                        break;
-                    case dsFPD_LED_DEVICE_ACTIVE:
-                        state.state = FPD_LED_DEVICE_ACTIVE;
-                        break;
-                    case dsFPD_LED_DEVICE_STANDBY:
-                        state.state = FPD_LED_DEVICE_STANDBY;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_CONNECTING:
-                        state.state = FPD_LED_DEVICE_WPS_CONNECTING;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_CONNECTED:
-                        state.state = FPD_LED_DEVICE_WPS_CONNECTED;
-                        break;
-                    case dsFPD_LED_DEVICE_WPS_ERROR:
-                        state.state = FPD_LED_DEVICE_WPS_ERROR;
-                        break;
-                    case dsFPD_LED_DEVICE_FACTORY_RESET:
-                        state.state = FPD_LED_DEVICE_FACTORY_RESET;
-                        break;
-                    case dsFPD_LED_DEVICE_USB_UPGRADE:
-                        state.state = FPD_LED_DEVICE_USB_UPGRADE;
-                        break;
-                    case dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR:
-                        state.state = FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
-                        break;
-
-                    default :
-                        LOGERR("Unsupported LEDState %d", Ledstate);
-                        return WPEFramework::Core::ERROR_BAD_REQUEST;
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
+                    dsError_t err = dsFPGetSupportedLEDStates(&halSupportedLEDStates);
+                    if (dsERR_NONE != err) {
+                        LOGERR("dsFPGetSupportedLEDStates error %d\n", err);
+                        return getCoreErrorFromDSError(err);
+                    } else {
+                        // Refresh the cached supported LED states
+                        m_SupportedLEDStates = halSupportedLEDStates;
                     }
-                } else {
-                    LOGERR("dsFPGetLEDState returned error %d", err);
+                } catch (...) {
+                    LOGERR("Exception in dsFPGetSupportedLEDStates.\n");
                     return Core::ERROR_GENERAL;
                 }
             }
-            catch(...)
-            {
-                LOGERR("Exception in dsFPGetLEDState");
-                return Core::ERROR_GENERAL;
-            }
-
-            return Core::ERROR_NONE;
-        }
-
-        Core::hresult LEDControlImplementation::SetLEDState(const string& state, bool& success)
-        {
-	    LOGINFO("");
-            
-            if (state.empty())
-            {
-                LOGERR("state is empty");
-                success = false;
-                return WPEFramework::Core::ERROR_BAD_REQUEST;
-            }
-            
-            try
-            {
-                dsFPDLedState_t LEDstate = dsFPD_LED_DEVICE_NONE;
-                if (0==strncmp(state.c_str(), FPD_LED_DEVICE_ACTIVE, strlen(FPD_LED_DEVICE_ACTIVE)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_ACTIVE)) ){
-                    LEDstate = dsFPD_LED_DEVICE_ACTIVE;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_STANDBY, strlen(FPD_LED_DEVICE_STANDBY)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_STANDBY)) ){
-                    LEDstate = dsFPD_LED_DEVICE_STANDBY;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_WPS_CONNECTING, strlen(FPD_LED_DEVICE_WPS_CONNECTING)) && 
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_WPS_CONNECTING))){
-                    LEDstate = dsFPD_LED_DEVICE_WPS_CONNECTING;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_WPS_CONNECTED, strlen(FPD_LED_DEVICE_WPS_CONNECTED)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_WPS_CONNECTED)) ){
-                    LEDstate = dsFPD_LED_DEVICE_WPS_CONNECTED;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_WPS_ERROR, strlen(FPD_LED_DEVICE_WPS_ERROR)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_WPS_ERROR)) ){
-                    LEDstate = dsFPD_LED_DEVICE_WPS_ERROR;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_FACTORY_RESET, strlen(FPD_LED_DEVICE_FACTORY_RESET)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_FACTORY_RESET)) ){
-                    LEDstate = dsFPD_LED_DEVICE_FACTORY_RESET;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_USB_UPGRADE, strlen(FPD_LED_DEVICE_USB_UPGRADE)) &&
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_USB_UPGRADE)) ){
-                    LEDstate = dsFPD_LED_DEVICE_USB_UPGRADE;
-                } else if (0==strncmp(state.c_str(), FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR, strlen(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR)) && 
-				(strlen(state.c_str()) == strlen(FPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR)) ){
-                    LEDstate = dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
-                } else {
-                    //Invalid parameter
-                    LOGERR("UNKNOWN state : %s", state.c_str());
-                    success = false;
-                    return WPEFramework::Core::ERROR_BAD_REQUEST;
-                }
-                if (dsFPD_LED_DEVICE_NONE!=LEDstate) {
-		    LOGINFO("dsFPSetLEDState state:%s state:%d", state.c_str(), LEDstate);
-                    dsError_t err = dsFPSetLEDState (LEDstate);
-                    if (err) {
-                        LOGERR("dsFPSetLEDState returned error %d", err);
-                        success = false;
-                        return Core::ERROR_GENERAL;
+            std::list<std::string> stateNames;
+            using State = WPEFramework::Exchange::ILEDControl::LEDControlState;
+            for (int i = static_cast<int>(State::LEDSTATE_NONE); i < static_cast<int>(State::LEDSTATE_MAX); ++i) {
+                const char* stateStr = LEDControlStateToString(static_cast<State>(i));
+                if (stateStr != nullptr) {
+                    // LEDControlState should be exact match with HAL supported states
+                    if (halSupportedLEDStates & (1 << i)) {
+                        stateNames.emplace_back(stateStr);
+                    } else {
+                        LOGWARN("LED state %d is not supported by HAL.\n", i);
                     }
                 }
             }
-            catch (...)
-            {
-                LOGERR("Exception in dsFPSetLEDState");
-                success = false;
-                return Core::ERROR_GENERAL;
-            }
-
+            supportedLEDStates = Core::Service<RPC::StringIterator>::Create<RPC::IStringIterator>(stateNames);
             success = true;
             return Core::ERROR_NONE;
         }
 
+        Core::hresult LEDControlImplementation::GetLEDState(WPEFramework::Exchange::ILEDControl::LEDControlState& ledState)
+        {
+            LOGINFO("");
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
+            }
+
+            dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
+            {
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
+                    dsError_t err = dsFPGetLEDState(&dsLEDState);
+                    if (err != dsERR_NONE) {
+                        LOGERR("dsFPGetLEDState returned error: %d\n", err);
+                        return getCoreErrorFromDSError(err);
+                    }
+                } catch (...) {
+                    LOGERR("Exception in dsFPGetLEDState.\n");
+                    return Core::ERROR_GENERAL;
+                }
+            }
+
+            try {
+                ledState = mapFromDsFPDLedStateToLEDControlState(dsLEDState);
+            } catch (const std::invalid_argument& e) {
+                LOGERR("Exception in mapFromDsFPDLedStateToLEDControlState dsFPDLedState_t value: %s\n", e.what());
+                return Core::ERROR_READ_ERROR;
+            }
+            return Core::ERROR_NONE;
+        }
+
+        // New overload of GetLEDState to maintain backward compatibility
+        Core::hresult LEDControlImplementation::GetLEDState(WPEFramework::Exchange::ILEDControl::LEDState& ledState)
+        {
+            LOGINFO("");
+            WPEFramework::Exchange::ILEDControl::LEDControlState state = WPEFramework::Exchange::ILEDControl::LEDSTATE_MAX;
+            Core::hresult hr = GetLEDState(state);
+            if (hr == Core::ERROR_NONE) {
+                ledState.state = state;
+            }
+            return hr;
+        }
+
+        Core::hresult LEDControlImplementation::SetLEDState(const WPEFramework::Exchange::ILEDControl::LEDControlState& state, bool& success)
+        {
+            LOGINFO("");
+            if (!m_isPlatInitialized) {
+                LOGERR("Platform init failed, cannot proceed.\n");
+                return Core::ERROR_NOT_SUPPORTED;
+            }
+
+            dsFPDLedState_t dsLEDState = dsFPD_LED_DEVICE_MAX;
+            try {
+                dsLEDState = mapFromLEDControlStateToDsFPDLedState(state);
+            } catch (const std::invalid_argument& e) {
+                LOGERR("Invalid dsFPDLedState_t value: %s\n", e.what());
+                return Core::ERROR_BAD_REQUEST;
+            }
+            // return error if requested state is unsupported
+            if (!(m_SupportedLEDStates & (1 << static_cast<int>(dsLEDState)))) {
+                LOGERR("Requested LED state 0x%X(dsLEDState 0x%x) is unsupported, supported states: 0x%X\n",
+                        (1 << static_cast<int>(state)), static_cast<int>(dsLEDState), m_SupportedLEDStates);
+                return Core::ERROR_NOT_SUPPORTED;
+            }
+
+            dsError_t err = dsERR_NONE;
+            {
+                Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
+                try {
+                    err = dsFPSetLEDState(dsLEDState);
+                } catch (...) {
+                    LOGERR("Exception in dsFPSetLEDState\n");
+                    return Core::ERROR_GENERAL;
+                }
+            }
+            if (err != dsERR_NONE) {
+                Core::hresult rc = getCoreErrorFromDSError(err);
+                LOGERR("Failed to set LED state to 0x%X (dsLEDState 0x%x), dsFPGetLEDState returned error: %d\n",
+                        (1 << static_cast<int>(state)), static_cast<int>(dsLEDState), err);
+                return rc;
+            }
+            success = true;
+            return Core::ERROR_NONE;
+        }
     } // namespace Plugin
 } // namespace WPEFramework
