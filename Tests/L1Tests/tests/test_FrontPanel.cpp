@@ -619,6 +619,112 @@ TEST_F(FrontPanelInitializedEventDsTest, setBrightnessCFrontPanelException)
     //EXPECT_EQ(response, string("{\"success\":true}"));
 }
 
+TEST_F(FrontPanelInitializedEventDsTest, powerLedOffExtended)
+{
+    // Get the singleton instance to test its methods directly
+    Plugin::CFrontPanel* frontPanel = Plugin::CFrontPanel::instance();
+    ASSERT_NE(frontPanel, nullptr);
+
+    // --- Test Remote LED ---
+    // Arrange
+
+    EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Remote", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
+        .Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOffLed(Plugin::FRONT_PANEL_INDICATOR_REMOTE));
+
+    // --- Test RF Bypass LED ---
+    // Arrange
+
+    EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("RfByPass", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
+        .Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOffLed(Plugin::FRONT_PANEL_INDICATOR_RFBYPASS));
+
+
+    // Expect setState(false) to be called on each of the mock indicators
+     EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false)).Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOffAllLed());
+}
+
+
+TEST_F(FrontPanelInitializedEventDsTest, powerLedOnExtended)
+{
+    // Get the singleton instance to test its methods directly
+    Plugin::CFrontPanel* frontPanel = Plugin::CFrontPanel::instance();
+    ASSERT_NE(frontPanel, nullptr);
+
+    // --- Test Remote LED ---
+    // Arrange
+
+    EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Remote", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true))
+        .Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOnLed(Plugin::FRONT_PANEL_INDICATOR_REMOTE));
+
+    // --- Test RF Bypass LED ---
+    // Arrange
+
+    EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("RfByPass", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true))
+        .Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOnLed(Plugin::FRONT_PANEL_INDICATOR_RFBYPASS));
+
+
+    // Expect setState(false) to be called on each of the mock indicators
+     EXPECT_CALL(frontPanelIndicatorMock, getInstanceString)
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true)).Times(1);
+
+    // Act & Assert
+    EXPECT_TRUE(frontPanel->powerOnAllLed());
+}
+
+
 TEST_F(FrontPanelInitializedEventDsTest, setBrightnessException)
 {
     // Expect the underlying implementation to throw when an invalid indicator is requested.
@@ -641,41 +747,3 @@ TEST_F(FrontPanelInitializedEventDsTest, setBrightnessException)
     EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 50}"), response));
     EXPECT_EQ(response, string("{\"success\":true}"));
 }
-
-/*
-TEST_F(FrontPanelInitializedEventDsTest, powerLedOffExtended)
-{
-    // Get the singleton instance to test its methods directly
-    Plugin::CFrontPanel* frontPanel = Plugin::CFrontPanel::instance();
-    ASSERT_NE(frontPanel, nullptr);
-
-    // --- Test Remote LED ---
-    // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Remote")))
-        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
-    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
-        .Times(1);
-
-    // Act & Assert
-    EXPECT_TRUE(frontPanel->powerOffLed(Plugin::FRONT_PANEL_INDICATOR_REMOTE));
-    ::testing::Mock::VerifyAndClearExpectations(&frontPanelIndicatorMock);
-
-    // --- Test RF Bypass LED ---
-    // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("RfByPass")))
-        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
-    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
-        .Times(1);
-
-    // Act & Assert
-    EXPECT_TRUE(frontPanel->powerOffLed(Plugin::FRONT_PANEL_INDICATOR_RFBYPASS));
-    ::testing::Mock::VerifyAndClearExpectations(&frontPanelIndicatorMock);
-
-
-    // Expect setState(false) to be called on each of the mock indicators
-    EXPECT_CALL(frontPanelIndicatorMock, setState(false)).Times(1);
-
-    // Act & Assert
-    EXPECT_TRUE(frontPanel->powerOffAllLed());
-}
-*/
