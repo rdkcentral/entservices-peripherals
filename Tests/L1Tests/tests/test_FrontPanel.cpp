@@ -587,7 +587,7 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDMode2)
             [&](uint32_t color, bool toPersist) {
                 EXPECT_EQ(color, 66051);
             }));
-    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"red\": 1, \"green\": 2, \"blue\":3}"), response));
+    EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"color\": \"red\", \"red\": 1, \"green\": 2, \"blue\":3}"), response));
 
         EXPECT_EQ(response, string("{\"success\":true}"));
 }
@@ -609,9 +609,7 @@ TEST_F(FrontPanelInitializedEventDsTest, setBrightnessCFrontPanelException)
         .Times(1)
         .WillOnce(::testing::Invoke(
             [&](int brightness, bool toPersist) {
-                std::cout << "In Expect Call" << endl;
                 throw std::runtime_error("TESTING");
-                std::cout << "End Expect Call" << endl;
             }));
 
     // The handler should catch the exception and return success:false.
@@ -738,12 +736,96 @@ TEST_F(FrontPanelInitializedEventDsTest, setBrightnessException)
         .Times(1)
         .WillOnce(::testing::Invoke(
             [&](int brightness, bool toPersist) {
-                std::cout << "In Expect Call" << endl;
                 throw std::runtime_error("TESTING");
-                std::cout << "End Expect Call" << endl;
             }));
 
     // The handler should catch the exception and return success:false.
     EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 50}"), response));
     EXPECT_EQ(response, string("{\"success\":true}"));
+}
+
+TEST_F(FrontPanelInitializedEventTest, getBrightnessException)
+{
+    // Arrange: Mock the underlying getBrightness call to throw an exception.
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Power")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
+
+    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](bool fromCache) -> int {
+                throw std::runtime_error("mocked hardware exception");
+                return 0; // Unreachable, but needed for compiler
+            }));
+
+    // Act: Call the getBrightness method. The implementation should catch the exception.
+    uint32_t result = handler.Invoke(connection, _T("getBrightness"), _T("{\"index\":\"power_led\"}"), response);
+
+    // Assert: Verify that the call failed with a general error and the response indicates failure.
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"brightness\":0,\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, powerOnLedException)
+{
+    // Arrange: Mock the underlying setState call to throw an exception.
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Power")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](bool state) {
+                throw std::runtime_error("mocked hardware exception on power on");
+            }));
+
+    // Act: Call the powerLedOn method. The implementation should catch the exception.
+    uint32_t result = handler.Invoke(connection, _T("powerLedOn"), _T("{\"index\":\"power_led\"}"), response);
+
+    // Assert: Verify that the call failed with a general error and the response indicates failure.
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, powerOffLedException)
+{
+    // Arrange: Mock the underlying setState call to throw an exception.
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Power")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](bool state) {
+                throw std::runtime_error("mocked hardware exception on power off");
+            }));
+
+    // Act: Call the powerLedOff method. The implementation should catch the exception.
+    uint32_t result = handler.Invoke(connection, _T("powerLedOff"), _T("{\"index\":\"power_led\"}"), response);
+
+    // Assert: Verify that the call failed with a general error and the response indicates failure.
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setLEDException)
+{
+    // Arrange: Mock an underlying device call to throw an exception.
+    // We'll make setBrightness throw, as it's a common path in the setLED implementation.
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::StrEq("Power")))
+        .WillByDefault(::testing::ReturnRef(frontPanelIndicatorMock));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](int brightness, bool toPersist) {
+                throw std::runtime_error("mocked hardware exception on setBrightness");
+            }));
+
+    // Act: Call the setLED method. The implementation should catch the exception.
+    uint32_t result = handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"color\": \"red\"}"), response);
+
+    // Assert: Verify that the call failed with a general error and the response indicates failure.
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
 }
