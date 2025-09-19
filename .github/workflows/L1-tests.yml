@@ -203,8 +203,8 @@ jobs:
         with:
           repository: rdkcentral/entservices-apis
           path: entservices-apis
-          ref: feature/RDKEMW-1013_COMRPC
-          token : ${{ secrets.RDKCM_RDKE }}
+          ref: develop
+          #token : ${{ secrets.RDKCM_RDKE }}
           run: rm -rf $GITHUB_WORKSPACE/entservices-apis/jsonrpc/DTV.json
 
       - name: Build entservices-apis
@@ -449,7 +449,7 @@ jobs:
           -DDS_FOUND=ON
           -DHAS_FRONT_PANEL=ON
           -DPLUGIN_FRONTPANEL=ON
-          -DPLUGIN_MOTION_DETECTION=OFF
+          -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICES_L1_TEST=ON
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
@@ -526,7 +526,7 @@ jobs:
           -DDS_FOUND=ON
           -DHAS_FRONT_PANEL=ON
           -DPLUGIN_FRONTPANEL=ON
-          -DPLUGIN_MOTION_DETECTION=OFF
+          -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICES_L1_TEST=ON
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
