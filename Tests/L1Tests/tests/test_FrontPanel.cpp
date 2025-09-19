@@ -750,7 +750,6 @@ TEST_F(FrontPanelInitializedEventTest, getBrightnessException)
     ON_CALL(frontPanelIndicatorMock, getInstanceString)
             .WillByDefault(::testing::Invoke(
                 [&](const std::string& name) -> device::FrontPanelIndicator& {
-                    //EXPECT_EQ("Power", name);
                     return device::FrontPanelIndicator::getInstance();
                 }));
 
@@ -767,7 +766,6 @@ TEST_F(FrontPanelInitializedEventTest, getBrightnessException)
 
     // Assert: Verify that the call failed with a general error and the response indicates failure.
     EXPECT_EQ(result, Core::ERROR_GENERAL);
-    //EXPECT_EQ(response, string("{\"brightness\":0,\"success\":false}"));
 }
 
 TEST_F(FrontPanelInitializedEventDsTest, powerOnLedException)
@@ -776,7 +774,6 @@ TEST_F(FrontPanelInitializedEventDsTest, powerOnLedException)
     ON_CALL(frontPanelIndicatorMock, getInstanceString)
             .WillByDefault(::testing::Invoke(
                 [&](const std::string& name) -> device::FrontPanelIndicator& {
-                    //EXPECT_EQ("Power", name);
                     throw std::runtime_error("TESTING");
                     return device::FrontPanelIndicator::getInstance();
                 }));
@@ -787,7 +784,6 @@ TEST_F(FrontPanelInitializedEventDsTest, powerOnLedException)
 
     // Assert: Verify that the call failed with a general error and the response indicates failure.
     EXPECT_EQ(result, Core::ERROR_GENERAL);
-    //EXPECT_EQ(response, string("{\"success\":false}"));
 }
 
 TEST_F(FrontPanelInitializedEventDsTest, powerOffLedException)
@@ -810,9 +806,7 @@ TEST_F(FrontPanelInitializedEventDsTest, powerOffLedException)
     // Act: Call the powerLedOff method. The implementation should catch the exception.
     uint32_t result = handler.Invoke(connection, _T("powerLedOff"), _T("{\"index\":\"power_led\"}"), response);
 
-    // Assert: Verify that the call failed with a general error and the response indicates failure.
     EXPECT_EQ(result, Core::ERROR_GENERAL);
-    //EXPECT_EQ(response, string("{\"success\":false}"));
 }
 
 TEST_F(FrontPanelInitializedEventDsTest, setLEDException)
@@ -822,7 +816,6 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDException)
     ON_CALL(frontPanelIndicatorMock, getInstanceString)
             .WillByDefault(::testing::Invoke(
                 [&](const std::string& name) -> device::FrontPanelIndicator& {
-                    //EXPECT_EQ("Power", name);
                     return device::FrontPanelIndicator::getInstance();
                 }));
     EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
@@ -837,5 +830,4 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDException)
 
     // Assert: Verify that the call failed with a general error and the response indicates failure.
     EXPECT_EQ(result, Core::ERROR_GENERAL);
-    //EXPECT_EQ(response, string("{\"success\":false}"));
 }
