@@ -126,9 +126,6 @@ protected:
         delete p_serviceMock;
         p_serviceMock = nullptr;
 
-        IarmBus::setImpl(nullptr);
-        delete p_iarmBusImplMock;
-        p_iarmBusImplMock = nullptr;
     }
 };
 
@@ -196,7 +193,12 @@ protected:
 
         //Clearing out out of scope variables, and setting initDone to 0.
         Plugin::CFrontPanel::initDone = 0;
-
+        IarmBus::setImpl(nullptr);
+        if (p_iarmBusImplMock != nullptr)
+        {
+            delete p_iarmBusImplMock;
+            p_iarmBusImplMock = nullptr;
+        }
         device::FrontPanelTextDisplay::setImpl(nullptr);
         if (p_frontPanelTextDisplayMock != nullptr)
         {
