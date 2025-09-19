@@ -123,22 +123,22 @@ jobs:
         with:
           repository: rdkcentral/entservices-testframework
           path: entservices-testframework
-          ref: feature/RDKEMW-7784
-#          token: ${{ secrets.RDKCM_RDKE }}
+          ref: develop
+          token: ${{ secrets.RDKCM_RDKE }}
 
       - name: Checkout entservices-peripherals
-#        if: ${{ inputs.caller_source == 'local' }}
+        if: ${{ inputs.caller_source == 'local' }}
         uses: actions/checkout@v3
         with:
           path: entservices-peripherals
 
-#      - name: Checkout entservices-peripherals-testframework
-#        if: ${{ inputs.caller_source == 'testframework' }}
-#        uses: actions/checkout@v3
-#        with:
-#          repository: rdkcentral/entservices-peripherals
-#          path: entservices-peripherals
-#          ref: develop
+      - name: Checkout entservices-peripherals-testframework
+        if: ${{ inputs.caller_source == 'testframework' }}
+        uses: actions/checkout@v3
+        with:
+          repository: rdkcentral/entservices-peripherals
+          path: entservices-peripherals
+          ref: develop
 
       - name: Checkout googletest
         if: steps.cache.outputs.cache-hit != 'true'
@@ -204,7 +204,7 @@ jobs:
           repository: rdkcentral/entservices-apis
           path: entservices-apis
           ref: feature/RDKEMW-1013_COMRPC
-          #token : ${{ secrets.RDKCM_RDKE }}
+          token : ${{ secrets.RDKCM_RDKE }}
           run: rm -rf $GITHUB_WORKSPACE/entservices-apis/jsonrpc/DTV.json
 
       - name: Build entservices-apis
@@ -620,17 +620,17 @@ jobs:
           &&
           ls -l /dev/disk/by-id/usb-JetFlash_Transcend_16GB_UEUIRCXT-0
 
-#      - name: Run unit tests without valgrind
-#        run: >
-#          PATH=$GITHUB_WORKSPACE/install/usr/bin:${PATH}
-#          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/usr/lib:$GITHUB_WORKSPACE/install/usr/lib/wpeframework/plugins:${LD_LIBRARY_PATH}
-#          GTEST_OUTPUT="json:$(pwd)/rdkL1TestResults.json"
-#          RdkServicesL1Test &&
-#          cp -rf $(pwd)/rdkL1TestResults.json $GITHUB_WORKSPACE/rdkL1TestResultsWithoutValgrind.json &&
-#          rm -rf $(pwd)/rdkL1TestResults.json
+      - name: Run unit tests without valgrind
+        run: >
+          PATH=$GITHUB_WORKSPACE/install/usr/bin:${PATH}
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/usr/lib:$GITHUB_WORKSPACE/install/usr/lib/wpeframework/plugins:${LD_LIBRARY_PATH}
+          GTEST_OUTPUT="json:$(pwd)/rdkL1TestResults.json"
+          RdkServicesL1Test &&
+          cp -rf $(pwd)/rdkL1TestResults.json $GITHUB_WORKSPACE/rdkL1TestResultsWithoutValgrind.json &&
+          rm -rf $(pwd)/rdkL1TestResults.json
 
       - name: Run unit tests with valgrind
-#        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT }}
         run: >
           PATH=$GITHUB_WORKSPACE/install/usr/bin:${PATH}
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/usr/lib:$GITHUB_WORKSPACE/install/usr/lib/wpeframework/plugins:${LD_LIBRARY_PATH}
@@ -647,7 +647,7 @@ jobs:
           rm -rf $(pwd)/rdkL1TestResults.json
 
       - name: Generate coverage
-#        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT }}
+        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT }}
         run: >
           cp $GITHUB_WORKSPACE/entservices-testframework/Tests/L1Tests/.lcovrc_l1 ~/.lcovrc
           &&
@@ -672,14 +672,14 @@ jobs:
           filtered_coverage.info
 
       - name: Upload artifacts
-#        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-L1-peripherals
           path: |
             coverage/
             valgrind_log
-            rdkL1TestResultsWithoutValgrind.json2
+            rdkL1TestResultsWithoutValgrind.json
             rdkL1TestResultsWithValgrind.json
           if-no-files-found: warn
           
