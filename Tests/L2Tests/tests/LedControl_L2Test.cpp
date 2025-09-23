@@ -724,7 +724,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_USBUPGRADE)
     status = m_LEDplugin->GetLEDState(LEDState);
     EXPECT_EQ(status, Core::ERROR_NONE);
 
-    TEST_LOG("GetLEDState returned: %s", LEDState.state.c_str());
+    TEST_LOG("GetLEDState returned: %d", LEDState.state);
     EXPECT_EQ(LEDState.state, Exchange::ILEDControl::LEDSTATE_USB_UPGRADE);
 }
 
