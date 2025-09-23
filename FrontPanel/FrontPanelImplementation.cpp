@@ -162,6 +162,8 @@ namespace WPEFramework
                 _powerManagerPlugin.Reset();
             }
 
+            CFrontPanel::instance()->deinitialize();
+
             _registeredEventHandlers = false;
 
             FrontPanelImplementation::_instance = nullptr;
