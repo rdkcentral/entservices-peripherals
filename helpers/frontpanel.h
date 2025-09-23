@@ -98,6 +98,7 @@ namespace WPEFramework
         {
         public:
             static CFrontPanel* instance(PluginHost::IShell *service = nullptr);
+            static void deinitialize();
             bool start();
             bool stop();
             std::string getLastError();

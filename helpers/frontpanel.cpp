@@ -208,6 +208,19 @@ namespace WPEFramework
             return s_instance;
         }
 
+
+        void CFrontPanel::deinitialize()
+        {
+            if (_powerManagerPlugin) {
+                _powerManagerPlugin.Reset();
+            }
+            if (s_instance) {
+                delete s_instance;
+                s_instance = nullptr;
+            }
+            initDone = 0;
+        }
+
         bool CFrontPanel::start()
         {
             LOGWARN("Front panel start");
