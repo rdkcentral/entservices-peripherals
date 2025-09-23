@@ -211,6 +211,9 @@ namespace WPEFramework
 
         void CFrontPanel::deinitialize()
         {
+
+            s_instance->stop();
+            
             if (_powerManagerPlugin) {
                 _powerManagerPlugin.Reset();
             }
