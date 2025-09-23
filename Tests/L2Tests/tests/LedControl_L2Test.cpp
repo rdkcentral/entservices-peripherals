@@ -674,7 +674,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_FACTORYRESET)
 
 TEST_F(LEDControl_L2test, Get_LEDState_FACTORYRESET)
 {
-    Exchange::ILEDControl::LEDControlState LEDState;
+    Exchange::ILEDControl::LEDState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
