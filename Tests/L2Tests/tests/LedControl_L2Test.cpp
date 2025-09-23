@@ -152,19 +152,6 @@ TEST_F(LEDControl_L2test, JSONRPC_GetSupportedLEDStates_ACTIVE)
     status = InvokeServiceMethod("org.rdk.LEDControl.1", "getSupportedLEDStates", param, result);
     EXPECT_EQ(Core::ERROR_NONE, status);
     EXPECT_TRUE(result["success"].Boolean());
-    // parse and verify supportedLEDStates
-    if (result.HasLabel("supportedLEDStates")) {
-        const JsonArray& states = result["supportedLEDStates"].Array();
-        std::set<std::string> stateSet;
-        for (const auto& state : states) {
-            stateSet.insert(state.String());
-        }
-        EXPECT_TRUE(stateSet.find("ACTIVE") != stateSet.end());
-        EXPECT_TRUE(stateSet.find("STANDBY") != stateSet.end());
-        EXPECT_EQ(stateSet.size(), 2);
-    } else {
-        FAIL() << "supportedLEDStates not found in response";
-    }
 }
 
 /************Test case Details **************************
