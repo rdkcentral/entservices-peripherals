@@ -448,7 +448,7 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_ErrorCase)
 TEST_F(LEDControl_L2test, Set_LEDState_ACTIVE)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "ACTIVE";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_ACTIVE;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -465,7 +465,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_ACTIVE)
 
 TEST_F(LEDControl_L2test, Get_LEDState_ACTIVE)
 {
-    Exchange::ILEDControl::LEDControlState LEDState;
+    Exchange::ILEDControl::LEDState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
@@ -476,7 +476,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_ACTIVE)
     status = m_LEDplugin->GetLEDState(LEDState);
     EXPECT_EQ(status, Core::ERROR_NONE);
 
-    TEST_LOG("GetLEDState returned: %s", LEDState.state.c_str());
+    TEST_LOG("GetLEDState returned: %d", LEDState.state);
 }
 
 /************Test case Details **************************
@@ -486,7 +486,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_ACTIVE)
 TEST_F(LEDControl_L2test, Set_LEDState_STANDBY)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "STANDBY";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_STANDBY;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -524,7 +524,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_STANDBY)
 TEST_F(LEDControl_L2test, Set_LEDState_WPSCONNECTING)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "WPS_CONNECTING";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_WPS_CONNECTING;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -562,7 +562,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_WPSCONNECTING)
 TEST_F(LEDControl_L2test, Set_LEDState_CONNECTED)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "WPS_CONNECTED";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_WPS_CONNECTED;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -600,7 +600,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_WPSCONNECTED)
 TEST_F(LEDControl_L2test, Set_LEDState_ERROR)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "WPS_ERROR";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_WPS_ERROR;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -638,7 +638,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_ERROR)
 TEST_F(LEDControl_L2test, Set_LEDState_FACTORYRESET)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "FACTORY_RESET";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_FACTORY_RESET;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -676,7 +676,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_FACTORYRESET)
 TEST_F(LEDControl_L2test, Set_LEDState_USBUPGRADE)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "USB_UPGRADE";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_USB_UPGRADE;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -714,7 +714,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_USBUPGRADE)
 TEST_F(LEDControl_L2test, Set_LEDState_DOWNLOADERROR)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "DOWNLOAD_ERROR";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_DOWNLOAD_ERROR;
     bool success = false;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -731,7 +731,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_DOWNLOADERROR)
 
 TEST_F(LEDControl_L2test, Get_LEDState_DOWNLOADERROR)
 {
-    Exchange::ILEDControl::LEDControlState LEDState;
+    Exchange::ILEDControl::LEDState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
@@ -742,7 +742,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_DOWNLOADERROR)
     status = m_LEDplugin->GetLEDState(LEDState);
     EXPECT_EQ(status, Core::ERROR_NONE);
 
-    TEST_LOG("GetLEDState returned: %s", LEDState.state.c_str());
+    TEST_LOG("GetLEDState returned: %d", LEDState.state);
 }
 
 /************Test case Details **************************
@@ -772,7 +772,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_FPD_LED_DEVICE_NONE)
 TEST_F(LEDControl_L2test, Set_LEDState_NONE)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "NONE";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_NONE;
     bool success = true;
 
     status = m_LEDplugin->SetLEDState(State, success);
@@ -825,7 +825,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_Errorcase)
 TEST_F(LEDControl_L2test, Set_LEDState_InvalidParameter)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "INVALID";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_MAX;
     bool success = true;
 
     status = m_LEDplugin->SetLEDState(State, success);
@@ -855,7 +855,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_emptyParameter)
 TEST_F(LEDControl_L2test, Set_LEDState_dsFPSetLEDState_Error)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "DOWNLOAD_ERROR";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_DOWNLOAD_ERROR;
     bool success = true;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
@@ -914,7 +914,7 @@ TEST_F(LEDControl_L2test, dsFPGetLEDState_RaiseException)
 TEST_F(LEDControl_L2test, dsFPSetLEDState_RaiseException)
 {
     uint32_t status = Core::ERROR_NONE;
-    string State = "DOWNLOAD_ERROR";
+    Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_DOWNLOAD_ERROR;
     bool success = true;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPSetLEDState(::testing::_))
