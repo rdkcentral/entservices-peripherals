@@ -342,6 +342,12 @@ namespace WPEFramework
                     case FRONT_PANEL_INDICATOR_RFBYPASS:
                         device::FrontPanelIndicator::getInstance("RfByPass").setState(true);
                         break;
+                    case FRONT_PANEL_INDICATOR_CLOCK:
+#ifdef CLOCK_BRIGHTNESS_ENABLED
+                        isClockOn = true;
+                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
+#endif
+                        break;
                     case FRONT_PANEL_INDICATOR_ALL:
                         if (isMessageLedOn)
                             device::FrontPanelIndicator::getInstance("Message").setState(true);
@@ -384,6 +390,12 @@ namespace WPEFramework
                     break;
                 case FRONT_PANEL_INDICATOR_RFBYPASS:
                     device::FrontPanelIndicator::getInstance("RfByPass").setState(false);
+                    break;
+                    case FRONT_PANEL_INDICATOR_CLOCK:
+#ifdef CLOCK_BRIGHTNESS_ENABLED
+                        isClockOn = true;
+                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(clockBrightness);
+#endif
                     break;
                 case FRONT_PANEL_INDICATOR_ALL:
                     for (uint i = 0; i < fpIndicators.size(); i++)
