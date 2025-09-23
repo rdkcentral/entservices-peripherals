@@ -392,7 +392,7 @@ namespace WPEFramework
                     break;
                     case FRONT_PANEL_INDICATOR_CLOCK:
 #ifdef CLOCK_BRIGHTNESS_ENABLED
-                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(100);
+                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(0);
 #endif
                     break;
                 case FRONT_PANEL_INDICATOR_ALL:
