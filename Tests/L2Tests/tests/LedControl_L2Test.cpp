@@ -217,10 +217,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_ACTIVE)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -247,10 +247,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_STANDBY)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -277,10 +277,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_WPSCONNECTING)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -307,10 +307,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_WPSCONNECTED)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -337,10 +337,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_WPSERROR)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -367,10 +367,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_RESET)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -397,10 +397,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_USBUPGRADE)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -427,10 +427,10 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_DOWNLOADERROR)
 
     if (supportedLEDStates != nullptr) {
         string value;
-        EXPECT_EQ(1, supportedLEDStates->Count());
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
+        EXPECT_EQ(1, supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -674,7 +674,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_FACTORYRESET)
 
 TEST_F(LEDControl_L2test, Get_LEDState_FACTORYRESET)
 {
-    Exchange::ILEDControl::LEDState LEDState;
+    Exchange::ILEDControl::LEDControlState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
@@ -713,7 +713,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_USBUPGRADE)
 
 TEST_F(LEDControl_L2test, Get_LEDState_USBUPGRADE)
 {
-    Exchange::ILEDControl::LEDControlState LEDState;
+    Exchange::ILEDControl::LEDState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
