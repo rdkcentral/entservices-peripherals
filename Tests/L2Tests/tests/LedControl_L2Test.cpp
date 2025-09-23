@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <interfaces/ILEDControl.h>
+#include <iterator>
 #include <mutex>
 
 #define TEST_LOG(x, ...)                                                                                                                         \
@@ -686,7 +687,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_FACTORYRESET)
 
 TEST_F(LEDControl_L2test, Get_LEDState_FACTORYRESET)
 {
-    Exchange::ILEDControl::LEDControlState LEDState;
+    Exchange::ILEDControl::LEDState LEDState;
     uint32_t status = Core::ERROR_NONE;
 
     EXPECT_CALL(*p_dsFPDMock, dsFPGetLEDState(::testing::_))
@@ -697,7 +698,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_FACTORYRESET)
     status = m_LEDplugin->GetLEDState(LEDState);
     EXPECT_EQ(status, Core::ERROR_NONE);
 
-    TEST_LOG("GetLEDState returned: %s", LEDState.state.c_str());
+    TEST_LOG("GetLEDState returned: %d", LEDState.state);
     EXPECT_EQ(LEDState.state, Exchange::ILEDControl::LEDSTATE_FACTORY_RESET);
 }
 
@@ -875,9 +876,10 @@ TEST_F(LEDControl_L2test, Set_LEDState_InvalidParameter)
 TEST_F(LEDControl_L2test, Set_LEDState_emptyParameter)
 {
     uint32_t status = Core::ERROR_NONE;
+    Exchange::ILEDControl::LEDControlState State = static_cast<Exchange::ILEDControl::LEDControlState>(999); // Invalid enum value
     bool success = true;
 
-    status = m_LEDplugin->SetLEDState(NULL, success);
+    status = m_LEDplugin->SetLEDState(State, success);
     EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
     EXPECT_FALSE(success);
 }
