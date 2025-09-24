@@ -174,9 +174,6 @@ protected:
                     return Core::ERROR_NONE;
                 });
 
-        // This CFrontPanel::instance() is never destroyed
-        ::testing::Mock::AllowLeak(PowerManagerMock::Get());
-
         EXPECT_EQ(string(""), plugin->Initialize(&service));
     }
     virtual ~FrontPanelInitializedTest() override
