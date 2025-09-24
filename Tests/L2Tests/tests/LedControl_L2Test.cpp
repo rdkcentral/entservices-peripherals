@@ -231,7 +231,7 @@ TEST_F(LEDControl_L2test, GetSupportedLEDStates_ACTIVE)
         while (supportedLEDStates->Next(value) == true) {
             TEST_LOG("supportedLEDState: %s", value.c_str());
         }
-        EXPECT_EQ(1, supportedLEDStates->Count());
+        EXPECT_EQ(static_cast<unsigned int>(1), supportedLEDStates->Count());
     } else {
         TEST_LOG("supportedLEDStates is empty!");
     }
@@ -872,7 +872,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_NONE)
 ** 1.SetLEDState with state set to be "NONE" using comrpc (NONE is INVALID and NOT SUPPORTED state)
 *******************************************************/
 
-TEST_F(LEDControl_L2test, Set_LEDState_NONE)
+TEST_F(LEDControl_L2test, Set_LEDState_NONE_NegativeTC)
 {
     uint32_t status = Core::ERROR_NONE;
     Exchange::ILEDControl::LEDControlState State = Exchange::ILEDControl::LEDSTATE_NONE;
