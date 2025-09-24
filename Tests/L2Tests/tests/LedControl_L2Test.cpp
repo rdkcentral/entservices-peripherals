@@ -885,7 +885,7 @@ TEST_F(LEDControl_L2test, Set_LEDState_NONE_NegativeTC)
             ::testing::Return(dsERR_NONE)));
 
     status = m_LEDplugin->SetLEDState(State, success);
-    EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
+    EXPECT_EQ(status, Core::ERROR_NOT_SUPPORTED);
     EXPECT_FALSE(success);
 }
 
@@ -904,7 +904,7 @@ TEST_F(LEDControl_L2test, Get_LEDState_defaultCase)
             ::testing::Return(dsERR_NONE)));
 
     status = m_LEDplugin->GetLEDState(LEDState);
-    EXPECT_EQ(status, Core::ERROR_BAD_REQUEST);
+    EXPECT_EQ(status, Core::ERROR_READ_ERROR);
 
     TEST_LOG("GetLEDState returned: %d", LEDState.state);
 }
