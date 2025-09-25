@@ -829,3 +829,203 @@ TEST_F(FrontPanelInitializedEventDsTest, getFrontPanelLightsException)
     EXPECT_EQ(result, Core::ERROR_GENERAL);
     EXPECT_EQ(response, string("{\"supportedLights\":[],\"supportedLightsInfo\":{},\"success\":false}"));
 }
+
+// Additional Coverage Tests
+
+TEST_F(FrontPanelInitializedEventDsTest, getBrightnessNegativeValue)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    ON_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .WillByDefault(::testing::Return(-1));
+
+    uint32_t result = handler.Invoke(connection, _T("getBrightness"), _T("{\"index\":\"power_led\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"brightness\":4294967295,\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBrightnessEmptyIndex)
+{
+    uint32_t result = handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 50, \"index\": \"\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, powerLedOnMissingIndex)
+{
+    uint32_t result = handler.Invoke(connection, _T("powerLedOn"), _T("{}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, powerLedOffMissingIndex)
+{
+    uint32_t result = handler.Invoke(connection, _T("powerLedOff"), _T("{}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setLEDEmptyColor)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    ON_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .WillByDefault(::testing::Return(50));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(1);
+
+    uint32_t result = handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"color\": \"\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_NONE);
+    EXPECT_EQ(response, string("{\"success\":true}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setLEDGetBrightnessException)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](bool fromCache) -> int {
+                throw std::runtime_error("getBrightness failed");
+                return 0;
+            }));
+
+    uint32_t result = handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"color\": \"red\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkMissingLedIndicator)
+{
+    uint32_t result = handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"iterations\": 10, \"pattern\": [{\"brightness\": 50, \"duration\": 1000}]}}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkMissingIterations)
+{
+    uint32_t result = handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"pattern\": [{\"brightness\": 50, \"duration\": 1000}]}}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkEmptyPattern)
+{
+    uint32_t result = handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"iterations\": 10, \"pattern\": []}}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBlinkColorMode2Exception)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator::Color& {
+                throw std::runtime_error("color not found");
+                return *p_colorImplMock;
+            }));
+
+    uint32_t result = handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"iterations\": 5, \"pattern\": [{\"brightness\": 50, \"duration\": 1000, \"color\": \"invalid\"}]}}"), response);
+    EXPECT_EQ(result, Core::ERROR_GENERAL);
+    EXPECT_EQ(response, string("{\"success\":false}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBrightnessZeroValue)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](int brightness, bool toPersist) {
+                EXPECT_EQ(0, brightness);
+            }));
+
+    uint32_t result = handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 0, \"index\": \"power_led\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_NONE);
+    EXPECT_EQ(response, string("{\"success\":true}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setBrightnessMaxValue)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](int brightness, bool toPersist) {
+                EXPECT_EQ(100, brightness);
+            }));
+
+    uint32_t result = handler.Invoke(connection, _T("setBrightness"), _T("{\"brightness\": 100, \"index\": \"power_led\"}"), response);
+    EXPECT_EQ(result, Core::ERROR_NONE);
+    EXPECT_EQ(response, string("{\"success\":true}"));
+}
+
+TEST_F(FrontPanelInitializedEventDsTest, setLEDWithAllParameters)
+{
+    ON_CALL(frontPanelIndicatorMock, getInstanceString)
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                EXPECT_EQ("Power", name);
+                return device::FrontPanelIndicator::getInstance();
+            }));
+
+    ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator::Color& {
+                EXPECT_EQ("blue", name);
+                return *p_colorImplMock;
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setColor(::testing::Ref(*p_colorImplMock), false))
+        .Times(1);
+
+    EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Invoke(
+            [&](uint32_t color, bool toPersist) {
+                EXPECT_EQ(0x00FF80, color); // red=0, green=255, blue=128
+            }));
+
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(1);
+
+    uint32_t result = handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 75, \"color\": \"blue\", \"red\": 0, \"green\": 255, \"blue\": 128}"), response);
+    EXPECT_EQ(result, Core::ERROR_NONE);
+    EXPECT_EQ(response, string("{\"success\":true}"));
+}
