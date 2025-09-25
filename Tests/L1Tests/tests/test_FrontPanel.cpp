@@ -706,11 +706,12 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDColorModeException)
                 return device::FrontPanelIndicator::getInstance();
             }));
 
+    static device::FrontPanelIndicator::Color colorInstance;
     ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
         .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator::Color& {
+            [&](const std::string& name) -> const device::FrontPanelIndicator::Color& {
                 throw std::runtime_error("color not supported");
-                return *p_colorImplMock;
+                return colorInstance; // Unreachable but needed for compiler
             }));
 
     uint32_t result = handler.Invoke(connection, _T("setLED"), _T("{\"ledIndicator\": \"power_led\", \"brightness\": 50, \"color\": \"invalid_color\"}"), response);
@@ -942,11 +943,12 @@ TEST_F(FrontPanelInitializedEventDsTest, setBlinkColorMode2Exception)
                 return device::FrontPanelIndicator::getInstance();
             }));
 
+    static device::FrontPanelIndicator::Color colorInstance;
     ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
         .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator::Color& {
+            [&](const std::string& name) -> const device::FrontPanelIndicator::Color& {
                 throw std::runtime_error("color not found");
-                return *p_colorImplMock;
+                return colorInstance; // Unreachable but needed for compiler
             }));
 
     uint32_t result = handler.Invoke(connection, _T("setBlink"), _T("{\"blinkInfo\": {\"ledIndicator\": \"power_led\", \"iterations\": 5, \"pattern\": [{\"brightness\": 50, \"duration\": 1000, \"color\": \"invalid\"}]}}"), response);
@@ -1005,14 +1007,15 @@ TEST_F(FrontPanelInitializedEventDsTest, setLEDWithAllParameters)
                 return device::FrontPanelIndicator::getInstance();
             }));
 
+    static device::FrontPanelIndicator::Color colorInstance;
     ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
         .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator::Color& {
+            [&](const std::string& name) -> const device::FrontPanelIndicator::Color& {
                 EXPECT_EQ("blue", name);
-                return *p_colorImplMock;
+                return colorInstance;
             }));
 
-    EXPECT_CALL(frontPanelIndicatorMock, setColor(::testing::Ref(*p_colorImplMock), false))
+    EXPECT_CALL(frontPanelIndicatorMock, setColor(::testing::_, false))
         .Times(1);
 
     EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
