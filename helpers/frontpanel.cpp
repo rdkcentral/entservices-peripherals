@@ -51,6 +51,7 @@ using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
 #include "UtilsLogging.h"
 #include "UtilssyncPersistFile.h"
 #include "PowerManagerInterface.h"
+#include "UtilsSearchRDKProfile.h"
 
 #define FP_SETTINGS_FILE_JSON "/opt/fp_service_preferences.json"
 
@@ -171,6 +172,7 @@ namespace WPEFramework
                                 if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
                                     powerStatus = true;
                             }
+                            LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
                         }
                     }
 #endif
@@ -181,16 +183,24 @@ namespace WPEFramework
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-                    for (uint i = 0; i < fpIndicators.size(); i++)
-                    {
-                        LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
-                        if (powerStatus)
-                            device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
+		    profileType = searchRdkProfile();
+		    if (TV != profileType)
+		    {
+                        for (uint i = 0; i < fpIndicators.size(); i++)
+			{
+                            LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
+			    if (powerStatus)
+                                device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
 
-                        device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
-                    }
+			    device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+			}
+		    }
+		    else
+		    {
+                        LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
+		    }
 
-                    if (powerStatus)
+		    if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
 
                 }
@@ -253,7 +263,7 @@ namespace WPEFramework
             return lastError_;
         }
 
-        void CFrontPanel::addEventObserver(FrontPanel* o)
+        void CFrontPanel::addEventObserver(FrontPanelImplementation* o)
         {
 
             auto it = std::find(observers_.begin(), observers_.end(), o);
@@ -262,7 +272,7 @@ namespace WPEFramework
                 observers_.push_back(o);
         }
 
-        void CFrontPanel::removeEventObserver(FrontPanel* o)
+        void CFrontPanel::removeEventObserver(FrontPanelImplementation* o)
         {
             observers_.remove(o);
         }
@@ -451,7 +461,7 @@ namespace WPEFramework
                 getNumberParameter("brightness", brightness);
 
             unsigned int color = 0;
-            if (parameters.HasLabel("color")) //color mode 2
+            if (parameters.HasLabel("color") && !parameters["color"].String().empty()) //color mode 2
             {
                 string colorString = parameters["color"].String();
                 try
@@ -628,7 +638,7 @@ namespace WPEFramework
             try
             {
                 if (brightness == -1)
-                    brightness = device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).getBrightness();
+                    brightness = device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).getBrightness(true);
 
                 device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setBrightness(brightness, false);
             }
