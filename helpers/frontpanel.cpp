@@ -345,11 +345,6 @@ namespace WPEFramework
                     case FRONT_PANEL_INDICATOR_RFBYPASS:
                         device::FrontPanelIndicator::getInstance("RfByPass").setState(true);
                         break;
-                    case FRONT_PANEL_INDICATOR_CLOCK:
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(100);
-#endif
-                        break;
                     case FRONT_PANEL_INDICATOR_ALL:
                         if (isMessageLedOn)
                             device::FrontPanelIndicator::getInstance("Message").setState(true);
@@ -361,6 +356,8 @@ namespace WPEFramework
                         //LOGWARN("CFrontPanel::powerOnLed() - FRONT_PANEL_INDICATOR_POWER not handled");
 			device::FrontPanelIndicator::getInstance("Power").setState(true);
                         break;
+                    default:
+                        LOGERR("Invalid Indicator %d", fp_indicator);
                     }
                 }
             }
@@ -393,11 +390,6 @@ namespace WPEFramework
                 case FRONT_PANEL_INDICATOR_RFBYPASS:
                     device::FrontPanelIndicator::getInstance("RfByPass").setState(false);
                     break;
-                    case FRONT_PANEL_INDICATOR_CLOCK:
-#ifdef CLOCK_BRIGHTNESS_ENABLED
-                        device::FrontPanelTextDisplay::getInstance("Text").setTextBrightness(0);
-#endif
-                    break;
                 case FRONT_PANEL_INDICATOR_ALL:
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
@@ -410,6 +402,8 @@ namespace WPEFramework
                     //LOGWARN("CFrontPanel::powerOffLed() - FRONT_PANEL_INDICATOR_POWER not handled");
 		    device::FrontPanelIndicator::getInstance("Power").setState(false);
                     break;
+                default:
+                    LOGERR("Invalid Indicator %d", fp_indicator);
                 }
             }
             catch (...)
