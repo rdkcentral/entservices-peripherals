@@ -94,7 +94,6 @@ namespace WPEFramework {
             std::vector<string> getFrontPanelLights();
             JsonObject getFrontPanelLightsInfo();
             void setBlink(const JsonObject& blinkInfo);
-            void loadPreferences();
             void InitializePowerManager(PluginHost::IShell *service);
 
 

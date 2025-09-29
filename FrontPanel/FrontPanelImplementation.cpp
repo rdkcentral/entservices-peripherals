@@ -162,6 +162,8 @@ namespace WPEFramework
                 _powerManagerPlugin.Reset();
             }
 
+            CFrontPanel::instance()->deinitialize();
+
             _registeredEventHandlers = false;
 
             FrontPanelImplementation::_instance = nullptr;
@@ -175,7 +177,6 @@ namespace WPEFramework
             CFrontPanel::instance(service);
             CFrontPanel::instance()->start();
             CFrontPanel::instance()->addEventObserver(this);
-            loadPreferences();
 
             return Core::ERROR_NONE;
         }
@@ -411,11 +412,6 @@ namespace WPEFramework
 
             supportedLights = (Core::Service<RPC::IteratorType<Exchange::IFrontPanel::IFrontPanelLightsListIterator>>::Create<Exchange::IFrontPanel::IFrontPanelLightsListIterator>(frontPanelLights));
             return Core::ERROR_NONE;
-        }
-
-        void FrontPanelImplementation::loadPreferences()
-        {
-            CFrontPanel::instance()->loadPreferences();
         }
 
 
