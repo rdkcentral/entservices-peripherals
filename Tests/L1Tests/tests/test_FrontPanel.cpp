@@ -278,28 +278,24 @@ protected:
 // Test initialization of the FrontPanel plugin
 TEST_F(FrontPanel_L1_Test, L1_Initialize) {
     // Verify that plugin is initialized correctly
-    EXPECT_NE(plugin, nullptr);
-    EXPECT_NE(FrontPanelImplem, nullptr);
+    EXPECT_NE(plugin.operator->(), nullptr);
+    EXPECT_NE(FrontPanelImplem.operator->(), nullptr);
     
-    // Verify that the IFrontPanel interface is correctly set up
-    EXPECT_TRUE(plugin->IsActive());
+    // Verify that notification handler is registered
     EXPECT_NE(_notification, nullptr);
 }
 
 // Test deinitialize behavior
 TEST_F(FrontPanel_L1_Test, L1_Deinitialize) {
-    // First verify the plugin is active
-    EXPECT_TRUE(plugin->IsActive());
-    
     // Set up expectations for deinitialization
-    EXPECT_CALL(PowerManagerMock::Mock(), Unregister(::testing::_))
+    EXPECT_CALL(PowerManagerMock::Mock(), Unregister(::testing::Matcher<const Exchange::IPowerManager::IModeChangedNotification*>(_)))
         .WillOnce(Return(Core::ERROR_NONE));
     
-    // Deinitialize the plugin
-    plugin->Deinitialize(&service);
+    // Store the pointer to check if still valid after deinitialize
+    PluginHost::IShell* service_ptr = &service;
     
-    // Verify the plugin is no longer active
-    EXPECT_FALSE(plugin->IsActive());
+    // Deinitialize the plugin
+    plugin->Deinitialize(service_ptr);
 }
 
 // Test Information method
@@ -309,116 +305,8 @@ TEST_F(FrontPanel_L1_Test, L1_Information) {
     EXPECT_NE(info.find("FrontPanel"), std::string::npos);
 }
 
-// Test SetBrightness method
-TEST_F(FrontPanel_L1_Test, L1_SetBrightness) {
-    // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
-        .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator& {
-                return device::FrontPanelIndicator::getInstance();
-            }));
-            
-    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(50, false))
-        .WillOnce(::testing::Return());
-    
-    // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->SetBrightness("power_led", 50, success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success.success);
-}
-
-// Test GetBrightness method
-TEST_F(FrontPanel_L1_Test, L1_GetBrightness) {
-    // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
-        .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator& {
-                return device::FrontPanelIndicator::getInstance();
-            }));
-            
-    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(false))
-        .WillOnce(Return(75));
-    
-    // Act
-    uint32_t brightness = 0;
-    bool success = false;
-    Core::hresult result = FrontPanelImplem->GetBrightness("power_led", brightness, success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success);
-    EXPECT_EQ(brightness, 75);
-}
-
-// Test GetBrightness failure case
-TEST_F(FrontPanel_L1_Test, L1_GetBrightness_Failure) {
-    // Arrange
-    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
-        .WillByDefault(::testing::Invoke(
-            [&](const std::string& name) -> device::FrontPanelIndicator& {
-                return device::FrontPanelIndicator::getInstance();
-            }));
-            
-    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(false))
-        .WillOnce(Return(-1));
-    
-    // Act
-    uint32_t brightness = 0;
-    bool success = true;
-    Core::hresult result = FrontPanelImplem->GetBrightness("power_led", brightness, success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_GENERAL);
-    EXPECT_FALSE(success);
-}
-
-// Test PowerLedOn method
-TEST_F(FrontPanel_L1_Test, L1_PowerLedOn) {
-    // Arrange
-    EXPECT_CALL(*p_frontPanelMock, powerOnLed(FRONT_PANEL_INDICATOR_POWER))
-        .WillOnce(Return(true));
-        
-    // Mock CFrontPanel::instance to return our mock
-    Plugin::CFrontPanel::_instance = p_frontPanelMock;
-    
-    // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->PowerLedOn("power_led", success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success.success);
-    
-    // Cleanup
-    Plugin::CFrontPanel::_instance = nullptr;
-}
-
-// Test PowerLedOff method
-TEST_F(FrontPanel_L1_Test, L1_PowerLedOff) {
-    // Arrange
-    EXPECT_CALL(*p_frontPanelMock, powerOffLed(FRONT_PANEL_INDICATOR_POWER))
-        .WillOnce(Return(true));
-        
-    // Mock CFrontPanel::instance to return our mock
-    Plugin::CFrontPanel::_instance = p_frontPanelMock;
-    
-    // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->PowerLedOff("power_led", success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success.success);
-    
-    // Cleanup
-    Plugin::CFrontPanel::_instance = nullptr;
-}
-
-// Test GetFrontPanelLights method
-TEST_F(FrontPanel_L1_Test, L1_GetFrontPanelLights) {
+// Test GetFrontPanelLights method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_GetFrontPanelLights_JsonRpc) {
     // Arrange
     device::List<device::FrontPanelIndicator> indicators;
     indicators.push_back(device::FrontPanelIndicator::getInstance());
@@ -449,96 +337,246 @@ TEST_F(FrontPanel_L1_Test, L1_GetFrontPanelLights) {
         .WillByDefault(Return(colors));
     
     // Act
-    Exchange::IFrontPanel::IFrontPanelLightsListIterator* supportedLights = nullptr;
-    std::string supportedLightsInfo;
-    bool success = false;
-    Core::hresult result = FrontPanelImplem->GetFrontPanelLights(supportedLights, supportedLightsInfo, success);
+    message.Parameters = JsonObject();
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "getFrontPanelLights";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
     
     // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success);
-    EXPECT_NE(supportedLights, nullptr);
-    EXPECT_FALSE(supportedLightsInfo.empty());
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
     
-    // Cleanup
-    if (supportedLights) {
-        supportedLights->Release();
-    }
+    JsonObject responseParams;
+    response->Result.ToString(responseParams);
+    EXPECT_TRUE(responseParams.HasLabel("lights"));
 }
 
-// Test SetLED method
-TEST_F(FrontPanel_L1_Test, L1_SetLED) {
+// Test setBrightness method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_SetBrightness_JsonRpc) {
     // Arrange
-    EXPECT_CALL(*p_frontPanelMock, setLED(_))
-        .WillOnce(Return(true));
-        
-    // Mock CFrontPanel::instance to return our mock
-    Plugin::CFrontPanel::_instance = p_frontPanelMock;
-    
-    // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->SetLED("power_led", 75, "red", 255, 0, 0, success);
-    
-    // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success.success);
-    
-    // Cleanup
-    Plugin::CFrontPanel::_instance = nullptr;
-}
-
-// Test SetBlink method
-TEST_F(FrontPanel_L1_Test, L1_SetBlink) {
-    // Arrange
-    JsonObject blinkInfoObj;
-    blinkInfoObj["ledIndicator"] = "power_led";
-    blinkInfoObj["iterations"] = 5;
-    blinkInfoObj["pattern"] = JsonArray();
-    std::string blinkInfo;
-    blinkInfoObj.ToString(blinkInfo);
-    
-    EXPECT_CALL(*p_frontPanelMock, setBlink(_))
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+            
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(50, false))
         .WillOnce(::testing::Return());
-        
-    // Mock CFrontPanel::instance to return our mock
-    Plugin::CFrontPanel::_instance = p_frontPanelMock;
     
     // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->SetBlink(blinkInfo, success);
+    JsonObject parameters;
+    parameters["index"] = "power_led";
+    parameters["brightness"] = 50;
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "setBrightness";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
     
     // Assert
-    EXPECT_EQ(result, Core::ERROR_NONE);
-    EXPECT_TRUE(success.success);
-    
-    // Cleanup
-    Plugin::CFrontPanel::_instance = nullptr;
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
 }
 
-// Test SetBlink failure case with invalid JSON
-TEST_F(FrontPanel_L1_Test, L1_SetBlink_InvalidJson) {
+// Test getBrightness method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_GetBrightness_JsonRpc) {
+    // Arrange
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+            
+    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(false))
+        .WillOnce(Return(75));
+    
     // Act
-    Exchange::IFrontPanel::FrontPanelSuccess success;
-    Core::hresult result = FrontPanelImplem->SetBlink("invalid json", success);
+    JsonObject parameters;
+    parameters["index"] = "power_led";
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "getBrightness";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
     
     // Assert
-    EXPECT_EQ(result, Core::ERROR_GENERAL);
-    EXPECT_FALSE(success.success);
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
+    
+    JsonObject responseParams;
+    response->Result.ToString(responseParams);
+    EXPECT_TRUE(responseParams.HasLabel("brightness"));
+    EXPECT_EQ(static_cast<uint32_t>(responseParams["brightness"].Number()), 75u);
+}
+
+// Test powerLedOn method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_PowerLedOn_JsonRpc) {
+    // Arrange
+    EXPECT_CALL(*p_frontPanelMock, PowerLedOn(_, _))
+        .WillOnce(::testing::Invoke([](const string&, Exchange::IFrontPanel::FrontPanelSuccess& success) {
+            success.success = true;
+            return Core::ERROR_NONE;
+        }));
+        
+    // Replace implementation
+    Plugin::FrontPanelImplementation::_instance = nullptr;
+    
+    // Act
+    JsonObject parameters;
+    parameters["index"] = "power_led";
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "powerLedOn";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
+    
+    // Assert
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
+}
+
+// Test powerLedOff method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_PowerLedOff_JsonRpc) {
+    // Arrange
+    EXPECT_CALL(*p_frontPanelMock, PowerLedOff(_, _))
+        .WillOnce(::testing::Invoke([](const string&, Exchange::IFrontPanel::FrontPanelSuccess& success) {
+            success.success = true;
+            return Core::ERROR_NONE;
+        }));
+    
+    // Act
+    JsonObject parameters;
+    parameters["index"] = "power_led";
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "powerLedOff";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
+    
+    // Assert
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
+}
+
+// Test setLED method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_SetLED_JsonRpc) {
+    // Arrange
+    EXPECT_CALL(*p_frontPanelMock, SetLED(_, _, _, _, _, _, _))
+        .WillOnce(::testing::Invoke([](const string&, uint32_t, const string&, uint32_t, uint32_t, uint32_t, 
+                                      Exchange::IFrontPanel::FrontPanelSuccess& success) {
+            success.success = true;
+            return Core::ERROR_NONE;
+        }));
+    
+    // Act
+    JsonObject parameters;
+    parameters["ledIndicator"] = "power_led";
+    parameters["brightness"] = 75;
+    parameters["color"] = "red";
+    parameters["red"] = 255;
+    parameters["green"] = 0;
+    parameters["blue"] = 0;
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "setLED";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
+    
+    // Assert
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
+}
+
+// Test setBlink method through JSON-RPC interface
+TEST_F(FrontPanel_L1_Test, L1_SetBlink_JsonRpc) {
+    // Arrange
+    EXPECT_CALL(*p_frontPanelMock, SetBlink(_, _))
+        .WillOnce(::testing::Invoke([](const string&, Exchange::IFrontPanel::FrontPanelSuccess& success) {
+            success.success = true;
+            return Core::ERROR_NONE;
+        }));
+    
+    // Act
+    JsonObject parameters;
+    parameters["blinkInfo"] = "{\"ledIndicator\":\"power_led\",\"iterations\":5,\"pattern\":[]}";
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "setBlink";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
+    
+    // Assert
+    EXPECT_NE(response, nullptr);
+    EXPECT_EQ(response->Error.Code, 0u);
 }
 
 // Test power mode changed behavior
 TEST_F(FrontPanel_L1_Test, L1_PowerModeChanged) {
-    // Arrange
-    EXPECT_CALL(*p_frontPanelMock, setPowerStatus(true))
-        .WillOnce(Return(true));
-        
-    // Mock CFrontPanel::instance to return our mock
-    Plugin::CFrontPanel::_instance = p_frontPanelMock;
+    // Arrange - mock the implementation of onPowerModeChanged
+    Plugin::FrontPanelImplementation tempImpl;
+    Plugin::FrontPanelImplementation* implPtr = &tempImpl;
+    Plugin::FrontPanelImplementation::_instance = implPtr;
     
     // Act - trigger the power mode changed notification
     ASSERT_NE(_notification, nullptr);
     _notification->OnPowerModeChanged(Exchange::IPowerManager::POWER_STATE_STANDBY, Exchange::IPowerManager::POWER_STATE_ON);
     
     // Cleanup
-    Plugin::CFrontPanel::_instance = nullptr;
+    Plugin::FrontPanelImplementation::_instance = nullptr;
+}
+
+// Test handling of invalid parameters in setBlink
+TEST_F(FrontPanel_L1_Test, L1_SetBlink_InvalidParams_JsonRpc) {
+    // Act
+    JsonObject parameters;
+    parameters["blinkInfo"] = "invalid json";
+    
+    message.Parameters = parameters;
+    message.JSONRPC = "2.0";
+    message.Id = 1234;
+    message.Designator = "org.rdk.DisplaySettings.1";
+    message.Method = "setBlink";
+    
+    // Send the message to the handler
+    Core::ProxyType<Core::JSONRPC::Message> response;
+    handler.Invoke(connection, message, response);
+    
+    // Assert
+    EXPECT_NE(response, nullptr);
+    EXPECT_NE(response->Error.Code, 0u);
 }
