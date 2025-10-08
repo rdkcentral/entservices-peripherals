@@ -111,16 +111,14 @@ namespace
         string range;
 
         indicator.getBrightnessLevels(levels, min, max);
-        range = (levels <=2)?"boolean":"int";
+        range = "int";
         indicatorInfo["range"] = range;
 
         indicatorInfo["min"] = JsonValue(min);
         indicatorInfo["max"] = JsonValue(max);
 
-        if (range == ("int"))
-        {
-            indicatorInfo["step"] = JsonValue((max-min)/levels);
-        }
+        indicatorInfo["step"] = JsonValue((max-min)/levels);
+        
         JsonArray availableColors;
         const device::List <device::FrontPanelIndicator::Color> colorsList = indicator.getSupportedColors();
         for (uint j = 0; j < colorsList.size(); j++)
