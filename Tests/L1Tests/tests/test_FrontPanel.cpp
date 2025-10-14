@@ -410,7 +410,7 @@ TEST_F(FrontPanelInitializedEventDsTest, getFrontPanelLights)
         .WillByDefault(::testing::Return("Power"));
 
     EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("getFrontPanelLights"), _T(""), response));
-    EXPECT_EQ(response, string("{\"supportedLights\":[\"power_led\"],\"supportedLightsInfo\":{\"power_led\":{\"range\":\"boolean\",\"min\":0,\"max\":2,\"colorMode\":0}},\"success\":true}"));
+    EXPECT_EQ(response, string("{\"supportedLights\":[\"power_led\"],\"supportedLightsInfo\":{\"power_led\":{\"range\":\"int\",\"min\":0,\"max\":2,\"step\":2,\"colorMode\":0}},\"success\":true}"));
 }
 
 TEST_F(FrontPanelInitializedEventDsTest, powerLedOffPower)
