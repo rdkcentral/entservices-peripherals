@@ -111,6 +111,14 @@ namespace WPEFramework
                 case LEDControlState::LEDSTATE_FACTORY_RESET: return dsFPD_LED_DEVICE_FACTORY_RESET;
                 case LEDControlState::LEDSTATE_USB_UPGRADE: return dsFPD_LED_DEVICE_USB_UPGRADE;
                 case LEDControlState::LEDSTATE_DOWNLOAD_ERROR: return dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR;
+                case LEDControlState::LEDSTATE_WIFI_ERROR: return dsFPD_LED_DEVICE_WIFI_ERROR;
+                case LEDControlState::LEDSTATE_BOOT_IN_PROGRESS: return dsFPD_LED_DEVICE_BOOT_IN_PROGRESS;
+                case LEDControlState::LEDSTATE_COLDSTANDBY: return dsFPD_LED_DEVICE_COLDSTANDBY;
+                case LEDControlState::LEDSTATE_PSU_FAILURE: return dsFPD_LED_DEVICE_PSU_FAILURE;
+                case LEDControlState::LEDSTATE_WPS_SES_OVERLAP: return dsFPD_LED_DEVICE_WPS_SES_OVERLAP;
+                case LEDControlState::LEDSTATE_IP_ACQUIRED: return dsFPD_LED_DEVICE_IP_ACQUIRED;
+                case LEDControlState::LEDSTATE_NO_IP: return dsFPD_LED_DEVICE_NO_IP;
+                case LEDControlState::LEDSTATE_RCU_COMMAND: return dsFPD_LED_DEVICE_RCU_COMMAND;
                 /* The ILEDControl.h's LEDControlState has LEDSTATE_MAX defined but do not use it */
                 default:
                     throw std::invalid_argument("Invalid LEDControlState for mapping to dsFPDLedState_t");
@@ -135,6 +143,14 @@ namespace WPEFramework
                 case dsFPD_LED_DEVICE_FACTORY_RESET: return LEDControlState::LEDSTATE_FACTORY_RESET;
                 case dsFPD_LED_DEVICE_USB_UPGRADE: return LEDControlState::LEDSTATE_USB_UPGRADE;
                 case dsFPD_LED_DEVICE_SOFTWARE_DOWNLOAD_ERROR: return LEDControlState::LEDSTATE_DOWNLOAD_ERROR;
+                case dsFPD_LED_DEVICE_WIFI_ERROR: return LEDControlState::LEDSTATE_WIFI_ERROR;
+                case dsFPD_LED_DEVICE_BOOT_IN_PROGRESS: return LEDControlState::LEDSTATE_BOOT_IN_PROGRESS;
+                case dsFPD_LED_DEVICE_COLDSTANDBY: return LEDControlState::LEDSTATE_COLDSTANDBY;
+                case dsFPD_LED_DEVICE_PSU_FAILURE: return LEDControlState::LEDSTATE_PSU_FAILURE;
+                case dsFPD_LED_DEVICE_WPS_SES_OVERLAP: return LEDControlState::LEDSTATE_WPS_SES_OVERLAP;
+                case dsFPD_LED_DEVICE_IP_ACQUIRED: return LEDControlState::LEDSTATE_IP_ACQUIRED;
+                case dsFPD_LED_DEVICE_NO_IP: return LEDControlState::LEDSTATE_NO_IP;
+                case dsFPD_LED_DEVICE_RCU_COMMAND: return LEDControlState::LEDSTATE_RCU_COMMAND;
                 case dsFPD_LED_DEVICE_MAX:
                 default:
                     throw std::invalid_argument("Invalid dsFPDLedState_t for mapping to LEDControlState");
@@ -159,6 +175,14 @@ namespace WPEFramework
                 case LEDControlState::LEDSTATE_FACTORY_RESET: return "FACTORY_RESET";
                 case LEDControlState::LEDSTATE_USB_UPGRADE: return "USB_UPGRADE";
                 case LEDControlState::LEDSTATE_DOWNLOAD_ERROR: return "DOWNLOAD_ERROR";
+                case LEDControlState::LEDSTATE_WIFI_ERROR: return "WIFI_ERROR";
+                case LEDControlState::LEDSTATE_BOOT_IN_PROGRESS: return "BOOT_IN_PROGRESS";
+                case LEDControlState::LEDSTATE_COLDSTANDBY: return "COLDSTANDBY";
+                case LEDControlState::LEDSTATE_PSU_FAILURE: return "PSU_FAILURE";
+                case LEDControlState::LEDSTATE_WPS_SES_OVERLAP: return "WPS_SES_OVERLAP";
+                case LEDControlState::LEDSTATE_IP_ACQUIRED: return "IP_ACQUIRED";
+                case LEDControlState::LEDSTATE_NO_IP: return "NO_IP";
+                case LEDControlState::LEDSTATE_RCU_COMMAND: return "RCU_COMMAND";
                 // Treat LEDSTATE_MAX and greater as invalid
                 case LEDControlState::LEDSTATE_MAX:
                 default: return nullptr;
