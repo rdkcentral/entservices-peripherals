@@ -140,9 +140,6 @@ FrontPanel_L2Test::FrontPanel_L2Test() : L2TestMocks() {
     EXPECT_CALL(*p_frontPanelConfigImplMock, getIndicators())
         .WillRepeatedly(::testing::Return(device::List<device::FrontPanelIndicator>()));
 
-    EXPECT_CALL(*p_frontPanelIndicatorMock, getInstanceString(::testing::_))
-        .WillRepeatedly(::testing::ReturnRef(*p_frontPanelIndicatorMock));
-
     EXPECT_CALL(*p_frontPanelIndicatorMock, getBrightness(::testing::_))
         .WillRepeatedly(::testing::Return(50));
 
