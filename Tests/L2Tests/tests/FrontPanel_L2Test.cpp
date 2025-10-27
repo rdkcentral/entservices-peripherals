@@ -113,6 +113,12 @@ private:
     std::mutex m_mutex;
     std::condition_variable m_condition_variable;
     uint32_t m_event_signalled;
+    
+    FrontPanelIndicatorMock* p_frontPanelIndicatorMock = nullptr;
+    FrontPanelTextDisplayMock* p_frontPanelTextDisplayMock = nullptr;
+    FrontPanelConfigMock* p_frontPanelConfigImplMock = nullptr;
+    ColorMock* p_colorImplMock = nullptr;
+    IarmBusImplMock* p_iarmBusImplMock = nullptr;
 };
 
 /**
@@ -121,6 +127,13 @@ private:
 FrontPanel_L2Test::FrontPanel_L2Test() : L2TestMocks() {
     uint32_t status = Core::ERROR_GENERAL;
     m_event_signalled = FRONTPANELL2TEST_STATE_INVALID;
+
+    // Initialize mock pointers
+    p_frontPanelIndicatorMock = new NiceMock<FrontPanelIndicatorMock>();
+    p_frontPanelTextDisplayMock = new NiceMock<FrontPanelTextDisplayMock>();
+    p_frontPanelConfigImplMock = new NiceMock<FrontPanelConfigMock>();
+    p_colorImplMock = new NiceMock<ColorMock>();
+    p_iarmBusImplMock = new NiceMock<IarmBusImplMock>();
 
     // Setup mock expectations for device settings
     EXPECT_CALL(*p_frontPanelConfigImplMock, getIndicators())
@@ -191,6 +204,13 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
 
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
+
+    // Clean up mock pointers
+    delete p_frontPanelIndicatorMock;
+    delete p_frontPanelTextDisplayMock;
+    delete p_frontPanelConfigImplMock;
+    delete p_colorImplMock;
+    delete p_iarmBusImplMock;
 }
 
 void FrontPanel_L2Test::OnPowerModeChanged(const PowerState currentState, const PowerState newState) {
