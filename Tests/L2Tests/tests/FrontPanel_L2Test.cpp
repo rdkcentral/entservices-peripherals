@@ -168,16 +168,6 @@ FrontPanel_L2Test::FrontPanel_L2Test() : L2TestMocks() {
     EXPECT_CALL(*p_frontPanelIndicatorMock, getSupportedColors())
         .WillRepeatedly(::testing::Return(device::List<device::FrontPanelIndicator::Color>()));
 
-    // Setup IARM mock expectations
-    EXPECT_CALL(*p_iarmBusImplMock, IARM_Bus_Init(::testing::_))
-        .WillRepeatedly(::testing::Return(IARM_RESULT_SUCCESS));
-
-    EXPECT_CALL(*p_iarmBusImplMock, IARM_Bus_Connect())
-        .WillRepeatedly(::testing::Return(IARM_RESULT_SUCCESS));
-
-    EXPECT_CALL(*p_iarmBusImplMock, IARM_Bus_RegisterEventHandler(::testing::_, ::testing::_, ::testing::_))
-        .WillRepeatedly(::testing::Return(IARM_RESULT_SUCCESS));
-
     // Activate the actual plugin service
     status = ActivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
@@ -193,12 +183,6 @@ FrontPanel_L2Test::FrontPanel_L2Test() : L2TestMocks() {
 FrontPanel_L2Test::~FrontPanel_L2Test() {
     uint32_t status = Core::ERROR_GENERAL;
     m_event_signalled = FRONTPANELL2TEST_STATE_INVALID;
-
-    EXPECT_CALL(*p_iarmBusImplMock, IARM_Bus_Disconnect())
-        .WillOnce(::testing::Return(IARM_RESULT_SUCCESS));
-
-    EXPECT_CALL(*p_iarmBusImplMock, IARM_Bus_Term())
-        .WillOnce(::testing::Return(IARM_RESULT_SUCCESS));
 
     status = DeactivateService("org.rdk.PowerManager");
     EXPECT_EQ(Core::ERROR_NONE, status);
