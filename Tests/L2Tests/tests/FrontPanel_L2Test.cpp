@@ -109,16 +109,17 @@ public:
     
     Core::Sink<FrontPanel_Notification> mNotification;
 
-private:
-    std::mutex m_mutex;
-    std::condition_variable m_condition_variable;
-    uint32_t m_event_signalled;
-    
+    // Mock pointers - public for access in test methods
     FrontPanelIndicatorMock* p_frontPanelIndicatorMock = nullptr;
     FrontPanelTextDisplayMock* p_frontPanelTextDisplayMock = nullptr;
     FrontPanelConfigMock* p_frontPanelConfigImplMock = nullptr;
     ColorMock* p_colorImplMock = nullptr;
     IarmBusImplMock* p_iarmBusImplMock = nullptr;
+
+private:
+    std::mutex m_mutex;
+    std::condition_variable m_condition_variable;
+    uint32_t m_event_signalled;
 };
 
 /**
