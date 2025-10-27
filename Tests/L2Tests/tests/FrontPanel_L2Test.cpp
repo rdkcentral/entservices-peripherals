@@ -28,6 +28,10 @@
 #include <interfaces/IPowerManager.h>
 #include "FrontPanelMock.h"
 #include "PowerManagerMock.h"
+
+#define TEST_LOG(x, ...)                                                                                                                         \
+    fprintf(stderr, "\033[1;32m[%s:%d](%s)<PID:%d><TID:%d>" x "\n\033[0m", __FILE__, __LINE__, __FUNCTION__, getpid(), gettid(), ##__VA_ARGS__); \
+    fflush(stderr);
 #include "FrontPanelIndicatorMock.h"
 #include "FrontPanelTextDisplayMock.h"
 #include "FrontPanelConfigMock.h"
@@ -155,26 +159,28 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
 }
 
 uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
-    uint32_t status = Core::ERROR_GENERAL;
-    
-#if ((THUNDER_VERSION == 2) || ((THUNDER_VERSION == 4) && (THUNDER_VERSION_MINOR == 2)))
-    // Thunder version specific handling if needed
-#endif
+    uint32_t return_value = Core::ERROR_GENERAL;
+    Core::ProxyType<RPC::InvokeServerType<1, 0, 4>> FrontPanel_Engine;
+    Core::ProxyType<RPC::CommunicatorClient> FrontPanel_Client;
 
-    status = ActivateService("org.rdk.FrontPanel");
-    if (status == Core::ERROR_NONE) {
-        m_controller_FrontPanel = GetController();
+    TEST_LOG("Creating FrontPanel_Engine");
+    FrontPanel_Engine = Core::ProxyType<RPC::InvokeServerType<1, 0, 4>>::Create();
+    FrontPanel_Client = Core::ProxyType<RPC::CommunicatorClient>::Create(Core::NodeId("/tmp/communicator"), Core::ProxyType<Core::IIPCServer>(FrontPanel_Engine));
+
+    TEST_LOG("Creating FrontPanel_Engine Announcements");
+#if ((THUNDER_VERSION == 2) || ((THUNDER_VERSION == 4) && (THUNDER_VERSION_MINOR == 2)))
+    FrontPanel_Engine->Announcements(FrontPanel_Client->Announcement());
+#endif
+    if (!FrontPanel_Client.IsValid()) {
+        TEST_LOG("Invalid FrontPanel_Client");
+    } else {
+        m_controller_FrontPanel = FrontPanel_Client->Open<PluginHost::IShell>(_T("org.rdk.FrontPanel"), ~0, 3000);
         if (m_controller_FrontPanel) {
             m_frontPanelPlugin = m_controller_FrontPanel->QueryInterface<Exchange::IFrontPanel>();
-            if (m_frontPanelPlugin) {
-                TEST_LOG("FrontPanel interface object created successfully\n");
-                return Core::ERROR_NONE;
-            }
+            return_value = Core::ERROR_NONE;
         }
     }
-    
-    TEST_LOG("Failed to create FrontPanel interface object\n");
-    return Core::ERROR_GENERAL;
+    return return_value;
 }
 
 /* COM-RPC tests */
