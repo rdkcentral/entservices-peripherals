@@ -111,6 +111,7 @@ protected:
     IarmBusImplMock* p_iarmBusImplMock;
     FrontPanelConfigMock* p_frontPanelConfigImplMock;
     FrontPanelTextDisplayMock* p_frontPanelTextDisplayMock;
+    ColorMock* p_colorImplMock;
     testing::NiceMock<FrontPanelIndicatorMock> frontPanelIndicatorMock;
     testing::NiceMock<FrontPanelIndicatorMock> frontPanelTextDisplayIndicatorMock;
 
@@ -145,6 +146,7 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     , p_iarmBusImplMock(nullptr)
     , p_frontPanelConfigImplMock(nullptr)
     , p_frontPanelTextDisplayMock(nullptr)
+    , p_colorImplMock(nullptr)
     , m_event_signalled(FRONTPANELL2TEST_STATE_INVALID) {
     
     uint32_t status = Core::ERROR_GENERAL;
@@ -162,6 +164,19 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     p_frontPanelTextDisplayMock = new testing::NiceMock<FrontPanelTextDisplayMock>;
     device::FrontPanelTextDisplay::setImpl(p_frontPanelTextDisplayMock);
     
+    p_colorImplMock = new testing::NiceMock<ColorMock>;
+    device::FrontPanelIndicator::Color::setImpl(p_colorImplMock);
+    
+    // Set up ColorMock expectations to match L1 tests
+    ON_CALL(*p_colorImplMock, getName())
+        .WillByDefault(::testing::Return("White"));
+
+    ON_CALL(*p_colorImplMock, getInstanceByName(::testing::_))
+        .WillByDefault(::testing::Invoke([](const std::string& name) {
+            (void)name;
+            return device::FrontPanelIndicator::Color::getInstance();
+        }));
+    
     // Set up basic mock expectations that are needed for plugin initialization
     ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
         .WillByDefault(::testing::Invoke(
@@ -177,6 +192,15 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     
     ON_CALL(*p_frontPanelConfigImplMock, getIndicators())
         .WillByDefault(::testing::Return(device::List<device::FrontPanelIndicator>({ device::FrontPanelIndicator::getInstance() })));
+    
+    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplays())
+        .WillByDefault(::testing::Return(device::List<device::FrontPanelTextDisplay>({ device::FrontPanelTextDisplay::getInstance() })));
+    
+    ON_CALL(frontPanelTextDisplayIndicatorMock, getName())
+        .WillByDefault(::testing::Return("Text"));
+    
+    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplay(::testing::_))
+        .WillByDefault(::testing::ReturnRef(device::FrontPanelTextDisplay::getInstance()));
     
     ON_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
         .WillByDefault(::testing::Return(100));
@@ -279,6 +303,15 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         delete p_frontPanelConfigImplMock;
         p_frontPanelConfigImplMock = nullptr;
     }
+    
+    device::FrontPanelIndicator::Color::setImpl(nullptr);
+    if (p_colorImplMock != nullptr) {
+        delete p_colorImplMock;
+        p_colorImplMock = nullptr;
+    }
+    
+    // Clear CFrontPanel static variables like L1 tests do
+    Plugin::CFrontPanel::initDone = 0;
 }
 
 uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
