@@ -154,6 +154,9 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     
     uint32_t status = Core::ERROR_GENERAL;
     
+    // Force reset CFrontPanel initialization state to prevent reinitialization
+    Plugin::CFrontPanel::initDone = 0;
+    
     // Reset all mocks to nullptr first to avoid assertion failures
     IarmBus::setImpl(nullptr);
     device::FrontPanelConfig::setImpl(nullptr);
@@ -281,15 +284,18 @@ FrontPanel_L2Test::FrontPanel_L2Test()
 FrontPanel_L2Test::~FrontPanel_L2Test() {
     uint32_t status = Core::ERROR_GENERAL;
     
+    // CRITICAL: Prevent any reinitialization by setting initDone = 0 first
+    Plugin::CFrontPanel::initDone = 0;
+    
+    // Stop any timers and cleanup FrontPanel singleton BEFORE anything else
+    Plugin::CFrontPanel::deinitialize();
+    
     // Stop any timers first to prevent race conditions
     // Get current instance and stop blinking if it exists
     Plugin::CFrontPanel* instance = Plugin::CFrontPanel::instance();
     if (instance) {
         instance->stopBlinkTimer();
     }
-    // Add a small delay to ensure any async operations complete
-    usleep(100000); // 100ms
-    
     
     if (m_frontPanelPlugin) {
         m_frontPanelPlugin->Release();
@@ -301,16 +307,36 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         m_controller_FrontPanel = nullptr;
     }
 
+    // Deactivate service AFTER stopping timers
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
     
-    // Now properly deinitialize CFrontPanel singleton
-    Plugin::CFrontPanel::deinitialize();
+    // Add a longer delay to ensure all async operations complete
+    usleep(200000); // 200ms
     
     // Clean up PowerManager mock
     PowerManagerMock::Delete();
     
-    // Clean up device settings mocks
+    // Clean up device settings mocks in reverse order of initialization
+    device::FrontPanelIndicator::Color::setImpl(nullptr);
+    if (p_colorImplMock != nullptr) {
+        delete p_colorImplMock;
+        p_colorImplMock = nullptr;
+    }
+    
+    device::FrontPanelTextDisplay::setImpl(nullptr);
+    if (p_frontPanelTextDisplayMock != nullptr) {
+        delete p_frontPanelTextDisplayMock;
+        p_frontPanelTextDisplayMock = nullptr;
+    }
+    
+    device::FrontPanelConfig::setImpl(nullptr);
+    if (p_frontPanelConfigImplMock != nullptr) {
+        delete p_frontPanelConfigImplMock;
+        p_frontPanelConfigImplMock = nullptr;
+    }
+    
+    // Clean up indicator instances
     device::FrontPanelIndicator::getInstance().impl = nullptr;
     device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = nullptr;
     
@@ -338,8 +364,8 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         p_colorImplMock = nullptr;
     }
     
-    // Clear CFrontPanel static variables like L1 tests do
-    Plugin::CFrontPanel::initDone = 0;
+    // Final delay to ensure all cleanup completes before destructor returns
+    usleep(100000); // 100ms
 }
 
 uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
