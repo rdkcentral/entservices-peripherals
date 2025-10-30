@@ -287,6 +287,9 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     if (instance) {
         instance->stopBlinkTimer();
     }
+    // Add a small delay to ensure any async operations complete
+    usleep(100000); // 100ms
+    
     
     if (m_frontPanelPlugin) {
         m_frontPanelPlugin->Release();
@@ -303,9 +306,6 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     
     // Now properly deinitialize CFrontPanel singleton
     Plugin::CFrontPanel::deinitialize();
-    
-    // Add a small delay to ensure any async operations complete
-    usleep(100000); // 100ms
     
     // Clean up PowerManager mock
     PowerManagerMock::Delete();
