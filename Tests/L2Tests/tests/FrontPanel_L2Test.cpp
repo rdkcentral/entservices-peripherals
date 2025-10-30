@@ -618,7 +618,7 @@ TEST_F(FrontPanel_L2Test, JsonRpcSetBlink) {
     JsonObject params;
     JsonObject result;
 
-    string blinkInfo = R"({"ledIndicator":"power_led","iterations":3,"pattern":[{"brightness":100,"duration":500,"color":"red"},{"brightness":0,"duration":500}]})";
+    string blinkInfo = R"({"ledIndicator":"power_led","iterations":3,"pattern":[{"brightness":100,"duration":5,"color":"red"},{"brightness":0,"duration":5}]})";
     params["blinkInfo"] = blinkInfo;
 
     status = InvokeServiceMethod("org.rdk.FrontPanel.1.", "setBlink", params, result);
