@@ -153,6 +153,12 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     
     uint32_t status = Core::ERROR_GENERAL;
     
+    // Reset all mocks to nullptr first to avoid assertion failures
+    IarmBus::setImpl(nullptr);
+    device::FrontPanelConfig::setImpl(nullptr);
+    device::FrontPanelTextDisplay::setImpl(nullptr);
+    device::FrontPanelIndicator::Color::setImpl(nullptr);
+    
     // Set up device settings mocks
     p_iarmBusImplMock = new testing::NiceMock<IarmBusImplMock>;
     IarmBus::setImpl(p_iarmBusImplMock);
