@@ -24,6 +24,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <fstream>
+#include <unistd.h>
 #include <interfaces/IFrontPanel.h>
 #include <interfaces/IPowerManager.h>
 #include "FrontPanelMock.h"
@@ -280,6 +281,13 @@ FrontPanel_L2Test::FrontPanel_L2Test()
 FrontPanel_L2Test::~FrontPanel_L2Test() {
     uint32_t status = Core::ERROR_GENERAL;
     
+    // Stop any timers first to prevent race conditions
+    // Get current instance and stop blinking if it exists
+    Plugin::CFrontPanel* instance = Plugin::CFrontPanel::instance();
+    if (instance) {
+        instance->stopBlinkTimer();
+    }
+    
     if (m_frontPanelPlugin) {
         m_frontPanelPlugin->Release();
         m_frontPanelPlugin = nullptr;
@@ -292,6 +300,12 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
 
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
+    
+    // Now properly deinitialize CFrontPanel singleton
+    Plugin::CFrontPanel::deinitialize();
+    
+    // Add a small delay to ensure any async operations complete
+    usleep(100000); // 100ms
     
     // Clean up PowerManager mock
     PowerManagerMock::Delete();
