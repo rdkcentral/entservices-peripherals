@@ -214,12 +214,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     ON_CALL(*p_iarmBusImplMock, IARM_Bus_UnRegisterEventHandler(::testing::_, ::testing::_))
         .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
     
-    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Disconnect())
-        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
-    
-    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Term())
-        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
-    
     // Additional mock for color operations that might be needed
     ON_CALL(frontPanelIndicatorMock, setColor(::testing::_, ::testing::_))
         .WillByDefault(::testing::Return());
