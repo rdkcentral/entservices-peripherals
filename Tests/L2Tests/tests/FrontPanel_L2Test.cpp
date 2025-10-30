@@ -28,6 +28,8 @@
 #include <interfaces/IPowerManager.h>
 #include "FrontPanelMock.h"
 #include "PowerManagerMock.h"
+#include "frontpanel.h"
+#include "frontpanel.cpp"
 
 #define TEST_LOG(x, ...)                                                                                                                         \
     fprintf(stderr, "\033[1;32m[%s:%d](%s)<PID:%d><TID:%d>" x "\n\033[0m", __FILE__, __LINE__, __FUNCTION__, getpid(), gettid(), ##__VA_ARGS__); \
