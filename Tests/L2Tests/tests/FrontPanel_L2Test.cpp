@@ -201,7 +201,13 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     ON_CALL(frontPanelTextDisplayIndicatorMock, getName())
         .WillByDefault(::testing::Return("Text"));
     
-    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplay(::testing::_))
+    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplay(::testing::Matcher<int>(::testing::_)))
+        .WillByDefault(::testing::ReturnRef(device::FrontPanelTextDisplay::getInstance()));
+    
+    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplay(::testing::Matcher<const std::string&>(::testing::_)))
+        .WillByDefault(::testing::ReturnRef(device::FrontPanelTextDisplay::getInstance()));
+    
+    ON_CALL(*p_frontPanelConfigImplMock, getTextDisplay())
         .WillByDefault(::testing::ReturnRef(device::FrontPanelTextDisplay::getInstance()));
     
     ON_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
