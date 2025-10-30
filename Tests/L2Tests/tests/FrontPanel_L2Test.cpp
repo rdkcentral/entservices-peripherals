@@ -32,11 +32,17 @@
 #define TEST_LOG(x, ...)                                                                                                                         \
     fprintf(stderr, "\033[1;32m[%s:%d](%s)<PID:%d><TID:%d>" x "\n\033[0m", __FILE__, __LINE__, __FUNCTION__, getpid(), gettid(), ##__VA_ARGS__); \
     fflush(stderr);
+    
 #include "FrontPanelIndicatorMock.h"
 #include "FrontPanelTextDisplayMock.h"
 #include "FrontPanelConfigMock.h"
 #include "ColorMock.h"
 #include "IarmBusMock.h"
+
+// Device settings includes for proper mock setup
+#include "frontPanelIndicator.hpp"
+#include "frontPanelConfig.hpp"
+#include "frontPanelTextDisplay.hpp"
 
 #define JSON_TIMEOUT   (1000)
 #define TEST_LOG(x, ...) fprintf(stderr, "\033[1;32m[%s:%d](%s)<PID:%d><TID:%d>" x "\n\033[0m", __FILE__, __LINE__, __FUNCTION__, getpid(), gettid(), ##__VA_ARGS__); fflush(stderr);
@@ -100,6 +106,13 @@ class FrontPanel_L2Test : public L2TestMocks {
 protected:
     PluginHost::IShell* m_controller_FrontPanel;
     Exchange::IFrontPanel* m_frontPanelPlugin;
+    
+    // Device settings mocks
+    IarmBusImplMock* p_iarmBusImplMock;
+    FrontPanelConfigMock* p_frontPanelConfigImplMock;
+    FrontPanelTextDisplayMock* p_frontPanelTextDisplayMock;
+    testing::NiceMock<FrontPanelIndicatorMock> frontPanelIndicatorMock;
+    testing::NiceMock<FrontPanelIndicatorMock> frontPanelTextDisplayIndicatorMock;
 
 public:
     FrontPanel_L2Test();
@@ -129,9 +142,100 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     : L2TestMocks()
     , m_controller_FrontPanel(nullptr)
     , m_frontPanelPlugin(nullptr)
+    , p_iarmBusImplMock(nullptr)
+    , p_frontPanelConfigImplMock(nullptr)
+    , p_frontPanelTextDisplayMock(nullptr)
     , m_event_signalled(FRONTPANELL2TEST_STATE_INVALID) {
     
     uint32_t status = Core::ERROR_GENERAL;
+    
+    // Set up device settings mocks
+    p_iarmBusImplMock = new testing::NiceMock<IarmBusImplMock>;
+    IarmBus::setImpl(p_iarmBusImplMock);
+    
+    p_frontPanelConfigImplMock = new testing::NiceMock<FrontPanelConfigMock>;
+    device::FrontPanelConfig::setImpl(p_frontPanelConfigImplMock);
+    
+    device::FrontPanelIndicator::getInstance().impl = &frontPanelIndicatorMock;
+    device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = &frontPanelTextDisplayIndicatorMock;
+    
+    p_frontPanelTextDisplayMock = new testing::NiceMock<FrontPanelTextDisplayMock>;
+    device::FrontPanelTextDisplay::setImpl(p_frontPanelTextDisplayMock);
+    
+    // Set up basic mock expectations that are needed for plugin initialization
+    ON_CALL(frontPanelIndicatorMock, getInstanceString(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](const std::string& name) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    
+    ON_CALL(frontPanelIndicatorMock, getInstanceInt(::testing::_))
+        .WillByDefault(::testing::Invoke(
+            [&](int id) -> device::FrontPanelIndicator& {
+                return device::FrontPanelIndicator::getInstance();
+            }));
+    
+    ON_CALL(*p_frontPanelConfigImplMock, getIndicators())
+        .WillByDefault(::testing::Return(device::List<device::FrontPanelIndicator>({ device::FrontPanelIndicator::getInstance() })));
+    
+    ON_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .WillByDefault(::testing::Return(100));
+    
+    ON_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .WillByDefault(::testing::Return());
+    
+    ON_CALL(frontPanelIndicatorMock, setState(::testing::_))
+        .WillByDefault(::testing::Return());
+    
+    ON_CALL(frontPanelIndicatorMock, getName())
+        .WillByDefault(::testing::Return("Power"));
+    
+    ON_CALL(frontPanelIndicatorMock, getBrightnessLevels(::testing::_, ::testing::_, ::testing::_))
+        .WillByDefault(::testing::Invoke([](int& levels, int& min, int& max) {
+            levels = 100; min = 0; max = 100;
+        }));
+    
+    ON_CALL(frontPanelIndicatorMock, getSupportedColors())
+        .WillByDefault(::testing::Return(device::List<device::FrontPanelIndicator::Color>()));
+    
+    ON_CALL(frontPanelIndicatorMock, getColorMode())
+        .WillByDefault(::testing::Return(0));
+    
+    // Set up IARM Bus mock expectations for basic functionality
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Connect())
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Init(::testing::_))
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_RegisterEventHandler(::testing::_, ::testing::_, ::testing::_))
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_UnRegisterEventHandler(::testing::_, ::testing::_))
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Disconnect())
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    ON_CALL(*p_iarmBusImplMock, IARM_Bus_Term())
+        .WillByDefault(::testing::Return(IARM_RESULT_SUCCESS));
+    
+    // Additional mock for color operations that might be needed
+    ON_CALL(frontPanelIndicatorMock, setColor(::testing::_, ::testing::_))
+        .WillByDefault(::testing::Return());
+        
+    ON_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
+        .WillByDefault(::testing::Return());
+        
+    ON_CALL(frontPanelIndicatorMock, getColorName())
+        .WillByDefault(::testing::Return("red"));
+    
+    // Set up PowerManager mock to prevent segmentation faults during plugin initialization
+    EXPECT_CALL(PowerManagerMock::Mock(), Register(::testing::Matcher<Exchange::IPowerManager::IModeChangedNotification*>(::testing::_)))
+        .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
+    
+    EXPECT_CALL(PowerManagerMock::Mock(), Unregister(::testing::Matcher<const Exchange::IPowerManager::IModeChangedNotification*>(::testing::_)))
+        .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
     
     // Activate the actual plugin service
     status = ActivateService("org.rdk.FrontPanel");
@@ -156,6 +260,31 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
 
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
+    
+    // Clean up PowerManager mock
+    PowerManagerMock::Delete();
+    
+    // Clean up device settings mocks
+    device::FrontPanelIndicator::getInstance().impl = nullptr;
+    device::FrontPanelTextDisplay::getInstance().FrontPanelIndicator::impl = nullptr;
+    
+    IarmBus::setImpl(nullptr);
+    if (p_iarmBusImplMock != nullptr) {
+        delete p_iarmBusImplMock;
+        p_iarmBusImplMock = nullptr;
+    }
+    
+    device::FrontPanelTextDisplay::setImpl(nullptr);
+    if (p_frontPanelTextDisplayMock != nullptr) {
+        delete p_frontPanelTextDisplayMock;
+        p_frontPanelTextDisplayMock = nullptr;
+    }
+    
+    device::FrontPanelConfig::setImpl(nullptr);
+    if (p_frontPanelConfigImplMock != nullptr) {
+        delete p_frontPanelConfigImplMock;
+        p_frontPanelConfigImplMock = nullptr;
+    }
 }
 
 uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
@@ -193,6 +322,13 @@ void FrontPanel_L2Test::Test_SetGetBrightness(Exchange::IFrontPanel* FrontPanelP
 
     TEST_LOG("\n################## Running Test_SetGetBrightness Test #################\n");
 
+    // Add mock expectations for device settings calls
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(brightness, ::testing::_))
+        .Times(::testing::AtLeast(0));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, getBrightness(::testing::_))
+        .WillRepeatedly(::testing::Return(brightness));
+
     Exchange::IFrontPanel::FrontPanelSuccess fpSuccess;
     status = FrontPanelPlugin->SetBrightness(index, brightness, fpSuccess);
     EXPECT_EQ(status, Core::ERROR_NONE);
@@ -208,6 +344,13 @@ void FrontPanel_L2Test::Test_PowerLedOnOff(Exchange::IFrontPanel* FrontPanelPlug
 
     TEST_LOG("\n################## Running Test_PowerLedOnOff Test #################\n");
 
+    // Add mock expectations for device settings calls
+    EXPECT_CALL(frontPanelIndicatorMock, setState(true))
+        .Times(::testing::AtLeast(0));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, setState(false))
+        .Times(::testing::AtLeast(0));
+
     status = FrontPanelPlugin->PowerLedOn(index, fpSuccess);
     EXPECT_EQ(status, Core::ERROR_NONE);
 
@@ -222,6 +365,20 @@ void FrontPanel_L2Test::Test_GetFrontPanelLights(Exchange::IFrontPanel* FrontPan
     bool success = false;
 
     TEST_LOG("\n################## Running Test_GetFrontPanelLights Test #################\n");
+
+    // Add mock expectations for device settings calls
+    EXPECT_CALL(*p_frontPanelConfigImplMock, getIndicators())
+        .WillRepeatedly(::testing::Return(device::List<device::FrontPanelIndicator>({ device::FrontPanelIndicator::getInstance() })));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, getBrightnessLevels(::testing::_, ::testing::_, ::testing::_))
+        .Times(::testing::AtLeast(0))
+        .WillRepeatedly(::testing::Invoke([](int& levels, int& min, int& max) {
+            levels = 100; min = 0; max = 100;
+        }));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, getSupportedColors())
+        .Times(::testing::AtLeast(0))
+        .WillRepeatedly(::testing::Return(device::List<device::FrontPanelIndicator::Color>()));
 
     status = FrontPanelPlugin->GetFrontPanelLights(supportedLights, supportedLightsInfo, success);
     EXPECT_EQ(status, Core::ERROR_NONE);
@@ -241,6 +398,13 @@ void FrontPanel_L2Test::Test_SetLED(Exchange::IFrontPanel* FrontPanelPlugin) {
 
     TEST_LOG("\n################## Running Test_SetLED Test #################\n");
 
+    // Add mock expectations for device settings calls
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(::testing::AtLeast(0));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
+        .Times(::testing::AtLeast(0));
+
     status = FrontPanelPlugin->SetLED(ledIndicator, brightness, color, red, green, blue, fpSuccess);
     EXPECT_EQ(status, Core::ERROR_NONE);
 }
@@ -251,6 +415,13 @@ void FrontPanel_L2Test::Test_SetBlink(Exchange::IFrontPanel* FrontPanelPlugin) {
     Exchange::IFrontPanel::FrontPanelSuccess fpSuccess;
 
     TEST_LOG("\n################## Running Test_SetBlink Test #################\n");
+
+    // Add mock expectations for device settings calls
+    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
+        .Times(::testing::AtLeast(0));
+    
+    EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
+        .Times(::testing::AtLeast(0));
 
     status = FrontPanelPlugin->SetBlink(blinkInfo, fpSuccess);
     EXPECT_EQ(status, Core::ERROR_NONE);
