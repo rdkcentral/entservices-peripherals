@@ -623,6 +623,7 @@ TEST_F(FrontPanel_L2Test, JsonRpcSetBlink) {
 
     status = InvokeServiceMethod("org.rdk.FrontPanel.1.", "setBlink", params, result);
     EXPECT_EQ(status, Core::ERROR_NONE);
+    usleep(500000); // Sleep for 500ms to allow blink to complete in test
 }
 
 TEST_F(FrontPanel_L2Test, JsonRpcGetFrontPanelLights) {
