@@ -297,6 +297,9 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         instance->stopBlinkTimer();
     }
     
+    // Give time for any pending timer callbacks to complete
+    usleep(200000); // 200ms
+    
     if (m_frontPanelPlugin) {
         m_frontPanelPlugin->Release();
         m_frontPanelPlugin = nullptr;
@@ -307,12 +310,9 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         m_controller_FrontPanel = nullptr;
     }
 
-    // Deactivate service AFTER stopping timers
+    // Deactivate service AFTER stopping timers and allowing cleanup
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
-    
-    // Add a longer delay to ensure all async operations complete
-    usleep(200000); // 200ms
     
     // Clean up PowerManager mock
     PowerManagerMock::Delete();
