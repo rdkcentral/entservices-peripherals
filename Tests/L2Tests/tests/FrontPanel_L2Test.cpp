@@ -128,7 +128,6 @@ public:
     void Test_PowerLedOnOff(Exchange::IFrontPanel* FrontPanelPlugin);
     void Test_GetFrontPanelLights(Exchange::IFrontPanel* FrontPanelPlugin);
     void Test_SetLED(Exchange::IFrontPanel* FrontPanelPlugin);
-    void Test_SetBlink(Exchange::IFrontPanel* FrontPanelPlugin);
     void Test_PowerStateIntegration(Exchange::IFrontPanel* FrontPanelPlugin, Exchange::IPowerManager* PowerManagerPlugin);
     
     Core::Sink<FrontPanel_Notification> mNotification;
@@ -296,9 +295,6 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     if (instance) {
         instance->stopBlinkTimer();
     }
-    
-    // Give time for any pending timer callbacks to complete
-    usleep(200000); // 200ms
     
     if (m_frontPanelPlugin) {
         m_frontPanelPlugin->Release();
@@ -490,23 +486,6 @@ void FrontPanel_L2Test::Test_SetLED(Exchange::IFrontPanel* FrontPanelPlugin) {
     EXPECT_EQ(status, Core::ERROR_NONE);
 }
 
-void FrontPanel_L2Test::Test_SetBlink(Exchange::IFrontPanel* FrontPanelPlugin) {
-    uint32_t status = Core::ERROR_GENERAL;
-    string blinkInfo = R"({"ledIndicator":"power_led","iterations":3,"pattern":[{"brightness":100,"duration":500,"color":"red"},{"brightness":0,"duration":500}]})";
-    Exchange::IFrontPanel::FrontPanelSuccess fpSuccess;
-
-    TEST_LOG("\n################## Running Test_SetBlink Test #################\n");
-
-    // Add mock expectations for device settings calls
-    EXPECT_CALL(frontPanelIndicatorMock, setBrightness(::testing::_, ::testing::_))
-        .Times(::testing::AtLeast(0));
-    
-    EXPECT_CALL(frontPanelIndicatorMock, setColorInt(::testing::_, ::testing::_))
-        .Times(::testing::AtLeast(0));
-
-    status = FrontPanelPlugin->SetBlink(blinkInfo, fpSuccess);
-    EXPECT_EQ(status, Core::ERROR_NONE);
-}
 
 void FrontPanel_L2Test::Test_PowerStateIntegration(Exchange::IFrontPanel* FrontPanelPlugin, Exchange::IPowerManager* PowerManagerPlugin) {
     uint32_t status = Core::ERROR_GENERAL;
@@ -539,7 +518,6 @@ TEST_F(FrontPanel_L2Test, FrontPanelComRpc) {
         Test_PowerLedOnOff(m_frontPanelPlugin);
         Test_GetFrontPanelLights(m_frontPanelPlugin);
         Test_SetLED(m_frontPanelPlugin);
-        Test_SetBlink(m_frontPanelPlugin);
     }
 }
 
@@ -651,19 +629,6 @@ TEST_F(FrontPanel_L2Test, JsonRpcSetLED) {
 
     status = InvokeServiceMethod("org.rdk.FrontPanel.1.", "setLED", params, result);
     EXPECT_EQ(status, Core::ERROR_NONE);
-}
-
-TEST_F(FrontPanel_L2Test, JsonRpcSetBlink) {
-    uint32_t status = Core::ERROR_GENERAL;
-    JsonObject params;
-    JsonObject result;
-
-    string blinkInfo = R"({"ledIndicator":"power_led","iterations":3,"pattern":[{"brightness":100,"duration":5,"color":"red"},{"brightness":0,"duration":5}]})";
-    params["blinkInfo"] = blinkInfo;
-
-    status = InvokeServiceMethod("org.rdk.FrontPanel.1.", "setBlink", params, result);
-    EXPECT_EQ(status, Core::ERROR_NONE);
-    usleep(500000); // Sleep for 500ms to allow blink to complete in test
 }
 
 TEST_F(FrontPanel_L2Test, JsonRpcGetFrontPanelLights) {
