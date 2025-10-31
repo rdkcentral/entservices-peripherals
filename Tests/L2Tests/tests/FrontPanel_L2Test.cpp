@@ -312,13 +312,6 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         m_controller_PowerManager = nullptr;
     }
 
-    // CFrontPanel static cleanup
-    Plugin::CFrontPanel::initDone = 0;
-    if (Plugin::CFrontPanel::s_instance) {
-        Plugin::CFrontPanel::s_instance->deinitialize();
-    }
-    Plugin::CFrontPanel::s_instance->stopBlinkTimer();
-    
     // Allow time for timer callbacks to complete before deactivating services
     usleep(200000);
     
