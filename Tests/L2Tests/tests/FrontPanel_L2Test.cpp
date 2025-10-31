@@ -324,7 +324,7 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     }
     
     // Clear CFrontPanel static variables like L1 tests do
-    Plugin::CFrontPanel::initDone = 0;
+    //Plugin::CFrontPanel::initDone = 0;
 }
 
 uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
