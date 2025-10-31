@@ -159,7 +159,7 @@ namespace WPEFramework
                 _powerManagerPlugin->Unregister(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());
                 _powerManagerPlugin.Reset();
             }
-
+            LOGINFO("[%s]", __FUNCTION__);
             CFrontPanel::instance()->deinitialize();
 
             _registeredEventHandlers = false;
@@ -170,6 +170,7 @@ namespace WPEFramework
 
         Core::hresult FrontPanelImplementation::Configure(PluginHost::IShell* service)
         {
+            LOGINFO("[%s]", __FUNCTION__);
             InitializePowerManager(service);
             FrontPanelImplementation::_instance = this;
             CFrontPanel::instance(service);
@@ -237,6 +238,7 @@ namespace WPEFramework
             }
             else if (brightness >= 0 && brightness <= 100)
             {
+                LOGINFO("[%s]", __FUNCTION__);
                 LOGWARN("calling setBrightness");
                 ok = CFrontPanel::instance()->setBrightness(brightness);
             }
@@ -283,6 +285,7 @@ namespace WPEFramework
             }
             else
             {
+                LOGINFO("[%s]", __FUNCTION__);
                 LOGWARN("calling getBrightness");
                 value = CFrontPanel::instance()->getBrightness();
             }
@@ -319,6 +322,7 @@ namespace WPEFramework
 
         Core::hresult FrontPanelImplementation::PowerLedOff(const string& index, FrontPanelSuccess& success)
         {
+            LOGINFO("[%s]", __FUNCTION__);
             bool ok = false;
             if (index == DATA_LED) {
                 ok = CFrontPanel::instance()->powerOffLed(FRONT_PANEL_INDICATOR_MESSAGE); 
@@ -437,6 +441,7 @@ namespace WPEFramework
             properties["green"] = green;
             properties["blue"] = blue;
 
+            LOGINFO("[%s]", __FUNCTION__);
             bool ok = CFrontPanel::instance()->setLED(properties);
             success.success = ok;
             return ok ? Core::ERROR_NONE : Core::ERROR_GENERAL;
@@ -452,6 +457,7 @@ namespace WPEFramework
          */
         void FrontPanelImplementation::setBlink(const JsonObject& blinkInfo)
         {
+            LOGINFO("[%s]", __FUNCTION__);
             CFrontPanel::instance()->setBlink(blinkInfo);
         }
 
