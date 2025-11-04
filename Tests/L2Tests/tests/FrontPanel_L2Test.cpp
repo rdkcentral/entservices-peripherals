@@ -277,6 +277,7 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     EXPECT_CALL(PowerManagerMock::Mock(), SetPowerState(::testing::_, ::testing::_, ::testing::_))
         .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
     
+    /* Activate services in constructor following Telemetry_L2Test pattern */
     // Activate PowerManager service first since FrontPanel depends on it
     status = ActivateService("org.rdk.PowerManager");
     EXPECT_EQ(Core::ERROR_NONE, status);
@@ -284,6 +285,18 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     // Activate the actual FrontPanel plugin service
     status = ActivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
+    
+    // Validate PowerManager is available for cross-plugin integration testing
+    if (CreateDevicePowerManagerInterfaceObject() != Core::ERROR_NONE) {
+        TEST_LOG("Warning: PowerManager interface not available for integration testing");
+        m_powerManagerPlugin = nullptr;
+        m_controller_PowerManager = nullptr;
+    } else {
+        EXPECT_TRUE(m_controller_PowerManager != nullptr);
+        if (m_controller_PowerManager) {
+            EXPECT_TRUE(m_powerManagerPlugin != nullptr);
+        }
+    }
 }
 
 /**
@@ -315,10 +328,12 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     // Allow time for timer callbacks to complete before deactivating services
     usleep(200000);
     
+    /* Deactivate services following Telemetry_L2Test pattern */
+    // Deactivate FrontPanel service first (like Telemetry pattern)
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
     
-    // Deactivate PowerManager service 
+    // Deactivate PowerManager service after FrontPanel (like Telemetry pattern)
     status = DeactivateService("org.rdk.PowerManager");
     EXPECT_EQ(Core::ERROR_NONE, status);
     
