@@ -28,6 +28,7 @@
 #include <interfaces/IPowerManager.h>
 #include "FrontPanelMock.h"
 #include "PowerManagerMock.h"
+#include "PowerManagerHalMock.h"
 #include "frontpanel.h"
 #include "frontpanel.cpp"
 
@@ -265,6 +266,30 @@ FrontPanel_L2Test::FrontPanel_L2Test()
         
     ON_CALL(frontPanelIndicatorMock, getColorName())
         .WillByDefault(::testing::Return("red"));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_DS_INIT())
+    .WillOnce(::testing::Return(DEEPSLEEPMGR_SUCCESS));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_INIT())
+    .WillRepeatedly(::testing::Return(PWRMGR_SUCCESS));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_API_SetWakeupSrc(::testing::_, ::testing::_))
+    .WillRepeatedly(::testing::Return(PWRMGR_SUCCESS));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_API_GetPowerState(::testing::_))
+    .WillRepeatedly(::testing::Invoke(
+    [](PWRMgr_PowerState_t* powerState) {
+       *powerState = PWRMGR_POWERSTATE_OFF; // by default over boot up, return PowerState OFF
+       return PWRMGR_SUCCESS;
+    }));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_API_SetPowerState(::testing::_))
+    .WillRepeatedly(::testing::Invoke(
+    [](PWRMgr_PowerState_t powerState) {
+       // All tests are run without settings file
+       // so default expected power state is ON
+       return PWRMGR_SUCCESS;
+    }));
     
     /* Activate services in constructor following Telemetry_L2Test pattern */
     // Activate PowerManager service first since FrontPanel depends on it
@@ -292,6 +317,14 @@ FrontPanel_L2Test::FrontPanel_L2Test()
  * @brief Destructor for FrontPanel L2 test class
  */
 FrontPanel_L2Test::~FrontPanel_L2Test() {
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_TERM())
+    .WillOnce(::testing::Return(PWRMGR_SUCCESS));
+
+    EXPECT_CALL(*p_powerManagerHalMock, PLAT_DS_TERM())
+    .WillOnce(::testing::Return(DEEPSLEEPMGR_SUCCESS));
+
+
     uint32_t status = Core::ERROR_GENERAL;
     
     if (m_frontPanelPlugin) {
