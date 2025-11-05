@@ -266,17 +266,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     ON_CALL(frontPanelIndicatorMock, getColorName())
         .WillByDefault(::testing::Return("red"));
     
-    // Set up PowerManager mock to prevent segmentation faults during plugin initialization
-    EXPECT_CALL(PowerManagerMock::Mock(), Register(::testing::Matcher<Exchange::IPowerManager::IModeChangedNotification*>(::testing::_)))
-        .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
-    
-    EXPECT_CALL(PowerManagerMock::Mock(), Unregister(::testing::Matcher<const Exchange::IPowerManager::IModeChangedNotification*>(::testing::_)))
-        .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
-    
-    // Set up PowerManager mock for SetPowerState calls in integration tests
-    EXPECT_CALL(PowerManagerMock::Mock(), SetPowerState(::testing::_, ::testing::_, ::testing::_))
-        .WillRepeatedly(::testing::Return(Core::ERROR_NONE));
-    
     /* Activate services in constructor following Telemetry_L2Test pattern */
     // Activate PowerManager service first since FrontPanel depends on it
     status = ActivateService("org.rdk.PowerManager");
@@ -335,10 +324,6 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
     
     // Deactivate PowerManager service after FrontPanel (like Telemetry pattern)
     status = DeactivateService("org.rdk.PowerManager");
-    EXPECT_EQ(Core::ERROR_NONE, status);
-    
-    // Clean up PowerManager mock
-    PowerManagerMock::Delete();
     
     // Clean up device settings mocks
     device::FrontPanelIndicator::getInstance().impl = nullptr;
