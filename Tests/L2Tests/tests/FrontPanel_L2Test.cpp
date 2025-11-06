@@ -109,8 +109,6 @@ class FrontPanel_L2Test : public L2TestMocks {
 protected:
     PluginHost::IShell* m_controller_FrontPanel;
     Exchange::IFrontPanel* m_frontPanelPlugin;
-    PluginHost::IShell* m_controller_PowerManager;
-    Exchange::IPowerManager* m_powerManagerPlugin;
     
     // Device settings mocks
     IarmBusImplMock* p_iarmBusImplMock;
@@ -125,7 +123,6 @@ public:
     virtual ~FrontPanel_L2Test() override;
 
     uint32_t CreateDeviceFrontPanelInterfaceObject();
-    uint32_t CreateDevicePowerManagerInterfaceObject();
     
     void Test_SetGetBrightness(Exchange::IFrontPanel* FrontPanelPlugin);
     void Test_PowerLedOnOff(Exchange::IFrontPanel* FrontPanelPlugin);
@@ -148,8 +145,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     : L2TestMocks()
     , m_controller_FrontPanel(nullptr)
     , m_frontPanelPlugin(nullptr)
-    , m_controller_PowerManager(nullptr)
-    , m_powerManagerPlugin(nullptr)
     , p_iarmBusImplMock(nullptr)
     , p_frontPanelConfigImplMock(nullptr)
     , p_frontPanelTextDisplayMock(nullptr)
@@ -291,7 +286,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
        return PWRMGR_SUCCESS;
     }));
     
-    /* Activate services in constructor following Telemetry_L2Test pattern */
     // Activate PowerManager service first since FrontPanel depends on it
     status = ActivateService("org.rdk.PowerManager");
     EXPECT_EQ(Core::ERROR_NONE, status);
@@ -300,17 +294,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
     status = ActivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
     
-    // Validate PowerManager is available for cross-plugin integration testing
-    if (CreateDevicePowerManagerInterfaceObject() != Core::ERROR_NONE) {
-        TEST_LOG("Warning: PowerManager interface not available for integration testing");
-        m_powerManagerPlugin = nullptr;
-        m_controller_PowerManager = nullptr;
-    } else {
-        EXPECT_TRUE(m_controller_PowerManager != nullptr);
-        if (m_controller_PowerManager) {
-            EXPECT_TRUE(m_powerManagerPlugin != nullptr);
-        }
-    }
 }
 
 /**
@@ -336,26 +319,15 @@ FrontPanel_L2Test::~FrontPanel_L2Test() {
         m_controller_FrontPanel->Release();
         m_controller_FrontPanel = nullptr;
     }
-    
-    if (m_powerManagerPlugin) {
-        m_powerManagerPlugin->Release();
-        m_powerManagerPlugin = nullptr;
-    }
-    
-    if (m_controller_PowerManager) {
-        m_controller_PowerManager->Release();
-        m_controller_PowerManager = nullptr;
-    }
 
     // Allow time for timer callbacks to complete before deactivating services
     usleep(200000);
     
-    /* Deactivate services following Telemetry_L2Test pattern */
-    // Deactivate FrontPanel service first (like Telemetry pattern)
+    // Deactivate FrontPanel service first 
     status = DeactivateService("org.rdk.FrontPanel");
     EXPECT_EQ(Core::ERROR_NONE, status);
     
-    // Deactivate PowerManager service after FrontPanel (like Telemetry pattern)
+    // Deactivate PowerManager service after FrontPanel
     status = DeactivateService("org.rdk.PowerManager");
     
     // Clean up device settings mocks
@@ -409,31 +381,6 @@ uint32_t FrontPanel_L2Test::CreateDeviceFrontPanelInterfaceObject() {
         m_controller_FrontPanel = FrontPanel_Client->Open<PluginHost::IShell>(_T("org.rdk.FrontPanel"), ~0, 3000);
         if (m_controller_FrontPanel) {
             m_frontPanelPlugin = m_controller_FrontPanel->QueryInterface<Exchange::IFrontPanel>();
-            return_value = Core::ERROR_NONE;
-        }
-    }
-    return return_value;
-}
-
-uint32_t FrontPanel_L2Test::CreateDevicePowerManagerInterfaceObject() {
-    uint32_t return_value = Core::ERROR_GENERAL;
-    Core::ProxyType<RPC::InvokeServerType<1, 0, 4>> PowerManager_Engine;
-    Core::ProxyType<RPC::CommunicatorClient> PowerManager_Client;
-
-    TEST_LOG("Creating PowerManager_Engine");
-    PowerManager_Engine = Core::ProxyType<RPC::InvokeServerType<1, 0, 4>>::Create();
-    PowerManager_Client = Core::ProxyType<RPC::CommunicatorClient>::Create(Core::NodeId("/tmp/communicator"), Core::ProxyType<Core::IIPCServer>(PowerManager_Engine));
-
-    TEST_LOG("Creating PowerManager_Engine Announcements");
-#if ((THUNDER_VERSION == 2) || ((THUNDER_VERSION == 4) && (THUNDER_VERSION_MINOR == 2)))
-    PowerManager_Engine->Announcements(PowerManager_Client->Announcement());
-#endif
-    if (!PowerManager_Client.IsValid()) {
-        TEST_LOG("Invalid PowerManager_Client");
-    } else {
-        m_controller_PowerManager = PowerManager_Client->Open<PluginHost::IShell>(_T("org.rdk.PowerManager"), ~0, 3000);
-        if (m_controller_PowerManager) {
-            m_powerManagerPlugin = m_controller_PowerManager->QueryInterface<Exchange::IPowerManager>();
             return_value = Core::ERROR_NONE;
         }
     }
