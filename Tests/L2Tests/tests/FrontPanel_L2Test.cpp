@@ -301,13 +301,6 @@ FrontPanel_L2Test::FrontPanel_L2Test()
  */
 FrontPanel_L2Test::~FrontPanel_L2Test() {
 
-    EXPECT_CALL(*p_powerManagerHalMock, PLAT_TERM())
-    .WillOnce(::testing::Return(PWRMGR_SUCCESS));
-
-    EXPECT_CALL(*p_powerManagerHalMock, PLAT_DS_TERM())
-    .WillOnce(::testing::Return(DEEPSLEEPMGR_SUCCESS));
-
-
     uint32_t status = Core::ERROR_GENERAL;
     
     if (m_frontPanelPlugin) {
