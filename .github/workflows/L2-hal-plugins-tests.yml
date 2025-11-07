@@ -115,7 +115,7 @@ jobs:
           cd entservices-inputoutput/FLASK-for-Hal-Mock
           ls
           mv dependencies_auto.py ..
-          mv build.sh ..
+          mv build_panel.sh ..
           mv peru.yaml ..
           #cp -r peru.yaml __w/rdkservices/rdkservices/rdkservices/L2HalMock
           cd ..
@@ -126,8 +126,8 @@ jobs:
           sed -i 's/CENTRAL_USERNAME_PLACEHOLDER/${{ secrets.HAL_EMULATOR_MANIFEST_USERNAME }}/g' peru.yaml
           sed -i 's/CENTRAL_PASSWORD_PLACEHOLDER/${{ secrets.HAL_EMULATOR_MANIFEST_PASSWORD }}/g' peru.yaml
           #peru sync
-          chmod -Rf 777 build.sh
-          ./build.sh $PLUGIN_NAME
+          chmod -Rf 777 build_panel.sh
+          ./build_panel.sh $PLUGIN_NAME
         shell: bash
         continue-on-error: false
           
