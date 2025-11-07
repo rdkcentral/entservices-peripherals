@@ -1,0 +1,247 @@
+name: L2 HAL Plugins using Mock
+
+on:
+  push:
+    branches: [ develop, 'sprint/**', 'release/**' ,main,'topic/**']
+    paths:
+      - DeviceDiagnostics/**
+      - PowerManager/**
+  pull_request:
+    branches: [ develop, 'sprint/**', 'release/**' ,main, 'feature/**','topic/**']
+    paths:
+      - DeviceDiagnostics/**
+      - PowerManager/**
+jobs:
+  L2_HAL_Plugins_using_Mock:
+    runs-on: ubuntu-latest
+    #container:
+      #image: partners.artifactory.comcast.com/rdk-docker/mw_hal_emulator_docker_image:latest
+    container:
+      image: ghcr.io/rdkcentral/docker-rdk-ci:latest
+      #credentials:
+        #username: ${{ vars.RDKE_ARTIFACTORY_USER }}
+        #password: ${{ secrets.RDKE_ARTIFACTORY_USER_APIKEY }}
+        
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      #- name: Download .env Config file for authorization of repositories
+      #  run: |
+      #    #echo $SHELL
+      #    curl -v -u ${{ secrets.HAL_EMULATOR_MANIFEST_USERNAME }}:${{ secrets.HAL_EMULATOR_MANIFEST_PASSWORD }} \
+      #    -o .env \
+      #    https://raw.githubusercontent.com/rdk-e/rdkservices/develop/L2HalMock/workflowConfig.env?token=GHSAT0AAAAAACP3CS2MBK2A7SRVN6WJJZ7WZWEMXRA
+      
+      #- name: Source .env Config file for authorization
+        #id: set-env
+      #  shell: sh
+      #  run: |
+      #    set -a
+      #    . $GITHUB_WORKSPACE/.env
+      #    set +a
+      #    echo "USERNAME=$USERNAME" >> $GITHUB_ENV
+      #    echo "PASSWORD=$PASSWORD" >> $GITHUB_ENV
+
+
+      - name: Fetch the changed file from given paths
+        # id: getfile
+        # run: |
+        #   #git config --global --add safe.directory /__w/rdkservices/rdkservices
+        #   #if [ "${{ github.event_name }}" = "pull_request" ]; then
+        #     #echo "::set-output name=files::$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | xargs)"
+        #   #else
+        #     #echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+        #   #fi
+        #   name: Fetch the changed file from given paths
+        id: getfile
+        run: |
+          git config --global --add safe.directory /__w/entservices-inputoutput/entservices-inputoutput
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::set-output name=files::$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | xargs)"
+          else
+            echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+          fi
+
+      
+      - name: Plugin to be build 
+        run: |
+          echo "PLUGIN_NAME=${{ steps.getfile.outputs.files }}" >> $GITHUB_ENV
+          #echo ${{ steps.getfile.outputs.files }} >> $PLUGIN_NAME
+
+      - name: Plugin Name Extract
+        id: extract_plugin
+        run: |
+          PLUGIN_NAME="${{ steps.getfile.outputs.files }}"
+          keyword=$(python3 -c "
+          import os
+          import sys
+          
+          def extract_keyword(plugin_name):
+              paths = plugin_name.split()
+              for path in paths:
+                  keyword = path.split('/')[0]
+                  if keyword.lower() in ['hdmicecsource', 'hdmicecsink','frontpanel','hdcpprofile']:
+                      return keyword
+              return None
+          
+          plugin_name = os.environ.get('PLUGIN_NAME', '')
+          if not plugin_name:
+              print('PLUGIN_NAME environment variable is not set.')
+              sys.exit(1)
+          
+          keyword = extract_keyword(plugin_name)
+          if keyword:
+              print(keyword)
+          else:
+              print('No matching keyword found.')
+              sys.exit(1)
+                    ")
+                    echo "PLUGIN_NAME=$keyword" >> $GITHUB_ENV
+
+
+        if: contains(steps.getfile.outputs.files, 'HdmiCecSource') || contains(steps.getfile.outputs.files, 'HdmiCecSink')
+      - name: Clone the Manifest and build the associated binaries
+        run: |
+          rm -rf rdkservices
+          #apt install libjsoncpp-dev
+          git clone -b topic/RDK-57171-Latest https://github.com/rdkcentral/entservices-inputoutput.git
+          cd entservices-inputoutput/L2HalMock
+          rm -rf build.sh
+          #rm -rf peru.yaml
+          #git clone -b peru https://github.com/rdk-e/FLASK-for-Hal-Mock.git
+          git clone -b peru https://${{secrets.RDK_E_MANIFEST_USERNAME}}:${{ secrets.RDK_E_MANIFEST_PASSWORD}}@github.com/rdk-e/FLASK-for-Hal-Mock.git
+          cd FLASK-for-Hal-Mock
+          ls
+          mv dependencies_auto.py ..
+          mv build.sh ..
+          mv peru.yaml ..
+          #cp -r peru.yaml __w/rdkservices/rdkservices/rdkservices/L2HalMock
+          cd ..
+          chmod -Rf 777 dependencies_auto.py
+          python3 dependencies_auto.py
+          sed -i 's/USERNAME_PLACEHOLDER/${{ secrets.RDK_E_MANIFEST_USERNAME }}/g' peru.yaml
+          sed -i 's/PASSWORD_PLACEHOLDER/${{ secrets.RDK_E_MANIFEST_PASSWORD }}/g' peru.yaml
+          sed -i 's/CENTRAL_USERNAME_PLACEHOLDER/${{ secrets.HAL_EMULATOR_MANIFEST_USERNAME }}/g' peru.yaml
+          sed -i 's/CENTRAL_PASSWORD_PLACEHOLDER/${{ secrets.HAL_EMULATOR_MANIFEST_PASSWORD }}/g' peru.yaml
+          #peru sync
+          chmod -Rf 777 build.sh
+          ./build.sh $PLUGIN_NAME
+        shell: bash
+        continue-on-error: false
+          
+      - name: Start all services, Execute testcases  
+        run: |
+            cd entservices-inputoutput/L2HalMock
+            echo "$$$$$$$$$$$ make all services up $$$$$$$$$$$$$$$$"
+            chmod -Rf 777 run.sh
+            ./run.sh $PLUGIN_NAME 
+            echo "Execute TEST SUITE"
+            #Start-Sleep -s 60
+            #cd Tests/L2HALMockTests/Test_Framework
+            cd workspace/deps/rdk/flask/Test_Framework
+            # ./restart.sh
+            python3 TestManager.py $PLUGIN_NAME
+            killall -QUIT WPEFramework
+        continue-on-error: false  
+        
+      - name: Generating code coverage report
+        run: |
+            apt-get install -y neovim
+            apt-get -y update
+            apt-get install -y lcov
+            ${pwd}
+            #cd rdkservices/build/HdmiCecSource/CMakeFiles/WPEFrameworkHdmiCecSource.dir
+            ls
+            # killall -QUIT WPEFramework 
+            ${pwd}
+            cd entservices-inputoutput/L2HalMock
+            # nvim rdkservices/HdmiCecSink/HdmiCecSink.cpp
+            ./generate_coveragereport.sh
+        continue-on-error: false       
+
+      - name: copying code coverage report
+        run: |
+             cd entservices-inputoutput/L2HalMock
+             cp -r coverage /tmp/coverage
+        continue-on-error: false
+         
+      - name: Generating Test report
+        run: |
+          echo "********************"
+          cd entservices-inputoutput/L2HalMock/workspace/deps/rdk/flask/Test_Framework
+          pwd
+          echo "Latest Results of the Run in CSV Format"
+          more TestReport.csv
+          #csvtool readable TestReport.csv | sed -e 's/,,/,,/g' | column -s, -t | less -#5 -N -S
+          echo "Processing HTML Report"
+          cd 'Test Execution Reports'
+          lynx -dump "$(ls -t | head -n 1)"
+          latest_file=$(ls -t | head -n 1)
+          cp "$latest_file" /tmp/report_L2-hal-plugins-tests.html    
+        shell: bash
+        continue-on-error: false
+        
+
+      - name: Generating code coverage report
+        run: |
+            apt-get install -y neovim
+            apt-get -y update
+            apt-get install -y lcov
+            ${pwd}
+            #cd rdkservices/build/HdmiCecSource/CMakeFiles/WPEFrameworkHdmiCecSource.dir
+            ls
+            # killall -QUIT WPEFramework 
+            ${pwd}
+            cd entservices-inputoutput/L2HalMock
+            # nvim rdkservices/HdmiCecSink/HdmiCecSink.cpp
+            chmod 777 generate_coveragereport.sh
+            ./generate_coveragereport.sh
+        continue-on-error: false     
+
+
+      - name: copying code coverage report
+        if: contains(steps.getfile.outputs.files, 'HdmiCecSource')
+        run: |
+             cd entservices-inputoutput/L2HalMock
+             cp -r coverage /tmp/coverage
+        continue-on-error: false
+
+
+      - name: Stop all services
+        run: |  
+            echo "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            netstat -ntlp
+            cd entservices-inputoutput/L2HALMock/start_services
+            python3 stop_run.py
+        continue-on-error: true
+   
+      - name:  Cache the Reports
+        id: report
+        run: |
+          cd entservices-inputoutput/L2HalMock/workspace/deps/rdk/flask/Test_Framework
+          # Get the latest file with .html extension using absolute path
+          latest_report=$(realpath $(pwd)/'Test Execution Reports'/*.html | tail -n 1)
+          echo "Uploading: $latest_report"
+          echo "latest_report = $latest_report" >> $GITHUB_ENV
+        continue-on-error: false
+
+      - name: Upload artifacts code coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts_code_coverage
+          path: /tmp/coverage
+          if-no-files-found: error
+          retention-days: 5
+        continue-on-error: false
+
+      - name: Upload artifacts test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts_report_L2-hal-plugins-tests
+          path: /tmp/report_L2-hal-plugins-tests.html
+          if-no-files-found: error
+          retention-days: 5
+        continue-on-error: false
+      
