@@ -4,13 +4,11 @@ on:
   push:
     branches: [ develop, 'sprint/**', 'release/**' ,main,'topic/**']
     paths:
-      - DeviceDiagnostics/**
-      - PowerManager/**
+      - FrontPanel/**
   pull_request:
     branches: [ develop, 'sprint/**', 'release/**' ,main, 'feature/**','topic/**']
     paths:
-      - DeviceDiagnostics/**
-      - PowerManager/**
+      - FrontPanel/**
 jobs:
   L2_HAL_Plugins_using_Mock:
     runs-on: ubuntu-latest
@@ -57,7 +55,7 @@ jobs:
         #   name: Fetch the changed file from given paths
         id: getfile
         run: |
-          git config --global --add safe.directory /__w/entservices-inputoutput/entservices-inputoutput
+          git config --global --add safe.directory /__w/entservices-peripherals/entservices-peripherals
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "::set-output name=files::$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | xargs)"
           else
@@ -101,7 +99,7 @@ jobs:
                     echo "PLUGIN_NAME=$keyword" >> $GITHUB_ENV
 
 
-        if: contains(steps.getfile.outputs.files, 'HdmiCecSource') || contains(steps.getfile.outputs.files, 'HdmiCecSink')
+        if: contains(steps.getfile.outputs.files, 'HdmiCecSource') || contains(steps.getfile.outputs.files, 'HdmiCecSink') || contains(steps.getfile.outputs.files, 'FrontPanel')
       - name: Clone the Manifest and build the associated binaries
         run: |
           rm -rf rdkservices
