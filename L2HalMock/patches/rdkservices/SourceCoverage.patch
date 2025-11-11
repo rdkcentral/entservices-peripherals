@@ -1,0 +1,44 @@
+diff --git a/HdmiCecSource/HdmiCecSource.cpp b/HdmiCecSource/HdmiCecSource.cpp
+index e00fba1..39dd000 100644
+--- a/HdmiCecSource/HdmiCecSource.cpp
++++ b/HdmiCecSource/HdmiCecSource.cpp
+@@ -30,7 +30,7 @@
+ 
+ using namespace WPEFramework;
+ 
+-
++extern "C" void __gcov_exit();
+ namespace WPEFramework
+ {
+     namespace {
+@@ -148,7 +148,7 @@ namespace WPEFramework
+                 connection->Release();
+              }
+            }
+-
++           __gcov_exit();
+            _connectionId = 0;
+            _service->Unregister(&_notification);
+            _service->Release();
+diff --git a/HdmiCecSource/HdmiCecSourceImplementation.cpp b/HdmiCecSource/HdmiCecSourceImplementation.cpp
+index f375762..27b0cea 100644
+--- a/HdmiCecSource/HdmiCecSourceImplementation.cpp
++++ b/HdmiCecSource/HdmiCecSourceImplementation.cpp
+@@ -78,7 +78,7 @@ static bool isDeviceActiveSource = false;
+ static bool isLGTvConnected = false;
+ 
+ using namespace WPEFramework;
+-
++extern "C" void __gcov_exit();
+ 
+ namespace WPEFramework
+ {
+@@ -381,7 +381,7 @@ namespace WPEFramework
+     {
+          LOGWARN("dtor");
+          HdmiCecSourceImplementation::_instance = nullptr;
+-
++         __gcov_exit();
+            if(_powerManagerPlugin)
+            {
+                _powerManagerPlugin->Unregister(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());

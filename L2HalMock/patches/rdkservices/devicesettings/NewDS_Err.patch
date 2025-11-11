@@ -1,0 +1,66 @@
+diff --git a/rpc/srv/dsDisplay.c b/rpc/srv/dsDisplay.c
+index f7d5395..41f0477 100644
+--- a/rpc/srv/dsDisplay.c
++++ b/rpc/srv/dsDisplay.c
+@@ -72,7 +72,7 @@ IARM_Result_t _dsSetAllmEnabled(void *arg);
+ IARM_Result_t _dsSetAVIContentType(void *arg);
+ IARM_Result_t _dsSetAVIScanInformation(void *arg);
+ IARM_Result_t _dsDisplayTerm(void *arg);
+-void _dsDisplayEventCallback(intptr_t handle, dsDisplayEvent_t event, void *eventData);
++void _dsDisplayEventCallback(int handle, dsDisplayEvent_t event, void *eventData);
+ static void  filterEDIDResolution(intptr_t Shandle, dsDisplayEDID_t *edid);
+ static void  dumpEDIDInformation( dsDisplayEDID_t *edid);
+ static dsVideoPortType_t _GetDisplayPortType(intptr_t handle);
+@@ -506,7 +506,7 @@ IARM_Result_t _dsDisplayTerm(void *arg)
+ 
+ 
+ /*HDMI Call back */
+-void _dsDisplayEventCallback(intptr_t handle, dsDisplayEvent_t event, void *eventData)
++void _dsDisplayEventCallback(int handle, dsDisplayEvent_t event, void *eventData)
+ {
+ 	IARM_Bus_DSMgr_EventData_t _eventData;
+     IARM_Bus_DSMgr_EventId_t _eventId;
+diff --git a/rpc/srv/dsHdmiIn.c b/rpc/srv/dsHdmiIn.c
+index e4b66ca..9913627 100755
+--- a/rpc/srv/dsHdmiIn.c
++++ b/rpc/srv/dsHdmiIn.c
+@@ -141,7 +141,8 @@ using namespace std;
+ void getDynamicAutoLatencyConfig()
+ {
+      RFC_ParamData_t param = {0};
+-     WDMP_STATUS status = getRFCParameter((char*)"dssrv", TVSETTINGS_DALS_RFC_PARAM, &param);
++    //  WDMP_STATUS status = getRFCParameter((char*)"dssrv", TVSETTINGS_DALS_RFC_PARAM, &param);
++    WDMP_STATUS status = WDMP_SUCCESS;
+      INT_DEBUG("DALS Feature Enable = [ %s ] \n", param.value);
+      if(WDMP_SUCCESS == status && (strncasecmp(param.value,"true",4) == 0)) {
+          isDalsEnabled = true;
+diff --git a/rpc/srv/dsVideoPort.c b/rpc/srv/dsVideoPort.c
+index d29966d..e72a95b 100644
+--- a/rpc/srv/dsVideoPort.c
++++ b/rpc/srv/dsVideoPort.c
+@@ -943,7 +943,7 @@ IARM_Result_t _dsSetResolution(void *arg)
+ 		_dsVideoPortPreResolutionCall(&param->resolution);
+ 
+ 		/*!< Set Platform Resolution  */
+-		ret = dsSetResolution(param->handle, &param->resolution);
++		// ret = dsSetResolution(param->handle, &param->resolution);
+ 		
+ 		/*!< Resolution Post Change Event  - IARM_BUS_DSMGR_EVENT_RES_POSTCHANGE */
+ 		_dsSendVideoPortPostResolutionCall(&param->resolution);
+diff --git a/rpc/srv/dsserverlogger.c b/rpc/srv/dsserverlogger.c
+index 58b0607..82ee183 100644
+--- a/rpc/srv/dsserverlogger.c
++++ b/rpc/srv/dsserverlogger.c
+@@ -60,9 +60,9 @@ void dsServer_Rdklogger_Init()
+         PdebugConfigFile = DSMGR_DEBUG_ACTUAL_PATH;
+     }
+ 
+-    if (rdk_logger_init(PdebugConfigFile) == 0) {
+-       b_rdk_logger_enabled = 1;
+-    }
++    // if (rdk_logger_init(PdebugConfigFile) == 0) {
++    //    b_rdk_logger_enabled = 1;
++    // }
+ }
+ #endif
+ 

@@ -1,0 +1,18 @@
+diff --git a/rfcMgr/rfc_xconf_handler.h b/rfcMgr/rfc_xconf_handler.h
+index 8289fcc..e1a5531 100644
+--- a/rfcMgr/rfc_xconf_handler.h
++++ b/rfcMgr/rfc_xconf_handler.h
+@@ -40,11 +40,11 @@ extern "C" {
+ 
+ #ifndef GTEST_ENABLE
+ #define BOOTSTRAP_FILE          "/opt/secure/RFC/bootstrap.ini"
+-#define PARTNER_ID_FILE         "/opt/www/authService/partnerId3.dat"
++// #define PARTNER_ID_FILE         "/opt/www/authService/partnerId3.dat"
+ #define DEVICE_PROPERTIES_FILE  "/etc/device.properties"
+ #else
+ #define BOOTSTRAP_FILE          "/tmp/bootstrap.ini"
+-#define PARTNER_ID_FILE         "/tmp/partnerId3.dat"
++// #define PARTNER_ID_FILE         "/tmp/partnerId3.dat"
+ #define DEVICE_PROPERTIES_FILE  "/tmp/device.properties"
+ #endif
+ 

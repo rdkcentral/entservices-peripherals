@@ -1,0 +1,26 @@
+diff --git a/dsmgr/Makefile b/dsmgr/Makefile
+index 93ce192..2a39a64 100755
+--- a/dsmgr/Makefile
++++ b/dsmgr/Makefile
+@@ -62,7 +62,7 @@ LDFLAGS += -L$(SDK_FSROOT)/usr/local/lib -lIARMBus
+ LDFLAGS += -L$(INSTALL)/lib -ldshalcli -lds -L$(UTILS_PATH)/ -liarmUtils 
+ 
+ ifeq ($(PLATFORM_SOC),L2HalMock)
+-export LDFLAGS += -L$(DS_PATH)/install/lib -L$(IARM_PATH)/install -L$(UTILS_PATH)/ -liarmUtils -ldshalsrv -lds-hal -lds -ldshalcli -lIARMBus -lglib-2.0 -lsafec-3.5
++export LDFLAGS += -L$(DS_PATH)/install/lib -L$(IARM_PATH)/install -L$(UTILS_PATH)/ -liarmUtils -ldshalsrv -lds-hal -lds -ldshalcli -lIARMBus -lglib-2.0 -lsafec
+ endif
+ 
+ INTEL_SHLIBS=   \
+diff --git a/sysmgr/Makefile b/sysmgr/Makefile
+index de8412e..3a5c1fd 100755
+--- a/sysmgr/Makefile
++++ b/sysmgr/Makefile
+@@ -46,7 +46,7 @@ LDFLAGS     +=-Wl,-rpath,$(SDK_FSROOT)/usr/local/lib
+ LDFLAGS     += -L$(SDK_FSROOT)/usr/local/lib -lIARMBus
+ 
+ ifeq ($(PLATFORM_SOC),L2HalMock)
+-LDFLAGS+=-L$(IARM_PATH)/install -lIARMBus -lglib-2.0 -lsafec-3.5
++LDFLAGS+=-L$(IARM_PATH)/install -lIARMBus -lglib-2.0 -lsafec
+ endif
+ 
+ all:clean executable 
