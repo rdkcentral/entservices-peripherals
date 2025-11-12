@@ -1,0 +1,59 @@
+diff --git a/FrontPanel/FrontPanel.cpp b/FrontPanel/FrontPanel.cpp
+index 0d79d02..001c8d2 100644
+--- a/FrontPanel/FrontPanel.cpp
++++ b/FrontPanel/FrontPanel.cpp
+@@ -29,7 +29,7 @@
+ #define API_VERSION_NUMBER_MAJOR 1
+ #define API_VERSION_NUMBER_MINOR 0
+ #define API_VERSION_NUMBER_PATCH 6
+-
++extern "C" void __gcov_exit();
+ namespace WPEFramework
+ {
+     namespace {
+@@ -109,7 +109,7 @@ namespace WPEFramework
+                 connection->Release();
+              }
+            }
+-
++           __gcov_exit();
+            _connectionId = 0;
+            _service->Release();
+            _service = nullptr;
+diff --git a/FrontPanel/FrontPanelImplementation.cpp b/FrontPanel/FrontPanelImplementation.cpp
+index 51d7080..6b14518 100644
+--- a/FrontPanel/FrontPanelImplementation.cpp
++++ b/FrontPanel/FrontPanelImplementation.cpp
+@@ -56,7 +56,7 @@
+ #define API_VERSION_NUMBER_PATCH 6
+ 
+ using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
+-
++extern "C" void __gcov_exit();
+ 
+ namespace
+ {
+@@ -165,7 +165,7 @@ namespace WPEFramework
+             _registeredEventHandlers = false;
+ 
+             FrontPanelImplementation::_instance = nullptr;
+-
++            __gcov_exit();
+         }
+ 
+         Core::hresult FrontPanelImplementation::Configure(PluginHost::IShell* service)
+diff --git a/helpers/frontpanel.cpp b/helpers/frontpanel.cpp
+index d5f0ec4..fea1ab3 100644
+--- a/helpers/frontpanel.cpp
++++ b/helpers/frontpanel.cpp
+@@ -24,8 +24,8 @@
+ * @{
+ **/
+ 
+-//#define USE_DS //TODO - this was defined in servicemanager.pro for all STB builds.  Not sure where to put it except here for now
+-//#define HAS_API_POWERSTATE
++#define USE_DS //TODO - this was defined in servicemanager.pro for all STB builds.  Not sure where to put it except here for now
++#define HAS_API_POWERSTATE
+ 
+ #include "frontpanel.h"
+ #ifdef USE_DS
