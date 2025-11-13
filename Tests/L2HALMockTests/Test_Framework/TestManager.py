@@ -89,8 +89,7 @@ for each in list_of_plugins:
 
 if track == 2 or track > 2:
     Utils.info_log("Executing Testcases for the given plugins")
-    else:
-        print("Plugins changed does not require FLASK HTTP Server for execution and build")
+    print("Plugins changed does not require FLASK HTTP Server for execution and build")
   
 
     if "FrontPanel" in plugin_name:
