@@ -24,14 +24,11 @@ import sys
 import datetime
 import time
 sys.path.append("../TestCases")
-from HdmiCecSource import CecUtils
+from FrontPanel import FPUtils
 from Utilities import Utils, ReportGenerator
 
 sys.path.append("Utilities")
-sys.path.append("../TestCases/HdmiCecSource")
-sys.path.append("../TestCases/HdmiCecSink")
 sys.path.append("../TestCases/FrontPanel")
-sys.path.append("../TestCases/HDCPProfile")
 
 # Define the build name of current build being tested
 build_name = "23Q4-HAL-MOCK-TEST"
