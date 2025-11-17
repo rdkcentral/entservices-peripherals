@@ -373,7 +373,7 @@ namespace WPEFramework {
                      JsonObject rangeObj = rangeList[range].Object();
                      if (rangeObj.HasLabel("startTime") && rangeObj.HasLabel("endTime"))
                      {
-                         unsigned int startTime, endTime = 0;
+                        unsigned int startTime = 0, endTime = 0;
                          getNumberParameterObject(rangeObj, "startTime", startTime);
                          getNumberParameterObject(rangeObj, "endTime", endTime);
                          timeSet.m_timeRangeArray[range].m_startTime = startTime;
