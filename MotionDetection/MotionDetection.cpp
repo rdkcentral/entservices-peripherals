@@ -364,7 +364,17 @@ namespace WPEFramework {
                  bool parseStatus = true;
                  string index = parameters["index"].String();
                  JsonArray rangeList = parameters["ranges"].Array();
-                 getNumberParameterObject(parameters, "nowTime", nowTime);
+				 // Validate and parse nowTime
+                 if (parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
+                     parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
+                 {
+                     getNumberParameterObject(parameters, "nowTime", nowTime);
+                 }
+                 else
+                 {
+                     LOGERR("Invalid nowTime parameter type");
+                     returnResponse(false);
+                 }
                  timeSet.m_nowTime = nowTime;
                  timeSet.m_timeRangeArray = (MOTION_DETECTION_Time_t *)malloc(rangeList.Length() * sizeof(MOTION_DETECTION_Time_t));
                  timeSet.m_rangeCount = rangeList.Length();
@@ -374,8 +384,33 @@ namespace WPEFramework {
                      if (rangeObj.HasLabel("startTime") && rangeObj.HasLabel("endTime"))
                      {
                          unsigned int startTime = 0, endTime = 0;
-                         getNumberParameterObject(rangeObj, "startTime", startTime);
-                         getNumberParameterObject(rangeObj, "endTime", endTime);
+                          
+                         // Validate and parse startTime
+                         if (rangeObj["startTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
+                             rangeObj["startTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
+                         {
+                             getNumberParameterObject(rangeObj, "startTime", startTime);
+                         }
+                         else
+                         {
+                             LOGERR("Invalid startTime parameter type at index %d", range);
+                             parseStatus = false;
+                             break;
+                         }
+                         
+                         // Validate and parse endTime
+                         if (rangeObj["endTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
+                             rangeObj["endTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
+                         {
+                             getNumberParameterObject(rangeObj, "endTime", endTime);
+                         }
+                         else
+                         {
+                             LOGERR("Invalid endTime parameter type at index %d", range);
+                             parseStatus = false;
+                             break;
+                         }
+                         
                          timeSet.m_timeRangeArray[range].m_startTime = startTime;
                          timeSet.m_timeRangeArray[range].m_endTime = endTime;
                      }
