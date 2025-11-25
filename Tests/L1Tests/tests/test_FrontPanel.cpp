@@ -378,7 +378,7 @@ TEST_F(FrontPanelInitializedEventDsTest, getBrightness)
     ON_CALL(*p_frontPanelIndicatorMock, getBrightness(::testing::_))
         .WillByDefault(::testing::Return(50));
     EXPECT_EQ(Core::ERROR_NONE, handler.Invoke(connection, _T("getBrightness"), _T(""), response));
-    // EXPECT_EQ(response, string("{\"brightness\":50,\"success\":true}"));
+    EXPECT_EQ(response, string("{\"brightness\":50,\"success\":true}"));
 }
 
 
