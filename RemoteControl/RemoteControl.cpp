@@ -24,6 +24,7 @@
 #include "UtilsJsonRpc.h"
 #include "UtilsIarm.h"
 #include "UtilsString.h"
+#include <mutex>
 
 #include <exception>
 #include <memory>
