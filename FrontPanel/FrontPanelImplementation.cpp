@@ -119,6 +119,10 @@ namespace
         
         JsonArray availableColors;
         const device::List <device::FrontPanelIndicator::Color> colorsList = indicator.getSupportedColors();
+        // Reserve capacity to avoid multiple reallocations
+        if (colorsList.size() > 0) {
+            availableColors.Reserve(colorsList.size());
+        }
         for (uint j = 0; j < colorsList.size(); j++)
         {
             availableColors.Add(colorsList.at(j).getName());

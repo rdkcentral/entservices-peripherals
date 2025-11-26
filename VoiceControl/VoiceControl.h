@@ -45,7 +45,13 @@ namespace WPEFramework {
             uint32_t configureVoice(const JsonObject& parameters, JsonObject& response);
             uint32_t setVoiceInit(const JsonObject& parameters, JsonObject& response);
             uint32_t sendVoiceMessage(const JsonObject& parameters, JsonObject& response);
-            uint32_t voiceSessionByText(const JsonObject& parameters, JsonObject& response); // DEPRECATED
+            
+            // DEPRECATED: Use voiceSessionRequest instead
+            // This method will be removed in a future API version
+            // Maintained for backward compatibility only
+            [[deprecated("Use voiceSessionRequest instead - will be removed in future API version")]]
+            uint32_t voiceSessionByText(const JsonObject& parameters, JsonObject& response);
+            
             uint32_t voiceSessionTypes(const JsonObject& parameters, JsonObject& response);
             uint32_t voiceSessionRequest(const JsonObject& parameters, JsonObject& response);
             uint32_t voiceSessionTerminate(const JsonObject& parameters, JsonObject& response);

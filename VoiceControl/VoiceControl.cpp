@@ -868,6 +868,9 @@ namespace WPEFramework {
 
         void VoiceControl::sendNotify_(const char* eventName, JsonObject& parameters)
         {
+            // Conditional masking of PII (Personally Identifiable Information) in event notifications
+            // This is intentional - when m_maskPii is true, sensitive parameters are masked before sending
+            // Both branches are required for proper PII handling compliance
             if(m_maskPii)
             {
                 sendNotifyMaskParameters(eventName, parameters);

@@ -717,25 +717,40 @@ namespace WPEFramework
         {
             m_currentBlinkListIndex++;
             bool blinkAgain = true;
+            
+            // Blink logic state machine:
+            // 1. Check if we've reached the end of the pattern list
+            // 2. If at end, reset index and increment blink count
+            // 3. Continue if max repeats not reached (negative = infinite)
+            // 4. Apply next blink pattern and schedule next timer
+            
             if ((size_t)m_currentBlinkListIndex >= m_blinkList.size())
             {
+                // Reached end of pattern list - reset to beginning
                 blinkAgain = false;
                 m_currentBlinkListIndex = 0;
                 m_numberOfBlinks++;
+                
+                // Check if we should continue blinking
+                // m_maxNumberOfBlinkRepeats < 0 means infinite loop
                 if (m_maxNumberOfBlinkRepeats < 0 || m_numberOfBlinks <= m_maxNumberOfBlinkRepeats)
                 {
                     blinkAgain = true;
                 }
             }
+            
             if (blinkAgain)
             {
+                // Apply the current pattern from the blink list
                 FrontPanelBlinkInfo blinkInfo = m_blinkList.at(m_currentBlinkListIndex);
                 setBlinkLed(blinkInfo);
+                
+                // Schedule next timer event if still blinking
                 if (m_isBlinking)
                     blinkTimer.Schedule(Core::Time::Now().Add(blinkInfo.durationInMs), m_blinkTimer);
             }
 
-            //if not blink again then the led color should stay on the LAST element in the array as stated in the spec
+            // Spec requirement: LED color should stay on the LAST element in the array when blinking stops
         }
 
         uint64_t BlinkInfo::Timed(const uint64_t scheduledTime)

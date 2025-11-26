@@ -29,8 +29,18 @@
 #include <exception>
 #include <memory>
 
-#define IARM_FACTORY_RESET_TIMEOUT  (15 * 1000)  // 15 seconds, in milliseconds
-#define IARM_IRDB_CALLS_TIMEOUT     (10 * 1000)  // 10 seconds, in milliseconds
+// Configurable timeouts with environment variable override support
+// Factory reset timeout: Used for complete device reset operations requiring extended time
+// Can be overridden via REMOTECONTROL_FACTORY_RESET_TIMEOUT_MS environment variable
+#ifndef IARM_FACTORY_RESET_TIMEOUT
+#define IARM_FACTORY_RESET_TIMEOUT  (15 * 1000)  // 15 seconds default, in milliseconds
+#endif
+
+// IRDB cloud calls timeout: Network operations to cloud IR database service
+// Can be overridden via REMOTECONTROL_IRDB_TIMEOUT_MS environment variable
+#ifndef IARM_IRDB_CALLS_TIMEOUT
+#define IARM_IRDB_CALLS_TIMEOUT     (10 * 1000)  // 10 seconds default, in milliseconds
+#endif
 
 using namespace std;
 
@@ -74,6 +84,20 @@ namespace WPEFramework {
             IARMCallGuard(const IARMCallGuard&) = delete;
             IARMCallGuard& operator=(const IARMCallGuard&) = delete;
         };
+        
+        // Helper function to get configurable timeout values from environment
+        static int getConfigurableTimeout(const char* envVar, int defaultTimeout) {
+            const char* envValue = getenv(envVar);
+            if (envValue) {
+                int timeout = atoi(envValue);
+                if (timeout > 0 && timeout <= 300000) { // Max 5 minutes
+                    LOGINFO("Using custom timeout from %s: %d ms", envVar, timeout);
+                    return timeout;
+                }
+                LOGWARN("Invalid timeout value in %s: %s, using default: %d ms", envVar, envValue, defaultTimeout);
+            }
+            return defaultTimeout;
+        }
     }
 
     namespace Plugin {
@@ -436,8 +460,9 @@ namespace WPEFramework {
             call->payload[len] = '\0';
 
             // The default timeout for IARM calls is 5 seconds, but this call could take longer since the results could come from a cloud IRDB.
-            // So increase the timeout to IARM_IRDB_CALLS_TIMEOUT
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS, (void *)call, totalsize, IARM_IRDB_CALLS_TIMEOUT);
+            // Timeout is configurable via REMOTECONTROL_IRDB_TIMEOUT_MS environment variable
+            static int irdbTimeout = getConfigurableTimeout("REMOTECONTROL_IRDB_TIMEOUT_MS", IARM_IRDB_CALLS_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS, (void *)call, totalsize, irdbTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS Bus Call FAILED, res: %d.", (int)res);
@@ -486,8 +511,9 @@ namespace WPEFramework {
             call->payload[len] = '\0';
 
             // The default timeout for IARM calls is 5 seconds, but this call could take longer since the results could come from a cloud IRDB.
-            // So increase the timeout to IARM_IRDB_CALLS_TIMEOUT
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_MODELS, (void *)call, totalsize, IARM_IRDB_CALLS_TIMEOUT);
+            // Timeout is configurable via REMOTECONTROL_IRDB_TIMEOUT_MS environment variable
+            static int irdbTimeout = getConfigurableTimeout("REMOTECONTROL_IRDB_TIMEOUT_MS", IARM_IRDB_CALLS_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_MODELS, (void *)call, totalsize, irdbTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MODELS Bus Call FAILED, res: %d.", (int)res);
@@ -536,8 +562,9 @@ namespace WPEFramework {
             call->payload[len] = '\0';
 
             // The default timeout for IARM calls is 5 seconds, but this call could take longer since the results could come from a cloud IRDB.
-            // So increase the timeout to IARM_IRDB_CALLS_TIMEOUT
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP, (void *)call, totalsize, IARM_IRDB_CALLS_TIMEOUT);
+            // Timeout is configurable via REMOTECONTROL_IRDB_TIMEOUT_MS environment variable
+            static int irdbTimeout = getConfigurableTimeout("REMOTECONTROL_IRDB_TIMEOUT_MS", IARM_IRDB_CALLS_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP, (void *)call, totalsize, irdbTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP Bus Call FAILED, res: %d.", (int)res);
@@ -586,8 +613,9 @@ namespace WPEFramework {
             call->payload[len] = '\0';
 
             // The default timeout for IARM calls is 5 seconds, but this call could take longer since the results could come from a cloud IRDB.
-            // So increase the timeout to IARM_IRDB_CALLS_TIMEOUT
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_CODES, (void *)call, totalsize, IARM_IRDB_CALLS_TIMEOUT);
+            // Timeout is configurable via REMOTECONTROL_IRDB_TIMEOUT_MS environment variable
+            static int irdbTimeout = getConfigurableTimeout("REMOTECONTROL_IRDB_TIMEOUT_MS", IARM_IRDB_CALLS_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_CODES, (void *)call, totalsize, irdbTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_CODES Bus Call FAILED, res: %d.", (int)res);
@@ -827,7 +855,9 @@ namespace WPEFramework {
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
 
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_INITIALIZE, (void *)call, totalsize, IARM_IRDB_CALLS_TIMEOUT);
+            // Configurable timeout for IRDB initialization calls
+            static int irdbTimeout = getConfigurableTimeout("REMOTECONTROL_IRDB_TIMEOUT_MS", IARM_IRDB_CALLS_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_IR_INITIALIZE, (void *)call, totalsize, irdbTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_INITIALIZE Bus Call FAILED, res: %d.", (int)res);
@@ -925,7 +955,9 @@ namespace WPEFramework {
 
             // The default timeout for IARM calls is 5 seconds, but this call could take longer and we need to ensure the remotes receive
             // the message before the larger system factory reset operation continues.  Therefore, make this timeout longer.
-            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_FACTORY_RESET, (void *)call, totalsize, IARM_FACTORY_RESET_TIMEOUT);
+            // Timeout is configurable via REMOTECONTROL_FACTORY_RESET_TIMEOUT_MS environment variable
+            static int factoryResetTimeout = getConfigurableTimeout("REMOTECONTROL_FACTORY_RESET_TIMEOUT_MS", IARM_FACTORY_RESET_TIMEOUT);
+            res = IARM_Bus_Call_with_IPCTimeout(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_MAIN_IARM_CALL_FACTORY_RESET, (void *)call, totalsize, factoryResetTimeout);
             if (res != IARM_RESULT_SUCCESS)
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_FACTORY_RESET Bus Call FAILED, res: %d.", (int)res);
