@@ -48,6 +48,41 @@ namespace WPEFramework {
             // Controls
             {}
         );
+        
+        // RAII wrapper for MOTION_DETECTION_Time_t array
+        class TimeRangeArrayGuard {
+        private:
+            MOTION_DETECTION_Time_t* array_;
+            
+        public:
+            TimeRangeArrayGuard() : array_(nullptr) {}
+            
+            explicit TimeRangeArrayGuard(size_t count) : array_(nullptr) {
+                if (count > 0) {
+                    array_ = static_cast<MOTION_DETECTION_Time_t*>(
+                        malloc(count * sizeof(MOTION_DETECTION_Time_t))
+                    );
+                }
+            }
+            
+            ~TimeRangeArrayGuard() {
+                if (array_) {
+                    free(array_);
+                    array_ = nullptr;
+                }
+            }
+            
+            MOTION_DETECTION_Time_t* get() { return array_; }
+            bool isValid() const { return array_ != nullptr; }
+            
+            MOTION_DETECTION_Time_t& operator[](size_t index) {
+                return array_[index];
+            }
+            
+            // Prevent copying
+            TimeRangeArrayGuard(const TimeRangeArrayGuard&) = delete;
+            TimeRangeArrayGuard& operator=(const TimeRangeArrayGuard&) = delete;
+        };
     }
 
     namespace Plugin {
@@ -55,9 +90,11 @@ namespace WPEFramework {
         SERVICE_REGISTRATION(MotionDetection, API_VERSION_NUMBER_MAJOR, API_VERSION_NUMBER_MINOR, API_VERSION_NUMBER_PATCH);
 
         MotionDetection* MotionDetection::_instance = nullptr;
+        std::mutex MotionDetection::_instanceMutex;
 
         MOTION_DETECTION_Result_t motiondetection_EventCallback (MOTION_DETECTION_EventMessage_t eventMsg)
         {
+            std::lock_guard<std::mutex> lock(MotionDetection::_instanceMutex);
             if (!MotionDetection::_instance) {
                 LOGERR ("Invalid pointer. Motion Detector is not initialized (yet?). Event is ignored");
                 return MOTION_DETECTION_RESULT_INTI_FAILURE;
@@ -78,7 +115,10 @@ namespace WPEFramework {
             : PluginHost::JSONRPC()
         {
             LOGINFO("MotionDetection ctor");
-            MotionDetection::_instance = this;
+            {
+                std::lock_guard<std::mutex> lock(_instanceMutex);
+                MotionDetection::_instance = this;
+            }
 
             Register("getMotionDetectors", &MotionDetection::getMotionDetectors, this);
             Register("arm", &MotionDetection::arm, this);
@@ -132,7 +172,10 @@ namespace WPEFramework {
         {
             LOGINFO("MotionDetection Deinitialize");
 	    MOTION_DETECTION_Platform_Term();
-            MotionDetection::_instance = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(_instanceMutex);
+                MotionDetection::_instance = nullptr;
+            }
             Unregister("getMotionDetectors");
             Unregister("arm");
             Unregister("disarm");
@@ -383,8 +426,6 @@ namespace WPEFramework {
                  string index = parameters["index"].String();
                  JsonArray rangeList = parameters["ranges"].Array();
                  
-                 timeSet.m_timeRangeArray = nullptr;  // Initialize to nullptr
-                 
 				 // Validate and parse nowTime
                  if (parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
                      parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
@@ -403,13 +444,16 @@ namespace WPEFramework {
                      returnResponse(false);
                  }
                  
-                 timeSet.m_timeRangeArray = (MOTION_DETECTION_Time_t *)malloc(rangeList.Length() * sizeof(MOTION_DETECTION_Time_t));
-                 if (!timeSet.m_timeRangeArray) {
+                 // Use RAII wrapper for automatic memory management
+                 TimeRangeArrayGuard timeRangeGuard(rangeList.Length());
+                 if (!timeRangeGuard.isValid()) {
                      LOGERR("Failed to allocate memory for time range array");
                      returnResponse(false);
                  }
                  
+                 timeSet.m_timeRangeArray = timeRangeGuard.get();
                  timeSet.m_rangeCount = rangeList.Length();
+                 
                  for (int range = 0;  range < rangeList.Length(); range++)
                  {
                      JsonObject rangeObj = rangeList[range].Object();
@@ -443,8 +487,8 @@ namespace WPEFramework {
                              break;
                          }
                          
-                         timeSet.m_timeRangeArray[range].m_startTime = startTime;
-                         timeSet.m_timeRangeArray[range].m_endTime = endTime;
+                         timeRangeGuard[range].m_startTime = startTime;
+                         timeRangeGuard[range].m_endTime = endTime;
                      }
                      else
                      {
@@ -453,22 +497,22 @@ namespace WPEFramework {
                          break;
                      }
                  }
+                 
                  if (parseStatus == true)
                  {
                      rc = MOTION_DETECTION_SetActivePeriod(index.c_str(), timeSet);
                      if (rc != MOTION_DETECTION_RESULT_SUCCESS) 
                      {
                          LOGERR("Failed to set Active Time..!");
-                         free(timeSet.m_timeRangeArray);
                          returnResponse(false);
                      }
                  }
                  else
                  {
-                     free(timeSet.m_timeRangeArray);
                      returnResponse(false);
                  }
-                 free(timeSet.m_timeRangeArray);
+                 
+                 // Memory automatically freed by TimeRangeArrayGuard destructor
                  returnResponse(true);
              }
              else

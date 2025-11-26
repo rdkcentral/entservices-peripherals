@@ -107,7 +107,18 @@ namespace WPEFramework {
         const string VoiceControl::Initialize(PluginHost::IShell*  /* service */)
         {
             InitializeIARM();
-            getMaskPii_();
+            
+            // Initialize m_maskPii - handle failure gracefully
+            try {
+                getMaskPii_();
+            } catch (const std::exception& e) {
+                LOGERR("Exception during getMaskPii_: %s. Defaulting m_maskPii to false.", e.what());
+                m_maskPii = false;
+            } catch (...) {
+                LOGERR("Unknown exception during getMaskPii_. Defaulting m_maskPii to false.");
+                m_maskPii = false;
+            }
+            
             // On success return empty, to indicate there is no error text.
             return (string());
         }
@@ -295,9 +306,23 @@ namespace WPEFramework {
         {
             JsonObject params;
             JsonObject result;
-            voiceStatus(params, result);
-            m_maskPii = result["maskPii"].Boolean();
-            LOGINFO("Mask pii set to %s.", (m_maskPii ? "True" : "False"));
+            uint32_t retCode = voiceStatus(params, result);
+            
+            if (retCode == Core::ERROR_NONE && result.HasLabel("success") && result["success"].Boolean())
+            {
+                if (result.HasLabel("maskPii")) {
+                    m_maskPii = result["maskPii"].Boolean();
+                    LOGINFO("Mask pii set to %s.", (m_maskPii ? "True" : "False"));
+                } else {
+                    LOGWARN("voiceStatus succeeded but no maskPii field found. Defaulting to false.");
+                    m_maskPii = false;
+                }
+            }
+            else
+            {
+                LOGERR("voiceStatus failed with code %u. Defaulting m_maskPii to false.", retCode);
+                m_maskPii = false;
+            }
         }
 
         uint32_t VoiceControl::voiceStatus(const JsonObject& parameters, JsonObject& response)
@@ -344,26 +369,19 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_VOICE_IARM_CALL_STATUS Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                returnResponse(bSuccess);
             }
-                else
-                {
-                    JsonObject result;
-
-                    result.FromString(call->result);
-                    bSuccess = result["success"].Boolean();
-                    response = result;
-                    if(bSuccess) {
-                        LOGINFO("CTRLM_VOICE_IARM_CALL_STATUS call SUCCESS!");
-                    } else {
-                        LOGERR("ERROR - CTRLM_VOICE_IARM_CALL_STATUS returned FAILURE!");
-                    }
-                }
-            }
-
-            if (call != NULL)
+            else
             {
-                free(call);
+                JsonObject result;
+
+                result.FromString(call->result);
+                bSuccess = result["success"].Boolean();
+                response = result;
+                if(bSuccess) {
+                    LOGINFO("CTRLM_VOICE_IARM_CALL_STATUS call SUCCESS!");
+                } else {
+                    LOGERR("ERROR - CTRLM_VOICE_IARM_CALL_STATUS returned FAILURE!");
+                }
             }
 
             returnResponse(bSuccess);
