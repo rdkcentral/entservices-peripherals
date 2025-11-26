@@ -399,7 +399,7 @@ namespace WPEFramework {
 
             // We must allocate the memory for the call structure. Determine what we will need.
             size_t totalsize = sizeof(ctrlm_voice_iarm_call_json_t) + jsonParams.size() + 1;
-            VoiceIARMCallGuard<ctrlm_voice_iarm_call_json_t> call(totalsize);
+            VoiceIARMCallGuard call(totalsize);
 
             if (!call.get())
             {
@@ -450,7 +450,7 @@ namespace WPEFramework {
 
             // We must allocate the memory for the call structure. Determine what we will need.
             size_t totalsize = sizeof(ctrlm_voice_iarm_call_json_t) + jsonParams.size() + 1;
-            VoiceIARMCallGuard<ctrlm_voice_iarm_call_json_t> call(totalsize);
+            VoiceIARMCallGuard call(totalsize);
 
             if (!call.get())
             {
@@ -502,7 +502,7 @@ namespace WPEFramework {
 
             // We must allocate the memory for the call structure. Determine what we will need.
             size_t totalsize = sizeof(ctrlm_voice_iarm_call_json_t) + jsonParams.size() + 1;
-            VoiceIARMCallGuard<ctrlm_voice_iarm_call_json_t> call(totalsize);
+            VoiceIARMCallGuard call(totalsize);
 
             if (!call.get())
             {
@@ -661,7 +661,7 @@ namespace WPEFramework {
 
             // We must allocate the memory for the call structure. Determine what we will need.
             size_t totalsize = sizeof(ctrlm_voice_iarm_call_json_t) + jsonParams.size() + 1;
-            VoiceIARMCallGuard<ctrlm_voice_iarm_call_json_t> call(totalsize);
+            VoiceIARMCallGuard call(totalsize);
 
             if (!call.get())
             {
@@ -712,7 +712,7 @@ namespace WPEFramework {
 
             // We must allocate the memory for the call structure. Determine what we will need.
             size_t totalsize = sizeof(ctrlm_voice_iarm_call_json_t) + jsonParams.size() + 1;
-            VoiceIARMCallGuard<ctrlm_voice_iarm_call_json_t> call(totalsize);
+            VoiceIARMCallGuard call(totalsize);
 
             if (!call.get())
             {
