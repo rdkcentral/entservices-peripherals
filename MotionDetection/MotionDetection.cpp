@@ -61,12 +61,17 @@ namespace WPEFramework {
             if (!MotionDetection::_instance) {
                 LOGERR ("Invalid pointer. Motion Detector is not initialized (yet?). Event is ignored");
                 return MOTION_DETECTION_RESULT_INTI_FAILURE;
-            } else {
-                string index(eventMsg.m_sensorIndex);
-                string eventType(1, eventMsg.m_eventType); 
-                MotionDetection::_instance->onMotionEvent(index, eventType);
-                return MOTION_DETECTION_RESULT_SUCCESS;
             }
+            
+            string index(eventMsg.m_sensorIndex);
+            // Validate char before conversion to string
+            if (!isprint(static_cast<unsigned char>(eventMsg.m_eventType))) {
+                LOGERR("Invalid event type character received: 0x%02X", static_cast<unsigned char>(eventMsg.m_eventType));
+                return MOTION_DETECTION_RESULT_INTI_FAILURE;
+            }
+            string eventType(1, eventMsg.m_eventType); 
+            MotionDetection::_instance->onMotionEvent(index, eventType);
+            return MOTION_DETECTION_RESULT_SUCCESS;
         }
 
         MotionDetection::MotionDetection()
@@ -109,9 +114,15 @@ namespace WPEFramework {
             // On success return empty, to indicate there is no error text.
 	    MOTION_DETECTION_Platform_Init();
 
-            MOTION_DETECTION_RegisterEventCallback(motiondetection_EventCallback);
+            MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RegisterEventCallback(motiondetection_EventCallback);
+            if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
+                LOGERR("Failed to register event callback: %d", rc);
+            }
 
-            MOTION_DETECTION_DisarmMotionDetector(MOTION_DETECTOR_INDEX);
+            rc = MOTION_DETECTION_DisarmMotionDetector(MOTION_DETECTOR_INDEX);
+            if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
+                LOGERR("Failed to disarm motion detector: %d", rc);
+            }
 
             m_lastEventTime = std::chrono::system_clock::now();
             return (string());
@@ -186,8 +197,9 @@ namespace WPEFramework {
             try {
                 mode = stoi(sMode);
             }catch (const std::exception& err) {
-                LOGERR("Failed to get Mode value..!");
+                LOGERR("Failed to get Mode value: %s", err.what());
                 returnResponse(false);
+                return Core::ERROR_GENERAL;
             }
             MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RESULT_SUCCESS;
             rc = MOTION_DETECTION_ArmMotionDetector((MOTION_DETECTION_Mode_t)mode, index.c_str());
@@ -244,8 +256,9 @@ namespace WPEFramework {
             try{
                 period = stoi(sPeriod);
             }catch (const std::exception& err) {
-                 LOGERR("Failed to get period value..!");
+                 LOGERR("Failed to get period value: %s", err.what());
                 returnResponse(false);
+                return Core::ERROR_GENERAL;
             }
             MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RESULT_SUCCESS;
             rc = MOTION_DETECTION_SetNoMotionPeriod(index.c_str(), period);
@@ -316,21 +329,26 @@ namespace WPEFramework {
 
             if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
                 LOGERR("Failed to get sensitivity..!");
+                if (sensitivity) {
+                    free(sensitivity);
+                }
                 returnResponse(false);
             }
 
-            string rSensitivity(sensitivity);
-
-            if (currentMode == 1) {
-                response["value"] = rSensitivity;
-            }
-            else if (currentMode == 2) {
-                response["name"] = rSensitivity;
+            if (sensitivity) {
+                string rSensitivity(sensitivity);
+                if (currentMode == 1) {
+                    response["value"] = rSensitivity;
+                }
+                else if (currentMode == 2) {
+                    response["name"] = rSensitivity;
+                }
+                free(sensitivity);
+            } else {
+                LOGERR("Sensitivity pointer is null");
+                returnResponse(false);
             }
             
-            if (sensitivity) {
-                free(sensitivity);
-            }
             returnResponse(true);
 
         }
@@ -364,6 +382,9 @@ namespace WPEFramework {
                  bool parseStatus = true;
                  string index = parameters["index"].String();
                  JsonArray rangeList = parameters["ranges"].Array();
+                 
+                 timeSet.m_timeRangeArray = nullptr;  // Initialize to nullptr
+                 
 				 // Validate and parse nowTime
                  if (parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
                      parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
@@ -376,7 +397,18 @@ namespace WPEFramework {
                      returnResponse(false);
                  }
                  timeSet.m_nowTime = nowTime;
+                 
+                 if (rangeList.Length() == 0) {
+                     LOGERR("Empty ranges array");
+                     returnResponse(false);
+                 }
+                 
                  timeSet.m_timeRangeArray = (MOTION_DETECTION_Time_t *)malloc(rangeList.Length() * sizeof(MOTION_DETECTION_Time_t));
+                 if (!timeSet.m_timeRangeArray) {
+                     LOGERR("Failed to allocate memory for time range array");
+                     returnResponse(false);
+                 }
+                 
                  timeSet.m_rangeCount = rangeList.Length();
                  for (int range = 0;  range < rangeList.Length(); range++)
                  {
@@ -427,11 +459,13 @@ namespace WPEFramework {
                      if (rc != MOTION_DETECTION_RESULT_SUCCESS) 
                      {
                          LOGERR("Failed to set Active Time..!");
+                         free(timeSet.m_timeRangeArray);
                          returnResponse(false);
                      }
                  }
                  else
                  {
+                     free(timeSet.m_timeRangeArray);
                      returnResponse(false);
                  }
                  free(timeSet.m_timeRangeArray);

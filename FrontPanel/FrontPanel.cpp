@@ -65,6 +65,15 @@ namespace WPEFramework
            _service->AddRef();
            _frontPanel = _service->Root<Exchange::IFrontPanel>(_connectionId, 5000, _T("FrontPanelImplementation"));
 
+           if(nullptr == _frontPanel)
+            {
+                msg = "FrontPanel plugin is not available - Root() returned nullptr";
+                LOGINFO("FrontPanel plugin is not available. Failed to activate FrontPanel Plugin");
+                _service->Release();
+                _service = nullptr;
+                return msg;
+            }
+
            if(nullptr != _frontPanel)
             {
                 _frontPanel->Configure(service);

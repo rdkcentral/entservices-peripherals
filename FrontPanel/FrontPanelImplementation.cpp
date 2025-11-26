@@ -75,17 +75,17 @@ namespace
         // { <IARM_NAME>, <SVC_MANAGER_API_NAME> },
         { 0,  0}
     };
+    
+    static constexpr size_t NAME_MAPPINGS_SIZE = sizeof(name_mappings) / sizeof(name_mappings[0]);
 
     string svc2iarm(const string &name)
     {
         const char *s = name.c_str();
 
-        int i = 0;
-        while (name_mappings[i].SvcManagerName)
+        for (size_t i = 0; i < NAME_MAPPINGS_SIZE && name_mappings[i].SvcManagerName; i++)
         {
             if (strcmp(s, name_mappings[i].SvcManagerName) == 0)
                 return name_mappings[i].IArmBusName;
-            i++;
         }
         return name;
     }
@@ -94,12 +94,10 @@ namespace
     {
         const char *s = name.c_str();
 
-        int i = 0;
-        while (name_mappings[i].IArmBusName)
+        for (size_t i = 0; i < NAME_MAPPINGS_SIZE && name_mappings[i].IArmBusName; i++)
         {
             if (strcmp(s, name_mappings[i].IArmBusName) == 0)
                 return name_mappings[i].SvcManagerName;
-            i++;
         }
         return name;
     }
@@ -121,6 +119,7 @@ namespace
         
         JsonArray availableColors;
         const device::List <device::FrontPanelIndicator::Color> colorsList = indicator.getSupportedColors();
+        availableColors.Reserve(colorsList.size());
         for (uint j = 0; j < colorsList.size(); j++)
         {
             availableColors.Add(colorsList.at(j).getName());
@@ -160,7 +159,11 @@ namespace WPEFramework
                 _powerManagerPlugin.Reset();
             }
 
-            CFrontPanel::instance()->deinitialize();
+            try {
+                CFrontPanel::instance()->deinitialize();
+            } catch (...) {
+                LOGERR("Exception during CFrontPanel deinitialize");
+            }
 
             _registeredEventHandlers = false;
 
@@ -182,12 +185,17 @@ namespace WPEFramework
 
         void FrontPanelImplementation::InitializePowerManager(PluginHost::IShell *service)
         {
-            _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
-                                        .withIShell(service)
-                                        .withRetryIntervalMS(200)
-                                        .withRetryCount(25)
-                                        .createInterface();
-            registerEventHandlers();
+            try {
+                _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
+                                            .withIShell(service)
+                                            .withRetryIntervalMS(200)
+                                            .withRetryCount(25)
+                                            .createInterface();
+                registerEventHandlers();
+            } catch (...) {
+                LOGERR("Exception during PowerManager initialization");
+                _powerManagerPlugin.Reset();
+            }
         }
 
         void FrontPanelImplementation::onPowerModeChanged(const PowerState currentState, const PowerState newState)
@@ -230,8 +238,14 @@ namespace WPEFramework
                     device::FrontPanelIndicator::getInstance(fp_ind.c_str()).setBrightness(int(brightness));
                     ok = true;
                 }
+                catch (const std::exception& e)
+                {
+                    LOGERR("Exception in setBrightness: %s", e.what());
+                    ok = false;
+                }
                 catch (...)
                 {
+                    LOGERR("Unknown exception in setBrightness");
                     ok = false;
                 }
             }
@@ -275,9 +289,13 @@ namespace WPEFramework
                 {
                     value = device::FrontPanelIndicator::getInstance(fp_ind.c_str()).getBrightness();
                 }
+                catch (const std::exception& e)
+                {
+                    LOGERR("Exception in getBrightness: %s", e.what());
+                }
                 catch (...)
                 {
-                    LOGWARN("Exception thrown from ds while calling getBrightness");
+                    LOGERR("Unknown exception in getBrightness");
                 }
                 
             }
@@ -468,7 +486,11 @@ namespace WPEFramework
                 // Call setBlink with the parsed object
                 setBlink(inputObj);
                 ok = true;
+            } catch (const std::exception& e) {
+                LOGERR("Exception in SetBlink: %s", e.what());
+                ok = false;
             } catch (...) {
+                LOGERR("Unknown exception in SetBlink");
                 ok = false;
             }
             success.success = ok;

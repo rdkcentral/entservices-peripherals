@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
+#include <atomic>
 
 #if defined(HAS_API_POWERSTATE)
 #include "libIBus.h"
@@ -71,8 +72,8 @@ namespace WPEFramework
         static int globalLedBrightness = 100;
 
         int CFrontPanel::initDone = 0;
-        static bool isMessageLedOn = false;
-        static bool isRecordLedOn = false;
+        static std::atomic<bool> isMessageLedOn{false};
+        static std::atomic<bool> isRecordLedOn{false};
 
         static bool powerStatus = false;     //Check how this works on xi3 and rng's
         static bool started = false;
@@ -106,13 +107,12 @@ namespace WPEFramework
             std::string svc2iarm(const std::string &name)
             {
                 const char *s = name.c_str();
+                static constexpr size_t NAME_MAPPINGS_SIZE = sizeof(name_mappings) / sizeof(name_mappings[0]);
 
-                int i = 0;
-                while (name_mappings[i].SvcManagerName)
+                for (size_t i = 0; i < NAME_MAPPINGS_SIZE && name_mappings[i].SvcManagerName; i++)
                 {
                     if (strcmp(s, name_mappings[i].SvcManagerName) == 0)
                         return name_mappings[i].IArmBusName;
-                    i++;
                 }
                 return name;
             }
@@ -130,11 +130,17 @@ namespace WPEFramework
             {
                 if (nullptr != service)
                 {
-                    _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
-                                      .withIShell(service)
-                                      .withRetryIntervalMS(200)
-                                      .withRetryCount(25)
-                                      .createInterface();
+                    try {
+                        _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
+                                          .withIShell(service)
+                                          .withRetryIntervalMS(200)
+                                          .withRetryCount(25)
+                                          .createInterface();
+                    } catch (const std::exception& e) {
+                        LOGERR("Exception during PowerManager initialization: %s", e.what());
+                    } catch (...) {
+                        LOGERR("Unknown exception during PowerManager initialization");
+                    }
                 }
                 if (!s_instance)
                     s_instance = new CFrontPanel;
@@ -167,14 +173,22 @@ namespace WPEFramework
                             {
                                 if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
                                     powerStatus = true;
+                            } else {
+                                LOGERR("GetPowerState failed with error: %d, powerStatus remains: %d", res, powerStatus);
                             }
                             LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
                         }
                     }
 #endif
 
-                    globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
-                    LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
+                    try {
+                        globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
+                        LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
+                    } catch (const std::exception& e) {
+                        LOGERR("Exception getting brightness: %s", e.what());
+                    } catch (...) {
+                        LOGERR("Unknown exception getting brightness");
+                    }
 
 		    profileType = searchRdkProfile();
 		    if (TV != profileType)
@@ -211,8 +225,11 @@ namespace WPEFramework
 
         void CFrontPanel::deinitialize()
         {
-
-            s_instance->stop();
+            // Clear observers before deleting s_instance to prevent dangling pointers
+            if (s_instance) {
+                s_instance->observers_.clear();
+                s_instance->stop();
+            }
             
             if (_powerManagerPlugin) {
                 _powerManagerPlugin.Reset();
@@ -332,38 +349,82 @@ namespace WPEFramework
                     switch (fp_indicator)
                     {
                     case FRONT_PANEL_INDICATOR_MESSAGE:
-                        isMessageLedOn = true;
-                        device::FrontPanelIndicator::getInstance("Message").setState(true);
+                        try {
+                            device::FrontPanelIndicator::getInstance("Message").setState(true);
+                            isMessageLedOn = true;
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on Message LED: %s", e.what());
+                            throw;
+                        }
                         break;
                     case FRONT_PANEL_INDICATOR_RECORD:
-                        isRecordLedOn = true;
-                        device::FrontPanelIndicator::getInstance("Record").setState(true);
+                        try {
+                            device::FrontPanelIndicator::getInstance("Record").setState(true);
+                            isRecordLedOn = true;
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on Record LED: %s", e.what());
+                            throw;
+                        }
                         break;
                     case FRONT_PANEL_INDICATOR_REMOTE:
-                        device::FrontPanelIndicator::getInstance("Remote").setState(true);
+                        try {
+                            device::FrontPanelIndicator::getInstance("Remote").setState(true);
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on Remote LED: %s", e.what());
+                            throw;
+                        }
                         break;
                     case FRONT_PANEL_INDICATOR_RFBYPASS:
-                        device::FrontPanelIndicator::getInstance("RfByPass").setState(true);
+                        try {
+                            device::FrontPanelIndicator::getInstance("RfByPass").setState(true);
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on RfByPass LED: %s", e.what());
+                            throw;
+                        }
                         break;
                     case FRONT_PANEL_INDICATOR_ALL:
-                        if (isMessageLedOn)
-                            device::FrontPanelIndicator::getInstance("Message").setState(true);
-                        if (isRecordLedOn)
-                            device::FrontPanelIndicator::getInstance("Record").setState(true);
-                        device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        // Turn on LEDs one by one, logging failures but continuing
+                        if (isMessageLedOn) {
+                            try {
+                                device::FrontPanelIndicator::getInstance("Message").setState(true);
+                            } catch (const std::exception& e) {
+                                LOGERR("Failed to power on Message LED in ALL: %s", e.what());
+                            }
+                        }
+                        if (isRecordLedOn) {
+                            try {
+                                device::FrontPanelIndicator::getInstance("Record").setState(true);
+                            } catch (const std::exception& e) {
+                                LOGERR("Failed to power on Record LED in ALL: %s", e.what());
+                            }
+                        }
+                        try {
+                            device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on Power LED in ALL: %s", e.what());
+                        }
                         break;
                     case FRONT_PANEL_INDICATOR_POWER:
-                        //LOGWARN("CFrontPanel::powerOnLed() - FRONT_PANEL_INDICATOR_POWER not handled");
-			device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        try {
+                            device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power on Power LED: %s", e.what());
+                            throw;
+                        }
                         break;
                     default:
                         LOGERR("Invalid Indicator %d", fp_indicator);
                     }
                 }
             }
+            catch (const std::exception& e)
+            {
+                LOGERR("FrontPanel Exception Caught during [%s]: %s\r\n", __func__, e.what());
+                return false;
+            }
             catch (...)
             {
-                LOGERR("FrontPanel Exception Caught during [%s]\r\n", __func__);
+                LOGERR("FrontPanel Unknown Exception Caught during [%s]\r\n", __func__);
                 return false;
             }
             return true;
@@ -377,38 +438,71 @@ namespace WPEFramework
                 switch (fp_indicator)
                 {
                 case FRONT_PANEL_INDICATOR_MESSAGE:
-                    isMessageLedOn = false;
-                    device::FrontPanelIndicator::getInstance("Message").setState(false);
+                    try {
+                        device::FrontPanelIndicator::getInstance("Message").setState(false);
+                        isMessageLedOn = false;
+                    } catch (const std::exception& e) {
+                        LOGERR("Failed to power off Message LED: %s", e.what());
+                        throw;
+                    }
                     break;
                 case FRONT_PANEL_INDICATOR_RECORD:
-                    isRecordLedOn = false;
-                    device::FrontPanelIndicator::getInstance("Record").setState(false);
+                    try {
+                        device::FrontPanelIndicator::getInstance("Record").setState(false);
+                        isRecordLedOn = false;
+                    } catch (const std::exception& e) {
+                        LOGERR("Failed to power off Record LED: %s", e.what());
+                        throw;
+                    }
                     break;
                 case FRONT_PANEL_INDICATOR_REMOTE:
-                    device::FrontPanelIndicator::getInstance("Remote").setState(false);
+                    try {
+                        device::FrontPanelIndicator::getInstance("Remote").setState(false);
+                    } catch (const std::exception& e) {
+                        LOGERR("Failed to power off Remote LED: %s", e.what());
+                        throw;
+                    }
                     break;
                 case FRONT_PANEL_INDICATOR_RFBYPASS:
-                    device::FrontPanelIndicator::getInstance("RfByPass").setState(false);
+                    try {
+                        device::FrontPanelIndicator::getInstance("RfByPass").setState(false);
+                    } catch (const std::exception& e) {
+                        LOGERR("Failed to power off RfByPass LED: %s", e.what());
+                        throw;
+                    }
                     break;
                 case FRONT_PANEL_INDICATOR_ALL:
+                    // Turn off LEDs one by one, logging failures but continuing
                     for (uint i = 0; i < fpIndicators.size(); i++)
                     {
-                        //LOGWARN("powerOffLed for Indicator %s", QString::fromStdString(fpIndicators.at(i).getName()).toUtf8().constData());
-                        LOGWARN("powerOffLed for Indicator %s", fpIndicators.at(i).getName().c_str());
-                        device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                        try {
+                            LOGWARN("powerOffLed for Indicator %s", fpIndicators.at(i).getName().c_str());
+                            device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                        } catch (const std::exception& e) {
+                            LOGERR("Failed to power off LED %s in ALL: %s", fpIndicators.at(i).getName().c_str(), e.what());
+                        }
                     }
                     break;
                 case FRONT_PANEL_INDICATOR_POWER:
-                    //LOGWARN("CFrontPanel::powerOffLed() - FRONT_PANEL_INDICATOR_POWER not handled");
-		    device::FrontPanelIndicator::getInstance("Power").setState(false);
+                    try {
+                        device::FrontPanelIndicator::getInstance("Power").setState(false);
+                    } catch (const std::exception& e) {
+                        LOGERR("Failed to power off Power LED: %s", e.what());
+                        throw;
+                    }
                     break;
                 default:
                     LOGERR("Invalid Indicator %d", fp_indicator);
                 }
             }
+            catch (const std::exception& e)
+            {
+                LOGERR("FrontPanel Exception Caught during [%s]: %s\r\n", __func__, e.what());
+                return false;
+            }
             catch (...)
             {
-                LOGERR("FrontPanel Exception Caught during [%s]\r\n", __func__);
+                LOGERR("FrontPanel Unknown Exception Caught during [%s]\r\n", __func__);
                 return false;
             }
             return true;
@@ -447,8 +541,14 @@ namespace WPEFramework
                     device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setColor(device::FrontPanelIndicator::Color::getInstance(colorString.c_str()), false);
                     success = true;
                 }
+                catch (const std::exception& e)
+                {
+                    LOGERR("Failed to set color for LED %s: %s", ledIndicator.c_str(), e.what());
+                    success = false;
+                }
                 catch (...)
                 {
+                    LOGERR("Unknown exception while setting color for LED %s", ledIndicator.c_str());
                     success = false;
                 }
             }
@@ -466,8 +566,14 @@ namespace WPEFramework
                     device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setColor(color);
                     success = true;
                 }
+                catch (const std::exception& e)
+                {
+                    LOGERR("Failed to set RGB color for LED %s: %s", ledIndicator.c_str(), e.what());
+                    success = false;
+                }
                 catch (...)
                 {
+                    LOGERR("Unknown exception while setting RGB color for LED %s", ledIndicator.c_str());
                     success = false;
                 }
             }
@@ -481,8 +587,14 @@ namespace WPEFramework
                 device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setBrightness(brightness, false);
                 success = true;
             }
+            catch (const std::exception& e)
+            {
+                LOGERR("Failed to set brightness for LED %s: %s", ledIndicator.c_str(), e.what());
+                success = false;
+            }
             catch (...)
             {
+                LOGERR("Unknown exception while setting brightness for LED %s", ledIndicator.c_str());
                 success = false;
             }
             return success;
@@ -576,14 +688,24 @@ namespace WPEFramework
                 }
 
             }
+            catch (const std::exception& e)
+            {
+                LOGERR("Exception caught in setBlinkLed for setColor: %s", e.what());
+            }
             catch (...)
-            {}
+            {
+                LOGERR("Unknown exception caught in setBlinkLed for setColor");
+            }
             try
             {
                 if (brightness == -1)
                     brightness = device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).getBrightness(true);
 
                 device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setBrightness(brightness, false);
+            }
+            catch (const std::exception& e)
+            {
+                LOGERR("Exception caught in setBlinkLed for setBrightness: %s", e.what());
             }
             catch (...)
             {

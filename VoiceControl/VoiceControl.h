@@ -60,6 +60,9 @@ namespace WPEFramework {
             void onStreamEnd(ctrlm_voice_iarm_event_json_t* eventData);
             void onSessionEnd(ctrlm_voice_iarm_event_json_t* eventData);
             //End events
+            
+            // Helper method for event handling
+            void handleVoiceEvent(const char* eventName, ctrlm_voice_iarm_event_json_t* eventData, bool useMaskPii);
 
         public:
             VoiceControl();

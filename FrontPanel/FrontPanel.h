@@ -70,7 +70,7 @@ namespace WPEFramework {
                 void Deactivated(RPC::IRemoteConnection* connection);
 
             private:
-                PluginHost::IShell* _service{};
+                PluginHost::IShell* _service;
                 Exchange::IFrontPanel* _frontPanel;
                 uint32_t _connectionId;
 
