@@ -65,7 +65,6 @@ namespace WPEFramework
            _service->AddRef();
            _frontPanel = _service->Root<Exchange::IFrontPanel>(_connectionId, 5000, _T("FrontPanelImplementation"));
 
-
            if(nullptr != _frontPanel)
             {
                 _frontPanel->Configure(service);
