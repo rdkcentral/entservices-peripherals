@@ -619,6 +619,14 @@ namespace WPEFramework
 
                 int duration = 0;
                 getNumberParameterObject(frontPanelBlinkHash, "duration", duration);
+                
+                // Validate duration to prevent overflow and ensure reasonable values
+                // Duration must be non-negative and within acceptable range (max 1 hour = 3600000ms)
+                if (duration < 0 || duration > 3600000) {
+                    LOGERR("Invalid duration value: %d (must be 0-3600000ms). Using 0.", duration);
+                    duration = 0;
+                }
+                
                 LOGWARN("setBlink ledIndicator: %s iterations: %d brightness: %d duration: %d", ledIndicator.c_str(), iterations, brightness, duration);
                 frontPanelBlinkInfo.brightness = brightness;
                 frontPanelBlinkInfo.durationInMs = duration;

@@ -342,7 +342,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -350,15 +349,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -368,7 +371,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_STOP_PAIRING Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -376,7 +378,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("STOP PAIRING call SUCCESS!");
@@ -390,7 +391,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -398,15 +398,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -416,7 +420,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_GET_RCU_STATUS Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -424,7 +427,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("GET RCU STATUS call SUCCESS!");
@@ -438,7 +440,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -446,15 +447,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -467,7 +472,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -475,7 +479,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("IRDB MANUFACTURERS call SUCCESS!");
@@ -489,7 +492,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -497,15 +499,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -518,7 +524,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MODELS Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -526,7 +531,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("IRDB MODELS call SUCCESS!");
@@ -540,7 +544,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -548,15 +551,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -569,7 +576,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -577,7 +583,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("IRDB AUTO LOOKUP call SUCCESS!");
@@ -591,7 +596,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -599,15 +603,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -620,7 +628,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_CODES Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -628,7 +635,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("GET IR CODES call SUCCESS!");
@@ -642,7 +648,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -650,15 +655,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -668,7 +677,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_SET_CODE Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -676,7 +684,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("SET IR CODES call SUCCESS!");
@@ -690,7 +697,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -698,15 +704,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -716,7 +726,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_CLEAR_CODE Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -724,7 +733,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("CLEAR IR CODES call SUCCESS!");
@@ -738,7 +746,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -746,15 +753,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -764,7 +775,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_LAST_KEYPRESS_GET Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -772,7 +782,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("GET LAST KEYPRESS call SUCCESS!");
@@ -786,7 +795,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -794,15 +802,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -812,7 +824,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_WRITE_RCU_WAKEUP_CONFIG Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -820,7 +831,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("WRITE RCU WAKEUP CONFIG call SUCCESS!");
@@ -834,7 +844,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -842,15 +851,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -862,7 +875,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_INITIALIZE Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -870,7 +882,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("INITIALIZE IRDB call SUCCESS!");
@@ -884,7 +895,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -892,15 +902,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -910,7 +924,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_FIND_MY_REMOTE Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -918,7 +931,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("FIND MY REMOTE call SUCCESS!");
@@ -932,7 +944,6 @@ namespace WPEFramework {
         {
             LOGINFOMETHOD();
 
-            ctrlm_main_iarm_call_json_t *call = NULL;
             IARM_Result_t                res;
             string                       jsonParams;
             bool                         bSuccess = false;
@@ -940,15 +951,19 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             totalsize = sizeof(ctrlm_main_iarm_call_json_t) + jsonParams.size() + 1;
-            call      = (ctrlm_main_iarm_call_json_t*)calloc(1, totalsize);
+            
+            // Use RAII wrapper to ensure automatic memory cleanup on all code paths
+            // Prevents memory leaks if IARM call fails or exception occurs
+            IARMCallGuard callGuard(totalsize);
 
-            if (call == NULL)
+            if (!callGuard.isValid())
             {
                 LOGERR("ERROR - Cannot allocate IARM structure - size: %u.", (unsigned)totalsize);
                 bSuccess = false;
                 returnResponse(bSuccess);
             }
 
+            ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             call->payload[len] = '\0';
@@ -962,7 +977,6 @@ namespace WPEFramework {
             {
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_FACTORY_RESET Bus Call FAILED, res: %d.", (int)res);
                 bSuccess = false;
-                free(call);
                 returnResponse(bSuccess);
             }
 
@@ -970,7 +984,6 @@ namespace WPEFramework {
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
             response = result;
-            free(call);
 
             if (bSuccess)
                 LOGINFO("FACTORY RESET call SUCCESS!");
