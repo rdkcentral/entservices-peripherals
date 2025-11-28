@@ -45,7 +45,13 @@ namespace WPEFramework {
             uint32_t configureVoice(const JsonObject& parameters, JsonObject& response);
             uint32_t setVoiceInit(const JsonObject& parameters, JsonObject& response);
             uint32_t sendVoiceMessage(const JsonObject& parameters, JsonObject& response);
-            uint32_t voiceSessionByText(const JsonObject& parameters, JsonObject& response); // DEPRECATED
+            
+            // DEPRECATED: Use voiceSessionRequest instead
+            // This method will be removed in a future API version
+            // Maintained for backward compatibility only
+            [[deprecated("Use voiceSessionRequest instead - will be removed in future API version")]]
+            uint32_t voiceSessionByText(const JsonObject& parameters, JsonObject& response);
+            
             uint32_t voiceSessionTypes(const JsonObject& parameters, JsonObject& response);
             uint32_t voiceSessionRequest(const JsonObject& parameters, JsonObject& response);
             uint32_t voiceSessionTerminate(const JsonObject& parameters, JsonObject& response);
@@ -60,6 +66,9 @@ namespace WPEFramework {
             void onStreamEnd(ctrlm_voice_iarm_event_json_t* eventData);
             void onSessionEnd(ctrlm_voice_iarm_event_json_t* eventData);
             //End events
+            
+            // Helper method for event handling
+            void handleVoiceEvent(const char* eventName, ctrlm_voice_iarm_event_json_t* eventData, bool useMaskPii);
 
         public:
             VoiceControl();
