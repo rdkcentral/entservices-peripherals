@@ -71,7 +71,6 @@ namespace WPEFramework
             _service->AddRef();
             _ledcontrol = _service->Root<Exchange::ILEDControl>(_connectionId, 5000, _T("LEDControlImplementation"));
 
-
             if(nullptr != _ledcontrol)
             {
                 // Invoking Plugin API register to wpeframework
