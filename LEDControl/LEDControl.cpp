@@ -71,14 +71,6 @@ namespace WPEFramework
             _service->AddRef();
             _ledcontrol = _service->Root<Exchange::ILEDControl>(_connectionId, 5000, _T("LEDControlImplementation"));
 
-            if(nullptr == _ledcontrol)
-            {
-                SYSLOG(Logging::Startup, (_T("LEDControl::Initialize: Root() returned nullptr")));
-                message = _T("LEDControl plugin could not be initialised - Root() failed");
-                _service->Release();
-                _service = nullptr;
-                return message;
-            }
 
             if(nullptr != _ledcontrol)
             {
