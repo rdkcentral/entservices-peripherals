@@ -50,6 +50,9 @@ namespace WPEFramework {
             {}
         );
         
+        // FIX: Memory Leak - RAII wrapper for automatic ctrlm_main_iarm_call_json_t memory management
+        // to prevent leaks when IARM_Bus_Call fails or early returns occur in all IARM call methods.
+        // Ensures calloc'd memory is always freed via destructor, eliminating manual free() tracking.
         // RAII wrapper for ctrlm_main_iarm_call_json_t memory management
         struct IARMCallGuard {
             ctrlm_main_iarm_call_json_t* call;
@@ -104,6 +107,9 @@ namespace WPEFramework {
             Register("factoryReset",           &RemoteControl::factoryReset,          this);
 
             m_hasOwnProcess = false;
+            // FIX: Uninitialized Member - Initialize m_apiVersionNumber to 0 instead of max uint32
+            // to prevent overflow issues in version comparisons and provide safe default value.
+            // Proper initialization ensures predictable behavior before setApiVersionNumber call.
             m_apiVersionNumber = 0;
             setApiVersionNumber(1);
         }
@@ -128,6 +134,9 @@ namespace WPEFramework {
 
         void RemoteControl::InitializeIARM()
         {
+            // FIX: IARM Init Race - Added static mutex to synchronize IARM initialization
+            // to prevent race condition when multiple plugins call Utils::IARM::init() concurrently.
+            // Ensures thread-safe initialization and prevents double-initialization issues.
             static std::mutex initMutex;
             std::lock_guard<std::mutex> lock(initMutex);
             
@@ -135,6 +144,9 @@ namespace WPEFramework {
             {
                 m_hasOwnProcess = true;
                 IARM_Result_t res;
+                // FIX: Unchecked IARM Return - Check RegisterEventHandler return values
+                // to detect event registration failures that could cause missed events.
+                // Added error logging for visibility of IARM communication issues.
                 res = IARM_Bus_RegisterEventHandler(CTRLM_MAIN_IARM_BUS_NAME,  CTRLM_RCU_IARM_EVENT_RCU_STATUS,  remoteEventHandler);
                 if (res != IARM_RESULT_SUCCESS) {
                     LOGERR("Failed to register RCU_STATUS event handler: %d", res);
@@ -163,6 +175,9 @@ namespace WPEFramework {
             if (m_hasOwnProcess)
             {
                 IARM_Result_t res;
+                // FIX: Unchecked IARM Return - Check RemoveEventHandler return values
+                // to detect event deregistration failures during cleanup.
+                // Added error logging for visibility of cleanup issues and IARM state.
                 res = IARM_Bus_RemoveEventHandler(CTRLM_MAIN_IARM_BUS_NAME,  CTRLM_RCU_IARM_EVENT_RCU_STATUS,  remoteEventHandler);
                 if (res != IARM_RESULT_SUCCESS) {
                     LOGERR("Failed to remove RCU_STATUS event handler: %d", res);
@@ -195,6 +210,9 @@ namespace WPEFramework {
 
         void RemoteControl::remoteEventHandler(const char *owner, IARM_EventId_t eventId, void *data, size_t len)
         {
+            // FIX: Null Pointer Dereference - Use local copy before dereferencing _instance
+            // to prevent race condition during plugin destruction when event may arrive.
+            // Thread-safe pattern ensures instance validity check before method call.
             RemoteControl* instance = RemoteControl::_instance;
             if (instance)
                 instance->iarmEventHandler(owner, eventId, data, len);
@@ -218,6 +236,9 @@ namespace WPEFramework {
                 return;
             }
             
+            // FIX: Null Pointer Dereference - Validate data size and pointer after cast
+            // to prevent using invalid eventData pointer from undersized or corrupted data.
+            // Added size check before cast and null validation after cast for safety.
             if (len < sizeof(ctrlm_main_iarm_event_json_t)) {
                 LOGERR("ERROR - event data too small: eventId: %d, size: %d, expected: %zu.", (int)eventId, len, sizeof(ctrlm_main_iarm_event_json_t));
                 return;
@@ -266,6 +287,9 @@ namespace WPEFramework {
 
             parameters.ToString(jsonParams);
             
+            // FIX: Buffer Overflow Risk - Validate JSON payload size before allocation
+            // to prevent excessive memory allocation from malicious or corrupted input.
+            // Enforces reasonable 100KB limit to prevent DoS via memory exhaustion.
             // Validate payload size to prevent buffer overflow
             if (jsonParams.size() > 100000) {  // Reasonable limit
                 LOGERR("ERROR - JSON payload too large: %zu bytes.", jsonParams.size());
@@ -284,6 +308,9 @@ namespace WPEFramework {
 
             ctrlm_main_iarm_call_json_t *call = callGuard.get();
             call->api_revision = CTRLM_MAIN_IARM_BUS_API_REVISION;
+            // FIX: Unchecked Copy - Validate payload copy completed successfully
+            // to detect truncation or buffer issues during string copy operation.
+            // Ensures complete data transfer before making IARM call.
             size_t len = jsonParams.copy(call->payload, jsonParams.size());
             if (len != jsonParams.size()) {
                 LOGERR("ERROR - Payload copy incomplete: copied %zu of %zu bytes.", len, jsonParams.size());

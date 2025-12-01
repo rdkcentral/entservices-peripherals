@@ -40,6 +40,9 @@ namespace WPEFramework
             LOGINFO("LEDControlImplementation Constructor called\n");
             if (!m_isPlatInitialized) {
                 LOGINFO("Doing plat init; dsFPInit\n");
+                // FIX: Partial Initialization - Worker job submitted outside catch block
+                // to ensure proper separation and prevent job submission if init fails.
+                // This maintains clean error handling and prevents worker thread issues.
                 try {
                     dsError_t err = dsERR_NONE;
                     if ((err = dsFPInit()) != dsERR_NONE) {
@@ -55,16 +58,25 @@ namespace WPEFramework
                                     unsigned int supported = (unsigned int)dsFPD_LED_DEVICE_NONE;
                                     dsError_t err = dsFPGetSupportedLEDStates(&supported);
                                     if (err == dsERR_NONE) {
+                                        // FIX: Race Condition - m_SupportedLEDStates updated with lock protection
+                                        // to prevent data race between worker thread and main thread.
+                                        // Ensures thread-safe access to shared member variable.
                                         Core::SafeSyncType<Core::CriticalSection> lock(_parent->_adminLock);
                                         _parent->m_SupportedLEDStates = supported;
                                         LOGINFO("Worker m_SupportedLEDStates updated: 0x%X\n", supported);
                                     } else {
                                         LOGERR("Worker dsFPGetSupportedLEDStates failed: %d\n", err);
+                                        // FIX: Exception Swallowing - Set safe error value with lock protection
+                                        // to ensure m_SupportedLEDStates has valid state even on failure.
+                                        // Prevents undefined behavior from uninitialized or stale values.
                                         Core::SafeSyncType<Core::CriticalSection> lock(_parent->_adminLock);
                                         _parent->m_SupportedLEDStates = (unsigned int)dsFPD_LED_DEVICE_NONE;
                                     }
                                 } catch (const std::exception& e) {
                                     LOGERR("Worker exception updating m_SupportedLEDStates: %s\n", e.what());
+                                    // FIX: Exception Swallowing - Set safe error value with lock on exception
+                                    // to ensure consistent state and prevent crashes from invalid LED states.
+                                    // Acquires lock before modifying shared state in exception path.
                                     Core::SafeSyncType<Core::CriticalSection> lock(_parent->_adminLock);
                                     _parent->m_SupportedLEDStates = (unsigned int)dsFPD_LED_DEVICE_NONE;
                                 } catch (...) {
@@ -86,6 +98,9 @@ namespace WPEFramework
             }
         }
 
+        // FIX: Destructor Exception - Added noexcept to prevent undefined behavior
+        // if exception occurs during stack unwinding. Separated std::exception and
+        // generic catch blocks for better diagnostics while ensuring no throw.
         LEDControlImplementation::~LEDControlImplementation() noexcept
         {
             LOGINFO("LEDControlImplementation Destructor called\n");
@@ -111,6 +126,9 @@ namespace WPEFramework
          * @param[in] state The LED control state
          * @return Corresponding dsFPDLedState_t, or dsFPD_LED_DEVICE_MAX on error
          */
+        // FIX: Uncaught Exception - Changed from throwing std::invalid_argument to returning error code
+        // to prevent exception propagation to C code which could cause crashes.
+        // Returns Core::ERROR_BAD_REQUEST instead of throwing for safe error handling.
         static Core::hresult mapFromLEDControlStateToDsFPDLedState(WPEFramework::Exchange::ILEDControl::LEDControlState state, dsFPDLedState_t& result)
         {
             using LEDControlState = WPEFramework::Exchange::ILEDControl::LEDControlState;
@@ -249,6 +267,9 @@ namespace WPEFramework
                 }
             }
             {
+                // FIX: Race Condition - Iterator created inside lock block to ensure thread safety
+                // when accessing stateNames collection that may be accessed by other threads.
+                // Prevents data races during iterator creation from shared state.
                 Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);
                 supportedLEDStates = Core::Service<RPC::StringIterator>::Create<RPC::IStringIterator>(stateNames);
             }
@@ -316,6 +337,9 @@ namespace WPEFramework
             }
             
             // return error if requested state is unsupported
+            // FIX: TOCTOU - Created local copy of m_SupportedLEDStates inside lock
+            // to prevent check-then-use race condition where value could change between check and use.
+            // Ensures consistent state validation throughout the function execution.
             unsigned int supportedStates = 0;
             {
                 Core::SafeSyncType<Core::CriticalSection> lock(_adminLock);

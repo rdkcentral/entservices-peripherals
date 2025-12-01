@@ -49,6 +49,9 @@ namespace WPEFramework {
             {}
         );
         
+        // FIX: Memory Leak - RAII wrapper for automatic memory management of MOTION_DETECTION_Time_t arrays
+        // to prevent memory leaks on early returns or exceptions in setMotionEventsActivePeriod.
+        // Ensures malloc'd memory is always freed via destructor, eliminating manual free() calls.
         // RAII wrapper for MOTION_DETECTION_Time_t array
         class TimeRangeArrayGuard {
         private:
@@ -92,6 +95,9 @@ namespace WPEFramework {
         MotionDetection* MotionDetection::_instance = nullptr;
         std::mutex MotionDetection::_instanceMutex;
 
+        // FIX: Null Pointer - Added mutex lock protection for _instance access in callback
+        // to prevent race condition during plugin destruction when callback may be invoked.
+        // Ensures thread-safe null check and prevents dereferencing invalid pointer.
         MOTION_DETECTION_Result_t motiondetection_EventCallback (MOTION_DETECTION_EventMessage_t eventMsg)
         {
             std::lock_guard<std::mutex> lock(MotionDetection::_instanceMutex);
@@ -101,6 +107,9 @@ namespace WPEFramework {
             }
             
             string index(eventMsg.m_sensorIndex);
+            // FIX: Unsafe Type Conversion - Validate char is printable before string conversion
+            // to prevent undefined behavior from control characters or invalid byte values.
+            // Uses isprint() to ensure only valid displayable characters are converted.
             // Validate char before conversion to string
             if (!isprint(static_cast<unsigned char>(eventMsg.m_eventType))) {
                 LOGERR("Invalid event type character received: 0x%02X", static_cast<unsigned char>(eventMsg.m_eventType));
@@ -154,11 +163,17 @@ namespace WPEFramework {
             // On success return empty, to indicate there is no error text.
 	    MOTION_DETECTION_Platform_Init();
 
+            // FIX: Unchecked Return Value - Check RegisterEventCallback return and log errors
+            // to detect registration failures that could cause missed motion events.
+            // Proper error handling ensures visibility of initialization problems.
             MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RegisterEventCallback(motiondetection_EventCallback);
             if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
                 LOGERR("Failed to register event callback: %d", rc);
             }
 
+            // FIX: Unchecked Return Value - Check DisarmMotionDetector return and log errors
+            // to detect failures in initial disarm operation during plugin initialization.
+            // Ensures proper initial state and visibility of HAL communication issues.
             rc = MOTION_DETECTION_DisarmMotionDetector(MOTION_DETECTOR_INDEX);
             if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
                 LOGERR("Failed to disarm motion detector: %d", rc);
@@ -242,6 +257,9 @@ namespace WPEFramework {
             }catch (const std::exception& err) {
                 LOGERR("Failed to get Mode value: %s", err.what());
                 returnResponse(false);
+                // FIX: Exception - Missing Return - Added explicit return after returnResponse
+                // to prevent fall-through to success path when stoi() throws exception.
+                // Ensures proper error code propagation to caller on parse failure.
                 return Core::ERROR_GENERAL;
             }
             MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RESULT_SUCCESS;
@@ -301,6 +319,9 @@ namespace WPEFramework {
             }catch (const std::exception& err) {
                  LOGERR("Failed to get period value: %s", err.what());
                 returnResponse(false);
+                // FIX: Exception - Missing Return - Added explicit return after returnResponse
+                // to prevent fall-through to success path when stoi() throws exception.
+                // Ensures proper error code propagation on parameter parsing failure.
                 return Core::ERROR_GENERAL;
             }
             MOTION_DETECTION_Result_t rc = MOTION_DETECTION_RESULT_SUCCESS;
@@ -372,6 +393,9 @@ namespace WPEFramework {
 
             if (rc != MOTION_DETECTION_RESULT_SUCCESS) {
                 LOGERR("Failed to get sensitivity..!");
+                // FIX: Memory Leak - Added null check before freeing sensitivity pointer
+                // to prevent freeing uninitialized pointer if API fails without allocating.
+                // Ensures safe cleanup on API error paths.
                 if (sensitivity) {
                     free(sensitivity);
                 }
@@ -426,6 +450,9 @@ namespace WPEFramework {
                  string index = parameters["index"].String();
                  JsonArray rangeList = parameters["ranges"].Array();
                  
+				 // FIX: Type Validation Missing - Validate parameter types before parsing
+                 // to prevent type mismatch errors and ensure safe parameter extraction.
+                 // Checks Variant::type for NUMBER or STRING before calling getNumberParameterObject.
 				 // Validate and parse nowTime
                  if (parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::NUMBER ||
                      parameters["nowTime"].Content() == WPEFramework::Core::JSON::Variant::type::STRING)
@@ -444,6 +471,9 @@ namespace WPEFramework {
                      returnResponse(false);
                  }
                  
+                 // FIX: Unchecked Allocation & Memory Leak - Use RAII wrapper with validation
+                 // to ensure malloc return is checked via isValid() and memory freed on all paths.
+                 // Automatic cleanup prevents leaks on early returns or exceptions.
                  // Use RAII wrapper for automatic memory management
                  TimeRangeArrayGuard timeRangeGuard(rangeList.Length());
                  if (!timeRangeGuard.isValid()) {

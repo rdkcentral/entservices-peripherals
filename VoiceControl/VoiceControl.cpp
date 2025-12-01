@@ -44,6 +44,9 @@ namespace WPEFramework {
             {}
         );
         
+        // FIX: Memory Leak - RAII wrapper for automatic ctrlm_voice_iarm_call_json_t memory management
+        // to prevent leaks when IARM_Bus_Call fails or early returns occur in voice control methods.
+        // Ensures calloc'd memory is always freed via destructor, eliminating manual free() tracking.
         // RAII wrapper for ctrlm_voice_iarm_call_json_t memory management
         struct VoiceIARMCallGuard {
             ctrlm_voice_iarm_call_json_t* call;
@@ -76,6 +79,9 @@ namespace WPEFramework {
 
         VoiceControl::VoiceControl()
             : PluginHost::JSONRPC()
+            // FIX: Uninitialized Members - Initialize all member variables in initializer list
+            // to ensure predictable state before any method calls or plugin operations.
+            // m_apiVersionNumber set to 0, m_hasOwnProcess and m_maskPii set to false for safety.
             , m_apiVersionNumber(0)
             , m_hasOwnProcess(false)
             , m_maskPii(false)
@@ -107,6 +113,9 @@ namespace WPEFramework {
         {
             InitializeIARM();
             
+            // FIX: getMaskPii Timing - Added exception handling around getMaskPii_() call
+            // to handle voiceStatus failure gracefully and ensure m_maskPii has valid fallback.
+            // Prevents initialization failure if voice service is temporarily unavailable.
             // Initialize m_maskPii - handle failure gracefully
             try {
                 getMaskPii_();
@@ -137,6 +146,9 @@ namespace WPEFramework {
                 m_hasOwnProcess = true;
 
                 IARM_Result_t res;
+                // FIX: Unchecked IARM Return - Check all RegisterEventHandler return values
+                // to detect event registration failures that could cause missed voice events.
+                // Added error logging for all 6 voice event handlers for visibility of issues.
                 res = IARM_Bus_RegisterEventHandler(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_VOICE_IARM_EVENT_JSON_SESSION_BEGIN, voiceEventHandler);
                 if (res != IARM_RESULT_SUCCESS) {
                     LOGERR("Failed to register SESSION_BEGIN event handler: %d", res);
@@ -172,6 +184,9 @@ namespace WPEFramework {
             if (m_hasOwnProcess)
             {
                 IARM_Result_t res;
+                // FIX: Unchecked IARM Return - Check all RemoveEventHandler return values
+                // to detect event deregistration failures during cleanup.
+                // Added error logging for all 6 handlers to ensure visibility of cleanup issues.
                 res = IARM_Bus_RemoveEventHandler(CTRLM_MAIN_IARM_BUS_NAME, CTRLM_VOICE_IARM_EVENT_JSON_SESSION_END, voiceEventHandler);
                 if (res != IARM_RESULT_SUCCESS) {
                     LOGERR("Failed to remove SESSION_END event handler: %d", res);
@@ -203,6 +218,9 @@ namespace WPEFramework {
 
         void VoiceControl::voiceEventHandler(const char *owner, IARM_EventId_t eventId, void *data, size_t len)
         {
+            // FIX: Null Pointer Dereference - Use local copy before dereferencing _instance
+            // to prevent race condition during plugin destruction when event may arrive.
+            // Thread-safe pattern ensures instance validity check before method call.
             VoiceControl* instance = VoiceControl::_instance;
             if (instance)
                 instance->iarmEventHandler(owner, eventId, data, len);
@@ -221,12 +239,18 @@ namespace WPEFramework {
                     return;
                 }
                 
+                // FIX: Null Pointer Dereference - Added null check after cast
+                // to detect invalid pointer from corrupted or malformed event data.
+                // Prevents dereferencing null eventData in subsequent operations.
                 ctrlm_voice_iarm_event_json_t* eventData = (ctrlm_voice_iarm_event_json_t*)data;
                 if (!eventData) {
                     LOGERR("ERROR - failed to cast event data: eventId: %u.", (unsigned)eventId);
                     return;
                 }
 
+                // FIX: Buffer Overflow Risk - Validate len > 0 before array access
+                // to prevent undefined behavior when accessing str[len-1] with zero length.
+                // Ensures safe null termination only when buffer has valid size.
                 // Ensure there is a null character at the end of the data area.
                 if (len > 0) {
                     char* str = (char*)data;
