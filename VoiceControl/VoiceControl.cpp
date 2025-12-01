@@ -20,7 +20,6 @@
 #include "VoiceControl.h"
 #include "libIBusDaemon.h"
 #include <stdlib.h>
-#include <memory>
 #include "UtilsJsonRpc.h"
 #include "UtilsIarm.h"
 

@@ -98,24 +98,14 @@ namespace WPEFramework
 
                 // Stop processing:
                 RPC::IRemoteConnection* connection = service->RemoteConnection(_connectionId);
-                
-                // Release the LED control interface and verify proper destruction
-                // In DEBUG mode: Assert that destruction succeeded to catch reference leaks
-                // In RELEASE mode: Log error if destruction didn't succeed as expected
-                uint32_t result = _ledcontrol->Release();
-#ifdef __DEBUG__
-                ASSERT(result == Core::ERROR_DESTRUCTION_SUCCEEDED);
-#else
-                if (result != Core::ERROR_DESTRUCTION_SUCCEEDED) {
-                    LOGERR("LEDControl interface Release() failed with code: %u (expected DESTRUCTION_SUCCEEDED)", result);
-                }
-#endif
+                VARIABLE_IS_NOT_USED uint32_t result = _ledcontrol->Release();
 
                 _ledcontrol = nullptr;
 
                 // It should have been the last reference we are releasing,
                 // so it should endup in a DESTRUCTION_SUCCEEDED, if not we
                 // are leaking...
+                ASSERT(result == Core::ERROR_DESTRUCTION_SUCCEEDED);
 
                 // If this was running in a (container) process...
                 if (nullptr != connection)
