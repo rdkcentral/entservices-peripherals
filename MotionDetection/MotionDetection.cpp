@@ -368,6 +368,13 @@ namespace WPEFramework {
                  timeSet.m_nowTime = nowTime;
                  timeSet.m_timeRangeArray = (MOTION_DETECTION_Time_t *)malloc(rangeList.Length() * sizeof(MOTION_DETECTION_Time_t));
                  timeSet.m_rangeCount = rangeList.Length();
+                 
+                 // Check malloc success
+                 if (timeSet.m_timeRangeArray == nullptr) {
+                     LOGERR("Failed to allocate memory for time range array");
+                     returnResponse(false);
+                 }
+                 
                  for (int range = 0;  range < rangeList.Length(); range++)
                  {
                      JsonObject rangeObj = rangeList[range].Object();
@@ -392,11 +399,13 @@ namespace WPEFramework {
                      if (rc != MOTION_DETECTION_RESULT_SUCCESS) 
                      {
                          LOGERR("Failed to set Active Time..!");
+                         free(timeSet.m_timeRangeArray);
                          returnResponse(false);
                      }
                  }
                  else
                  {
+                     free(timeSet.m_timeRangeArray);
                      returnResponse(false);
                  }
                  free(timeSet.m_timeRangeArray);
