@@ -20,7 +20,6 @@
 #pragma once
 
 #include <chrono>
-#include <mutex>
 #include "Module.h"
 #include "motionDetector.h"
 
@@ -84,7 +83,6 @@ namespace WPEFramework {
             //End events
         public:
             static MotionDetection* _instance;
-            static std::mutex _instanceMutex;
 
         private:
             std::chrono::system_clock::time_point m_lastEventTime;
