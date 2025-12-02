@@ -81,9 +81,6 @@ namespace WPEFramework {
             void onStatus(ctrlm_main_iarm_event_json_t* eventData);
             void onValidation(ctrlm_main_iarm_event_json_t* eventData);
             //End events
-            
-            // Helper method for event handling
-            void handleIarmEvent(const char* eventName, ctrlm_main_iarm_event_json_t* eventData);
 
         public:
             RemoteControl();
