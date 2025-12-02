@@ -40,9 +40,6 @@ namespace WPEFramework
             LOGINFO("LEDControlImplementation Constructor called\n");
             if (!m_isPlatInitialized) {
                 LOGINFO("Doing plat init; dsFPInit\n");
-                // FIX: Partial Initialization - Worker job submitted outside catch block
-                // to ensure proper separation and prevent job submission if init fails.
-                // This maintains clean error handling and prevents worker thread issues.
                 try {
                     dsError_t err = dsERR_NONE;
                     if ((err = dsFPInit()) != dsERR_NONE) {
