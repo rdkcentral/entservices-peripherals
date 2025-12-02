@@ -160,6 +160,10 @@ namespace WPEFramework {
                 return;
             }
             ctrlm_main_iarm_event_json_t *eventData = static_cast<ctrlm_main_iarm_event_json_t *>(data);
+             if (!eventData) {
+                LOGERR("ERROR - failed to cast event data: eventId: %d.", (int)eventId);
+                return;
+            }
 
             switch(eventId) {
                 case CTRLM_RCU_IARM_EVENT_RCU_STATUS:
