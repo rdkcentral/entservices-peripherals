@@ -454,7 +454,7 @@ namespace WPEFramework
             }
             else if (parameters.HasLabel("red")) //color mode 1
             {
-                unsigned int red = 0, green  = 0, blue  = 0;
+                unsigned int red = 0, green = 0, blue = 0;
 
                 getNumberParameter("red", red);
                 getNumberParameter("green", green);
