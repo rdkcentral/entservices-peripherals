@@ -146,7 +146,7 @@ namespace WPEFramework {
             {
                 ctrlm_voice_iarm_event_json_t* eventData = (ctrlm_voice_iarm_event_json_t*)data;
 
-                if ((data == NULL) || (len <= sizeof(ctrlm_voice_iarm_event_json_t)))
+                if ((data == NULL) || (len == 0) || (len <= sizeof(ctrlm_voice_iarm_event_json_t)))
                 {
                     LOGERR("ERROR - got eventId(%u) with INVALID DATA: data: %p, len: %zu.", (unsigned)eventId, data, len);
                     return;
