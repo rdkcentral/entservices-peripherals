@@ -319,18 +319,20 @@ namespace WPEFramework {
                 returnResponse(false);
             }
 
-            string rSensitivity(sensitivity);
-
-            if (currentMode == 1) {
-                response["value"] = rSensitivity;
-            }
-            else if (currentMode == 2) {
-                response["name"] = rSensitivity;
-            }
-            
+            // ISSUE #211: Critical fix - added null pointer check before dereferencing
+            // Prevents potential crash if MOTION_DETECTION_GetSensitivity returns null pointer
             if (sensitivity) {
+                string rSensitivity(sensitivity);
+
+                if (currentMode == 1) {
+                    response["value"] = rSensitivity;
+                }
+                else if (currentMode == 2) {
+                    response["name"] = rSensitivity;
+                }
                 free(sensitivity);
             }
+            
             returnResponse(true);
 
         }

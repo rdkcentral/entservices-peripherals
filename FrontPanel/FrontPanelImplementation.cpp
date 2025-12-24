@@ -235,7 +235,9 @@ namespace WPEFramework
                     ok = false;
                 }
             }
-            else if (brightness >= 0 && brightness <= 100)
+            // ISSUE #79: Fixed useless comparison - brightness is uint32_t (unsigned), so >= 0 is always true
+            // Removed redundant check, keeping only the upper bound validation
+            else if (brightness <= 100)
             {
                 LOGWARN("calling setBrightness");
                 ok = CFrontPanel::instance()->setBrightness(brightness);
@@ -350,7 +352,9 @@ namespace WPEFramework
             {
                 string IndicatorNameIarm = fpIndicators.at(i).getName();
                 string MappedName = iarm2svc(IndicatorNameIarm);
-                if (MappedName != IndicatorNameIarm) lights.push_back(MappedName);
+                // ISSUE #4: Performance optimization - use std::move() to avoid unnecessary string copy
+                // MappedName is not used after push_back, so moving eliminates copy operation
+                if (MappedName != IndicatorNameIarm) lights.push_back(std::move(MappedName));
             }
             return lights;
         }

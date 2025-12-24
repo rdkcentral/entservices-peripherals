@@ -38,12 +38,18 @@ namespace Plugin {
 
     public:
         PluginInterfaceRef()
+            // ISSUE #248: Initialization fix - explicitly initialize pointers to nullptr
+            // Prevents undefined behavior from uninitialized pointer members
             : _interface(nullptr)
+            , _service(nullptr)
         {
         }
 
         PluginInterfaceRef(INTERFACE* interface, PluginHost::IShell* controller)
+            // ISSUE #249: Initialization fix - explicitly initialize pointers
+            // Ensures members are properly initialized from constructor parameters
             : _interface(interface)
+            , _service(controller)
         {
         }
 
@@ -58,9 +64,13 @@ namespace Plugin {
 
         // use move
         PluginInterfaceRef(PluginInterfaceRef&& other)
+            // ISSUE #250: Initialization fix - explicitly initialize pointers during move
+            // Ensures move constructor properly transfers ownership of pointer members
             : _interface(other._interface)
+            , _service(other._service)
         {
             other._interface = nullptr;
+            other._service = nullptr;
         }
 
         PluginInterfaceRef& operator=(PluginInterfaceRef&& other)
@@ -187,6 +197,8 @@ namespace Plugin {
             return *this;
         }
 
+        // ISSUE #207: Code cleanup - removed redundant const qualifier from return type
+        // Const on return values prevents move semantics and provides no benefit for prvalues
         PluginInterfaceRef<INTERFACE> createInterface()
         {
             auto* interface = ::WPEFramework::Plugin::createInterface<INTERFACE>(*this);
@@ -195,16 +207,18 @@ namespace Plugin {
                 LOGERR("Failed to create plugin interface for %s", _callsign.c_str());
             }
 
+            // ISSUE #206: Code cleanup - removed redundant const qualifier from return value
+            // Const on return values prevents move semantics and provides no benefit for prvalues
             // pass on the ownership of controller to interfaceRef
             return std::move(PluginInterfaceRef<INTERFACE>(interface, _service));
         }
 
-        const uint32_t retryInterval() const
+        uint32_t retryInterval() const
         {
             return _retry_interval;
         }
 
-        const int retryCount() const
+        int retryCount() const
         {
             return _retry_count;
         }

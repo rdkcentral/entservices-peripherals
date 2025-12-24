@@ -224,7 +224,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #6: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -272,7 +274,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #7: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -320,7 +324,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #8: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -370,11 +376,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #9: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("IRDB MANUFACTURERS call SUCCESS!");
+                LOGINFO("GET MANUFACTURERS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS returned FAILURE!");
 
@@ -420,11 +428,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #10: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("IRDB MODELS call SUCCESS!");
+                LOGINFO("GET MODELS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MODELS returned FAILURE!");
 
@@ -470,11 +480,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #11: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("IRDB AUTO LOOKUP call SUCCESS!");
+                LOGINFO("GET IR CODES BY AUTOLOOKUP call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP returned FAILURE!");
 
@@ -520,11 +532,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #12: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET IR CODES call SUCCESS!");
+                LOGINFO("GET IR CODES BY NAMES call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_CODES returned FAILURE!");
 
@@ -568,11 +582,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #13: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("SET IR CODES call SUCCESS!");
+                LOGINFO("SET IR CODE call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_SET_CODE returned FAILURE!");
 
@@ -616,7 +632,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #14: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -664,11 +682,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #15: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET LAST KEYPRESS call SUCCESS!");
+                LOGINFO("GET LAST KEYPRESS SOURCE call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_LAST_KEYPRESS_GET returned FAILURE!");
 
@@ -712,11 +732,13 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #16: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
-                LOGINFO("WRITE RCU WAKEUP CONFIG call SUCCESS!");
+                LOGINFO("CONFIGURE WAKEUP KEYS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_WRITE_RCU_WAKEUP_CONFIG returned FAILURE!");
 
@@ -760,7 +782,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #17: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -808,7 +832,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #18: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)
@@ -858,7 +884,9 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            response = result;
+            // ISSUE #19: Performance optimization - use std::move() to avoid expensive JsonObject copy
+            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            response = std::move(result);
             free(call);
 
             if (bSuccess)

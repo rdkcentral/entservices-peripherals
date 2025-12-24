@@ -274,7 +274,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #23: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("CTRLM_VOICE_IARM_CALL_STATUS call SUCCESS!");
                     } else {
@@ -335,7 +337,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #24: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("CONFIGURE_VOICE call SUCCESS!");
                     } else {
@@ -396,7 +400,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #25: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SET_VOICE_INIT call SUCCESS!");
                     } else {
@@ -458,7 +464,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #26: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SEND_VOICE_MESSAGE call SUCCESS!");
                     } else {
@@ -546,7 +554,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #27: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SESSION_TYPES call SUCCESS!");
                     } else {
@@ -607,7 +617,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #28: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SESSION_REQUEST call SUCCESS!");
                     } else {
@@ -668,7 +680,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #29: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SESSION_TERMINATE call SUCCESS!");
                     } else {
@@ -729,7 +743,9 @@ namespace WPEFramework {
 
                     result.FromString(call->result);
                     bSuccess = result["success"].Boolean();
-                    response = result;
+                    // ISSUE #30: Performance optimization - use std::move() to avoid expensive JsonObject copy
+                    // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+                    response = std::move(result);
                     if(bSuccess) {
                         LOGINFO("SESSION_AUDIO_STREAM_START call SUCCESS!");
                     } else {

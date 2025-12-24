@@ -151,7 +151,9 @@ namespace WPEFramework
                         auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
                         if (m_lights.end() == it)
                         {
-                            m_lights.push_back(IndicatorNameIarm);
+                            // ISSUE #31: Performance optimization - use std::move() to avoid expensive string copy
+                            // 'IndicatorNameIarm' is no longer needed after insertion, moving avoids copy overhead
+                            m_lights.push_back(std::move(IndicatorNameIarm));
                         }
                     }
 
@@ -239,7 +241,9 @@ namespace WPEFramework
 
                     auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
                     if (m_lights.end() == it)
-                        m_lights.push_back(IndicatorNameIarm);
+                        // ISSUE #32: Performance optimization - use std::move() to avoid expensive string copy
+                        // 'IndicatorNameIarm' is no longer needed after insertion, moving avoids copy overhead
+                        m_lights.push_back(std::move(IndicatorNameIarm));
                 }
             }
             catch (...)
@@ -514,7 +518,9 @@ namespace WPEFramework
                 if (frontPanelBlinkHash.HasLabel("color")) //color mode 2
                 {
                     string color = frontPanelBlinkHash["color"].String();
-                    frontPanelBlinkInfo.colorName = color;
+                    // ISSUE #33: Performance optimization - use std::move() to avoid expensive string copy
+                    // 'color' is no longer needed after assignment, moving transfers ownership efficiently
+                    frontPanelBlinkInfo.colorName = std::move(color);
                     frontPanelBlinkInfo.colorMode = 2;
                 }
                 else if (frontPanelBlinkHash.HasLabel("red")) //color mode 1
@@ -532,7 +538,9 @@ namespace WPEFramework
                 {
                     frontPanelBlinkInfo.colorMode = 0;
                 }
-                m_blinkList.push_back(frontPanelBlinkInfo);
+                // ISSUE #34: Performance optimization - use std::move() to avoid expensive object copy
+                // 'frontPanelBlinkInfo' is no longer needed after insertion, moving avoids copy constructor overhead
+                m_blinkList.push_back(std::move(frontPanelBlinkInfo));
             }
             startBlinkTimer(iterations);
         }
