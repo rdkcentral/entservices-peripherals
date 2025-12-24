@@ -113,7 +113,7 @@ RDKShell::RDKShell()
 
 ### Requirement
 
-- If the plugin runs as out-of-process, then it should implement RPC::IRemoteConnection::"INotification interface inside your plugin.
+-  If the plugin runs as out-of-process, then it should implement RPC::IRemoteConnection::INotification interface inside your plugin.
 
 ### Example
 
@@ -139,9 +139,9 @@ private:
         void Activated(RPC::IRemoteConnection* /* connection */) override
         {
         }
-        void Deactivated(RPC::IRemoteConnection* connectionId) override
+        void Deactivated(RPC::IRemoteConnection* connection) override
         {
-            _parent.Deactivated(connectionId);
+            _parent.Deactivated(connection);
         }
 
         BEGIN_INTERFACE_MAP(Notification)
