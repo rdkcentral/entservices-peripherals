@@ -382,7 +382,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET MANUFACTURERS call SUCCESS!");
+                LOGINFO("IRDB MANUFACTURERS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MANUFACTURERS returned FAILURE!");
 
@@ -434,7 +434,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET MODELS call SUCCESS!");
+                LOGINFO("IRDB MODELS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_MODELS returned FAILURE!");
 
@@ -486,7 +486,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET IR CODES BY AUTOLOOKUP call SUCCESS!");
+                LOGINFO("IRDB AUTO LOOKUP call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_AUTO_LOOKUP returned FAILURE!");
 
@@ -538,7 +538,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET IR CODES BY NAMES call SUCCESS!");
+                LOGINFO("GET IR CODES call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_CODES returned FAILURE!");
 
@@ -588,7 +588,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("SET IR CODE call SUCCESS!");
+                LOGINFO("SET IR CODES call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_IR_SET_CODE returned FAILURE!");
 
@@ -688,7 +688,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("GET LAST KEYPRESS SOURCE call SUCCESS!");
+                LOGINFO("GET LAST KEYPRESS call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_LAST_KEYPRESS_GET returned FAILURE!");
 
@@ -738,7 +738,7 @@ namespace WPEFramework {
             free(call);
 
             if (bSuccess)
-                LOGINFO("CONFIGURE WAKEUP KEYS call SUCCESS!");
+                LOGINFO("WRITE RCU WAKEUP CONFIG call SUCCESS!");
             else
                 LOGERR("ERROR - CTRLM_MAIN_IARM_CALL_WRITE_RCU_WAKEUP_CONFIG returned FAILURE!");
 

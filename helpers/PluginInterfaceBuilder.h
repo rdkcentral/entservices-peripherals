@@ -70,7 +70,6 @@ namespace Plugin {
             , _service(other._service)
         {
             other._interface = nullptr;
-            other._service = nullptr;
         }
 
         PluginInterfaceRef& operator=(PluginInterfaceRef&& other)
