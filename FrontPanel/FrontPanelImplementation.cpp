@@ -409,7 +409,8 @@ namespace WPEFramework
             JsonObject info = getFrontPanelLightsInfo();
             string infoStr;
             info.ToString(infoStr);
-            supportedLightsInfo = infoStr;
+            // Issue 5 
+            supportedLightsInfo = std::move(infoStr);
             success = true;
 
             supportedLights = (Core::Service<RPC::IteratorType<Exchange::IFrontPanel::IFrontPanelLightsListIterator>>::Create<Exchange::IFrontPanel::IFrontPanelLightsListIterator>(frontPanelLights));
