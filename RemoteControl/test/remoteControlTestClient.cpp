@@ -849,9 +849,7 @@ int main(int argc, char** argv)
                     cmd = lastCmd;
                 else if ((cmd[0] >= '0') && (cmd[0] <= '9'))
                 {
-                    // ISSUE #251: Code cleanup - removed unused value assignment
-                    // 'choice' was assigned but never used, assignment removed
-                    // choice = stoi(cmd);
+                    choice = stoi(cmd);
                     lastCmd = cmd;
                 }
                 else if ((cmd[0] >= 'a') && (cmd[0] <= 'h'))
