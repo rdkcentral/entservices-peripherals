@@ -330,7 +330,6 @@ namespace WPEFramework {
                 }
                 free(sensitivity);
             }
-            
             returnResponse(true);
 
         }
