@@ -224,8 +224,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #6: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -274,8 +272,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #7: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -324,8 +320,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #8: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -376,8 +370,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #9: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -428,8 +420,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #10: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -480,8 +470,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #11: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -532,8 +520,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #12: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -582,8 +568,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #13: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -632,8 +616,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #14: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -681,9 +663,7 @@ namespace WPEFramework {
 
             JsonObject result;
             result.FromString(call->result);
-            bSuccess = result["success"].Boolean();
-            // ISSUE #15: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
+            bSuccess = result["success"].Boolean();y
             response = std::move(result);
             free(call);
 
@@ -732,8 +712,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #16: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -782,8 +760,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #17: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -832,8 +808,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #18: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
@@ -884,8 +858,6 @@ namespace WPEFramework {
             JsonObject result;
             result.FromString(call->result);
             bSuccess = result["success"].Boolean();
-            // ISSUE #19: Performance optimization - use std::move() to avoid expensive JsonObject copy
-            // 'result' is no longer needed after assignment, moving transfers ownership efficiently
             response = std::move(result);
             free(call);
 
