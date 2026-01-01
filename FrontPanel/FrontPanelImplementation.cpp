@@ -350,7 +350,6 @@ namespace WPEFramework
             {
                 string IndicatorNameIarm = fpIndicators.at(i).getName();
                 string MappedName = iarm2svc(IndicatorNameIarm);
-                
                 if (MappedName != IndicatorNameIarm) lights.push_back(std::move(MappedName));
             }
             return lights;
