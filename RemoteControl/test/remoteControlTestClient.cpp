@@ -361,7 +361,9 @@ void handleParams(string& cmd)
                 std::cout << "Enter the TV code: ";
                 std::getline(std::cin, digits);
             }
-            currentTVCode = digits;
+            // ISSUE #20: Performance optimization - use std::move() to avoid string copy
+            // 'digits' is no longer needed after assignment, moving transfers ownership efficiently
+            currentTVCode = std::move(digits);
         }
         break;
 
@@ -374,7 +376,9 @@ void handleParams(string& cmd)
                 std::cout << "Enter the AVR code: ";
                 std::getline(std::cin, digits);
             }
-            currentAMPCode = digits;
+            // ISSUE #21: Performance optimization - use std::move() to avoid string copy
+            // 'digits' is no longer needed after assignment, moving transfers ownership efficiently
+            currentAMPCode = std::move(digits);
         }
         break;
 
@@ -387,7 +391,9 @@ void handleParams(string& cmd)
 
             if(!model.empty())
             {
-                currentModel = model;
+                // ISSUE #22: Performance optimization - use std::move() to avoid string copy
+                // 'model' is no longer needed after assignment, moving transfers ownership efficiently
+                currentModel = std::move(model);
             }
             else
             {
@@ -843,7 +849,9 @@ int main(int argc, char** argv)
                     cmd = lastCmd;
                 else if ((cmd[0] >= '0') && (cmd[0] <= '9'))
                 {
-                    choice = stoi(cmd);
+                    // ISSUE #251: Code cleanup - removed unused value assignment
+                    // 'choice' was assigned but never used, assignment removed
+                    // choice = stoi(cmd);
                     lastCmd = cmd;
                 }
                 else if ((cmd[0] >= 'a') && (cmd[0] <= 'h'))
