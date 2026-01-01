@@ -202,17 +202,12 @@ namespace Plugin {
             return std::move(PluginInterfaceRef<INTERFACE>(interface, _service));
         }
 
-        // ISSUE #206: Code cleanup - removed redundant const qualifier from return value
-            // Const on return values prevents move semantics and provides no benefit for prvalues
-            // pass on the ownership of controller to interfaceRef
-        uint32_t retryInterval() const
+        const uint32_t retryInterval() const
         {
             return _retry_interval;
         }
 
-        // ISSUE #207: Code cleanup - removed redundant const qualifier from return type
-        // Const on return values prevents move semantics and provides no benefit for prvalues
-        int retryCount() const
+        const int retryCount() const
         {
             return _retry_count;
         }
