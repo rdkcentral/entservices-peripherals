@@ -235,7 +235,6 @@ namespace WPEFramework
                     ok = false;
                 }
             }
-            
             else if (brightness <= 100)
             {
                 LOGWARN("calling setBrightness");
