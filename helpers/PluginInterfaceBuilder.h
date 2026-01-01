@@ -197,8 +197,11 @@ namespace Plugin {
             if (!interface) {
                 LOGERR("Failed to create plugin interface for %s", _callsign.c_str());
             }
+
+            // pass on the ownership of controller to interfaceRef
             return std::move(PluginInterfaceRef<INTERFACE>(interface, _service));
         }
+
         // ISSUE #206: Code cleanup - removed redundant const qualifier from return value
             // Const on return values prevents move semantics and provides no benefit for prvalues
             // pass on the ownership of controller to interfaceRef
@@ -206,6 +209,7 @@ namespace Plugin {
         {
             return _retry_interval;
         }
+
         // ISSUE #207: Code cleanup - removed redundant const qualifier from return type
         // Const on return values prevents move semantics and provides no benefit for prvalues
         int retryCount() const
