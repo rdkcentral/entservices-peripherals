@@ -151,8 +151,6 @@ namespace WPEFramework
                         auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
                         if (m_lights.end() == it)
                         {
-                            // ISSUE #31: Performance optimization - use std::move() to avoid expensive string copy
-                            // 'IndicatorNameIarm' is no longer needed after insertion, moving avoids copy overhead
                             m_lights.push_back(std::move(IndicatorNameIarm));
                         }
                     }
@@ -241,8 +239,6 @@ namespace WPEFramework
 
                     auto it = std::find(m_lights.begin(), m_lights.end(), IndicatorNameIarm);
                     if (m_lights.end() == it)
-                        // ISSUE #32: Performance optimization - use std::move() to avoid expensive string copy
-                        // 'IndicatorNameIarm' is no longer needed after insertion, moving avoids copy overhead
                         m_lights.push_back(std::move(IndicatorNameIarm));
                 }
             }
@@ -518,8 +514,6 @@ namespace WPEFramework
                 if (frontPanelBlinkHash.HasLabel("color")) //color mode 2
                 {
                     string color = frontPanelBlinkHash["color"].String();
-                    // ISSUE #33: Performance optimization - use std::move() to avoid expensive string copy
-                    // 'color' is no longer needed after assignment, moving transfers ownership efficiently
                     frontPanelBlinkInfo.colorName = std::move(color);
                     frontPanelBlinkInfo.colorMode = 2;
                 }
@@ -538,8 +532,6 @@ namespace WPEFramework
                 {
                     frontPanelBlinkInfo.colorMode = 0;
                 }
-                // ISSUE #34: Performance optimization - use std::move() to avoid expensive object copy
-                // 'frontPanelBlinkInfo' is no longer needed after insertion, moving avoids copy constructor overhead
                 m_blinkList.push_back(std::move(frontPanelBlinkInfo));
             }
             startBlinkTimer(iterations);
