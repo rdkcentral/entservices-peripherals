@@ -319,8 +319,6 @@ namespace WPEFramework {
                 returnResponse(false);
             }
 
-            // ISSUE #211: Critical fix - added null pointer check before dereferencing
-            // Prevents potential crash if MOTION_DETECTION_GetSensitivity returns null pointer
             if (sensitivity) {
                 string rSensitivity(sensitivity);
 
