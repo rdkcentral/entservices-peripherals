@@ -361,8 +361,6 @@ void handleParams(string& cmd)
                 std::cout << "Enter the TV code: ";
                 std::getline(std::cin, digits);
             }
-            // ISSUE #20: Performance optimization - use std::move() to avoid string copy
-            // 'digits' is no longer needed after assignment, moving transfers ownership efficiently
             currentTVCode = std::move(digits);
         }
         break;
@@ -376,8 +374,6 @@ void handleParams(string& cmd)
                 std::cout << "Enter the AVR code: ";
                 std::getline(std::cin, digits);
             }
-            // ISSUE #21: Performance optimization - use std::move() to avoid string copy
-            // 'digits' is no longer needed after assignment, moving transfers ownership efficiently
             currentAMPCode = std::move(digits);
         }
         break;
@@ -391,8 +387,6 @@ void handleParams(string& cmd)
 
             if(!model.empty())
             {
-                // ISSUE #22: Performance optimization - use std::move() to avoid string copy
-                // 'model' is no longer needed after assignment, moving transfers ownership efficiently
                 currentModel = std::move(model);
             }
             else
