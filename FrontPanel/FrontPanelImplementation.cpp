@@ -235,8 +235,7 @@ namespace WPEFramework
                     ok = false;
                 }
             }
-            // ISSUE #79: Fixed useless comparison - brightness is uint32_t (unsigned), so >= 0 is always true
-            // Removed redundant check, keeping only the upper bound validation
+            
             else if (brightness <= 100)
             {
                 LOGWARN("calling setBrightness");
@@ -352,8 +351,7 @@ namespace WPEFramework
             {
                 string IndicatorNameIarm = fpIndicators.at(i).getName();
                 string MappedName = iarm2svc(IndicatorNameIarm);
-                // ISSUE #4: Performance optimization - use std::move() to avoid unnecessary string copy
-                // MappedName is not used after push_back, so moving eliminates copy operation
+                
                 if (MappedName != IndicatorNameIarm) lights.push_back(std::move(MappedName));
             }
             return lights;
@@ -409,7 +407,6 @@ namespace WPEFramework
             JsonObject info = getFrontPanelLightsInfo();
             string infoStr;
             info.ToString(infoStr);
-            // Issue 5 
             supportedLightsInfo = std::move(infoStr);
             success = true;
 
