@@ -663,7 +663,7 @@ namespace WPEFramework {
 
             JsonObject result;
             result.FromString(call->result);
-            bSuccess = result["success"].Boolean();y
+            bSuccess = result["success"].Boolean();
             response = std::move(result);
             free(call);
 
