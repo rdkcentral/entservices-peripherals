@@ -229,8 +229,15 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
-                if (powerStatus)
-                    device::FrontPanelIndicator::getInstance("Power").setState(true);
+                if (powerStatus) {
+                    profileType = searchRdkProfile();
+                    LOGINFO("Madhu Front panel start powerStatus[%d] profileType[%d]", powerStatus, profileType);
+                    if (TV != profileType) {
+                        device::FrontPanelIndicator::getInstance("Power").setState(true);
+                    } else {
+                        device::FrontPanelIndicator::getInstance("Power").setState(false);
+                    }
+                }
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
