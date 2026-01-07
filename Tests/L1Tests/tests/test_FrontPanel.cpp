@@ -220,6 +220,9 @@ protected:
             delete p_frontPanelConfigImplMock;
             p_frontPanelConfigImplMock = nullptr;
         }
+
+        // Clear IFactories before derived class destructors run
+        PluginHost::IFactories::Assign(nullptr);
     }
 };
 
