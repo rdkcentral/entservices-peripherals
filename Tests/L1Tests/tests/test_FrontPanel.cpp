@@ -220,24 +220,18 @@ protected:
             delete p_frontPanelConfigImplMock;
             p_frontPanelConfigImplMock = nullptr;
         }
-
-        // Clear IFactories before derived class destructors run
-        PluginHost::IFactories::Assign(nullptr);
     }
 };
 
 class FrontPanelInitializedEventTest : public FrontPanelInitializedTest {
 protected:
     testing::NiceMock<ServiceMock> service;
-    FactoriesImplementation factoriesImplementation;
     PLUGINHOST_DISPATCHER* dispatcher;
     Core::JSONRPC::Message message;
 
     FrontPanelInitializedEventTest()
         : FrontPanelInitializedTest()
     {
-        PluginHost::IFactories::Assign(&factoriesImplementation);
-
         dispatcher = static_cast<PLUGINHOST_DISPATCHER*>(
             plugin->QueryInterface(PLUGINHOST_DISPATCHER_ID));
 
@@ -248,8 +242,6 @@ protected:
     {
         dispatcher->Deactivate();
         dispatcher->Release();
-
-        PluginHost::IFactories::Assign(nullptr);
     }
 };
 
