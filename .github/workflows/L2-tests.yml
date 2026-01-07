@@ -352,7 +352,7 @@ jobs:
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/gdialservice.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/MotionDetection.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/dsFPD.h
-          -Wall -Wno-unused-result -Wno-deprecated-declarations -Wno-error=format=
+          -Wall -Wno-unused-result -Wno-error=deprecated-declarations -Wno-error=format=
           -DUSE_IARMBUS
           -DRDK_SERVICE_L2_TEST
           -DENABLE_SYSTEM_GET_STORE_DEMO_LINK
@@ -429,7 +429,7 @@ jobs:
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/readprocMockInterface.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/gdialservice.h
           -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/dsFPD.h
-          -Wall -Wno-unused-result -Wno-deprecated-declarations -Wno-error=format=
+          -Wall -Wno-unused-result -Wno-error=deprecated-declarations -Wno-error=format=
           -Wl,-wrap,system -Wl,-wrap,syslog -Wl,--no-as-needed
           -DENABLE_TELEMETRY_LOGGING
           -DUSE_IARMBUS
