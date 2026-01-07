@@ -112,6 +112,10 @@ protected:
             dispatcher = nullptr;
         }
 
+        // Stop and clear the WorkerPool before destruction
+        workerPool->Stop();
+        Core::IWorkerPool::Assign(nullptr);
+
         // Restore global factory hooks
         PluginHost::IFactories::Assign(nullptr);
 
