@@ -123,7 +123,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-testframework
           path: entservices-testframework
-          ref: develop
+          ref: feature/workflow-test
           token: ${{ secrets.RDKCM_RDKE }}
 
       - name: Checkout entservices-peripherals
@@ -138,7 +138,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-peripherals
           path: entservices-peripherals
-          ref: develop
+          ref: feature/workflowtest_L1-L2
 
       - name: Checkout googletest
         if: steps.cache.outputs.cache-hit != 'true'
@@ -204,7 +204,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-apis
           path: entservices-apis
-          ref: ${{env.INTERFACES_REF}}
+          ref: Test
           #token : ${{ secrets.RDKCM_RDKE }}
           run: rm -rf $GITHUB_WORKSPACE/entservices-apis/jsonrpc/DTV.json
 
