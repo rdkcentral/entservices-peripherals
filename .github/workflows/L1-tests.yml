@@ -138,7 +138,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-peripherals
           path: entservices-peripherals
-          ref: develop
+          ref: L2TestPlugin_COMRPC
 
       - name: Checkout googletest
         if: steps.cache.outputs.cache-hit != 'true'
@@ -188,7 +188,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr"
           -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
           -DGENERIC_CMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DBUILD_TYPE=Debug
           -DBINDING=127.0.0.1
           -DPORT=55555
           -DEXCEPTIONS_ENABLE=ON

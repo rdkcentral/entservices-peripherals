@@ -112,10 +112,6 @@ protected:
             dispatcher = nullptr;
         }
 
-        // Stop and clear the WorkerPool before destruction
-        workerPool->Stop();
-        Core::IWorkerPool::Assign(nullptr);
-
         // Restore global factory hooks
         PluginHost::IFactories::Assign(nullptr);
 
@@ -226,12 +222,15 @@ protected:
 class FrontPanelInitializedEventTest : public FrontPanelInitializedTest {
 protected:
     testing::NiceMock<ServiceMock> service;
+    FactoriesImplementation factoriesImplementation;
     PLUGINHOST_DISPATCHER* dispatcher;
     Core::JSONRPC::Message message;
 
     FrontPanelInitializedEventTest()
         : FrontPanelInitializedTest()
     {
+        PluginHost::IFactories::Assign(&factoriesImplementation);
+
         dispatcher = static_cast<PLUGINHOST_DISPATCHER*>(
             plugin->QueryInterface(PLUGINHOST_DISPATCHER_ID));
 
@@ -242,6 +241,8 @@ protected:
     {
         dispatcher->Deactivate();
         dispatcher->Release();
+
+        PluginHost::IFactories::Assign(nullptr);
     }
 };
 
