@@ -202,12 +202,12 @@ namespace Plugin {
             return std::move(PluginInterfaceRef<INTERFACE>(interface, _service));
         }
 
-        const uint32_t retryInterval() const
+        uint32_t retryInterval() const
         {
             return _retry_interval;
         }
 
-        const int retryCount() const
+        int retryCount() const
         {
             return _retry_count;
         }
