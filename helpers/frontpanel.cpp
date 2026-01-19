@@ -188,12 +188,12 @@ namespace WPEFramework
                     }
                     else {
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-                    }*/
+                    }
 
                     if (powerStatus) {
                         LOGWARN("Madhu Power LED setState");
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
-                    }
+                    }*/
                 }
                 catch (...)
                 {
@@ -228,13 +228,7 @@ namespace WPEFramework
             try
             {
                 /*if (powerStatus) {
-                    profileType = searchRdkProfile();
-                    LOGINFO("Madhu Front panel start powerStatus[%d] profileType[%d]", powerStatus, profileType);
-                    if (TV != profileType) {
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
-                    } else {
-                        device::FrontPanelIndicator::getInstance("Power").setState(false);
-                    }
                 }*/
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
