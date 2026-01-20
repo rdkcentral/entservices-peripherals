@@ -374,8 +374,6 @@ jobs:
           -DCMAKE_DISABLE_FIND_PACKAGE_RBus=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDS_FOUND=ON
-          -DHAS_FRONT_PANEL=ON
-          -DPLUGIN_FRONTPANEL=OFF
           -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICE_L2_TEST=ON
           -DPLUGIN_L2Tests=ON
@@ -451,8 +449,6 @@ jobs:
           -DCMAKE_DISABLE_FIND_PACKAGE_RBus=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDS_FOUND=ON
-          -DHAS_FRONT_PANEL=ON
-          -DPLUGIN_FRONTPANEL=OFF
           -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICE_L2_TEST=ON
           -DPLUGIN_L2Tests=ON

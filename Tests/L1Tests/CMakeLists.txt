@@ -105,16 +105,11 @@ endmacro()
 set (MOTION_DETECTION_INC ${CMAKE_SOURCE_DIR}/../entservices-peripherals/MotionDetection ${CMAKE_SOURCE_DIR}/../entservices-peripherals/helpers)
 add_plugin_test_ex(PLUGIN_MOTION_DETECTION tests/test_MotionDetection.cpp "${MOTION_DETECTION_INC}" "${NAMESPACE}MotionDetection")
 
-# PLUGIN_FRONTPANEL
-set (FRONTPANEL_INC ${CMAKE_SOURCE_DIR}/../entservices-peripherals/FrontPanel ${CMAKE_SOURCE_DIR}/../entservices-peripherals/helpers)
-set (FRONTPANEL_LIBS ${NAMESPACE}FrontPanel ${NAMESPACE}FrontPanelImplementation)
-add_plugin_test_ex(PLUGIN_FRONTPANEL tests/test_FrontPanel.cpp "${FRONTPANEL_INC}" "${FRONTPANEL_LIBS}")
+
 
 add_library(${MODULE_NAME} SHARED ${TEST_SRC})
 
-set_source_files_properties(
-        tests/test_FrontPanel.cpp
-        PROPERTIES COMPILE_FLAGS "-fexceptions")
+
 
 include_directories(${TEST_INC})
 

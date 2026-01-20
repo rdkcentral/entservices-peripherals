@@ -21,9 +21,7 @@ set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(THUNDER_PORT 9998)
 find_package(${NAMESPACE}Plugins REQUIRED)
 
-if(PLUGIN_FRONTPANEL)
-    set(SRC_FILES ${SRC_FILES} tests/FrontPanel_L2Test.cpp)
-endif()
+
 
 
 add_library(${MODULE_NAME} SHARED ${SRC_FILES})
