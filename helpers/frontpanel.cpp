@@ -177,7 +177,7 @@ namespace WPEFramework
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
                     profileType = searchRdkProfile();
-                    /*if (TV != profileType) {
+                    if (TV != profileType) {
                         for (uint i = 0; i < fpIndicators.size(); i++) {
                             LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
                             if (powerStatus)
@@ -193,7 +193,7 @@ namespace WPEFramework
                     if (powerStatus) {
                         LOGWARN("Madhu Power LED setState");
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
-                    }*/
+                    }
                 }
                 catch (...)
                 {
