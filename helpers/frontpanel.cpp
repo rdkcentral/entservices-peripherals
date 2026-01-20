@@ -191,7 +191,7 @@ namespace WPEFramework
                     }
 
                     if (powerStatus) {
-                        LOGWARN("Madhu Power LED setState");
+                        LOGWARN("Instance Madhu Power LED setState");
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
                     }
                 }
@@ -227,9 +227,16 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
-                /*if (powerStatus) {
+                if (powerStatus) {
+                    profileType = searchRdkProfile();
+                    if (TV != profileType) {
+                        LOGWARN("Start Madhu STB Power LED setState");
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
-                }*/
+                    } else {
+                        LOGWARN("Start Madhu TV Power LED setState");
+                        device::FrontPanelIndicator::getInstance("Power").setState(false);
+                    }
+                }
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
