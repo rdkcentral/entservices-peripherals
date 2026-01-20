@@ -21,10 +21,6 @@ set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(THUNDER_PORT 9998)
 find_package(${NAMESPACE}Plugins REQUIRED)
 
-if(PLUGIN_LEDCONTROL)
-    set(SRC_FILES ${SRC_FILES} tests/LedControl_L2Test.cpp)
-endif()
-
 if(PLUGIN_FRONTPANEL)
     set(SRC_FILES ${SRC_FILES} tests/FrontPanel_L2Test.cpp)
 endif()
