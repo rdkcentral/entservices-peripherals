@@ -190,10 +190,12 @@ namespace WPEFramework
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
                     }
 
-                    /*if (powerStatus) {
-                        LOGWARN("Instance Madhu Power LED setState");
-                        device::FrontPanelIndicator::getInstance("Power").setState(true);
-                    }*/
+                    if (powerStatus) {
+                        if (TV != profileType) {
+                            LOGWARN("Instance Madhu Power LED setState");
+                            device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        }
+                    }
                 }
                 catch (...)
                 {
