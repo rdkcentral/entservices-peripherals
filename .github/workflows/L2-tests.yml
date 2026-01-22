@@ -377,8 +377,8 @@ jobs:
           -DDS_FOUND=ON
           -DPLUGIN_LEDCONTROL=ON
           -DPLUGIN_MOTION_DETECTION=ON
-          -DRDK_SERVICE_L2_TEST=ON
-          -DPLUGIN_L2Tests=ON
+          -DRDK_SERVICE_L2_TEST=OFF
+          -DPLUGIN_L2Tests=OFF
           -DPLUGIN_MOTION_DETECTION=OFF
           -DRDK_SERVICE_L2_TEST=OFF
           -DPLUGIN_L2Tests=OFF
