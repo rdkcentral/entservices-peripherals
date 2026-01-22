@@ -62,7 +62,6 @@ if(PLUGIN_LEDCONTROL)
     add_subdirectory(LEDControl)
 endif()
 
-
 if(WPEFRAMEWORK_CREATE_IPKG_TARGETS)
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEB_COMPONENT_INSTALL ON)
