@@ -380,8 +380,6 @@ jobs:
           -DRDK_SERVICE_L2_TEST=OFF
           -DPLUGIN_L2Tests=OFF
           -DPLUGIN_MOTION_DETECTION=OFF
-          -DRDK_SERVICE_L2_TEST=OFF
-          -DPLUGIN_L2Tests=OFF
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
           &&
