@@ -183,7 +183,7 @@ namespace WPEFramework
                             if (powerStatus)
                                 device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
 
-                            //device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                            device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
                         }
                     }
                     else {
@@ -191,10 +191,10 @@ namespace WPEFramework
                     }
 
                     if (powerStatus) {
-                        //if (TV != profileType) {
+                        if (TV != profileType) {
                             LOGWARN("Instance Madhu Power LED setState");
                             device::FrontPanelIndicator::getInstance("Power").setState(true);
-                        //}
+                        }
                     }
                 }
                 catch (...)
@@ -230,7 +230,9 @@ namespace WPEFramework
             try
             {
                 if (powerStatus) {
+                    if (TV != profileType) {
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
+                    }
                 }
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
