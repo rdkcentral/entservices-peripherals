@@ -328,6 +328,7 @@ namespace WPEFramework
             stopBlinkTimer();
             try
             {
+                LOGWARN("powerOnLed Madhu Power LED setState");
                 if (powerStatus)
                 {
                     switch (fp_indicator)
@@ -375,6 +376,7 @@ namespace WPEFramework
             stopBlinkTimer();
             try
             {
+                LOGWARN("powerOnLed Madhu Power LED setState");
                 switch (fp_indicator)
                 {
                 case FRONT_PANEL_INDICATOR_MESSAGE:
