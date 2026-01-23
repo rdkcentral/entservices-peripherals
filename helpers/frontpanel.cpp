@@ -176,7 +176,7 @@ namespace WPEFramework
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-                    profileType = searchRdkProfile();
+                    /*profileType = searchRdkProfile();
                     if (TV != profileType) {
                         for (uint i = 0; i < fpIndicators.size(); i++) {
                             LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
@@ -195,7 +195,7 @@ namespace WPEFramework
                             LOGWARN("Instance Madhu Power LED setState");
                             device::FrontPanelIndicator::getInstance("Power").setState(true);
                         }
-                    }
+                    }*/
                 }
                 catch (...)
                 {
@@ -229,11 +229,15 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
-                if (powerStatus) {
+                /*if (powerStatus) {
                     if (TV != profileType) {
+                        LOGWARN("start Madhu Power LED setState for STB");
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
+                    } else {
+                        LOGWARN("start Madhu Power LED setState for TV");
+                        device::FrontPanelIndicator::getInstance("Power").setState(false);
                     }
-                }
+                }*/
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
