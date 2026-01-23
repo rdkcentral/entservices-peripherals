@@ -488,6 +488,7 @@ namespace WPEFramework
                     brightness = device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).getBrightness(true);
 
                 device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setBrightness(brightness, false);
+                device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setBrightness(brightness, false);
                 success = true;
             }
             catch (...)
