@@ -200,6 +200,10 @@ namespace WPEFramework
                             device::FrontPanelIndicator::getInstance("Power").setState(true);
                         }
                     }*/
+		    if (powerStatus) {
+                LOGWARN("Instance: setState(true) is called for Power LED");
+                device::FrontPanelIndicator::getInstance("Power").setState(true);
+            }
 
                 }
                 catch (...)
