@@ -193,10 +193,10 @@ namespace WPEFramework
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
 		    }
 
-		    if (powerStatus) {
+		    /*if (powerStatus) {
                 LOGWARN("Instance: setState(true) is called for Power LED");
                 device::FrontPanelIndicator::getInstance("Power").setState(true);
-            }
+            }*/
 
                 }
                 catch (...)
@@ -231,10 +231,10 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
-                if (powerStatus) {
+                /*if (powerStatus) {
                     LOGWARN("start: setState(true) is called for Power LED");
                     device::FrontPanelIndicator::getInstance("Power").setState(true);
-                }
+                }*/
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
