@@ -193,8 +193,10 @@ namespace WPEFramework
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
 		    }
 
-		    if (powerStatus)
-                        device::FrontPanelIndicator::getInstance("Power").setState(true);
+		    if (powerStatus) {
+                LOGWARN("Instance: setState(true) is called for Power LED");
+                device::FrontPanelIndicator::getInstance("Power").setState(true);
+            }
 
                 }
                 catch (...)
@@ -229,8 +231,10 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
-                if (powerStatus)
+                if (powerStatus) {
+                    LOGWARN("start: setState(true) is called for Power LED");
                     device::FrontPanelIndicator::getInstance("Power").setState(true);
+                }
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
@@ -442,6 +446,7 @@ namespace WPEFramework
             if (parameters.HasLabel("color") && !parameters["color"].String().empty()) //color mode 2
             {
                 string colorString = parameters["color"].String();
+                LOGWARN("setLED color mode 2 - color: %s", colorString.c_str());
                 try
                 {
                     device::FrontPanelIndicator::getInstance(ledIndicator.c_str()).setColor(device::FrontPanelIndicator::Color::getInstance(colorString.c_str()), false);
@@ -459,6 +464,7 @@ namespace WPEFramework
                 getNumberParameter("red", red);
                 getNumberParameter("green", green);
                 getNumberParameter("blue", blue);
+                LOGWARN("setLED color mode 1 - red: %u, green: %u, blue: %u, combined color: 0x%06X", red, green, blue, (red << 16) | (green << 8) | blue);
 
                 color = (red << 16) | (green << 8) | blue;
                 try
@@ -472,7 +478,10 @@ namespace WPEFramework
                 }
             }
 
-            LOGWARN("setLed ledIndicator: %s brightness: %d", parameters["ledIndicator"].String().c_str(), brightness);
+            LOGWARN("setLED all parameters - ledIndicator: %s, brightness: %d, hasColor: %s, hasRGB: %s", 
+                    parameters["ledIndicator"].String().c_str(), brightness,
+                    (parameters.HasLabel("color") && !parameters["color"].String().empty()) ? "true" : "false",
+                    parameters.HasLabel("red") ? "true" : "false");
             try
             {
                 if (brightness == -1)
