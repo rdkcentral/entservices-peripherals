@@ -176,7 +176,7 @@ namespace WPEFramework
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-                    /*profileType = searchRdkProfile();
+                    profileType = searchRdkProfile();
                     if (TV != profileType) {
                         for (uint i = 0; i < fpIndicators.size(); i++) {
                             LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
@@ -190,7 +190,7 @@ namespace WPEFramework
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
                     }
 
-                    if (powerStatus) {
+                    /*if (powerStatus) {
                         if (TV != profileType) {
                             LOGWARN("Instance Madhu Power LED setState");
                             device::FrontPanelIndicator::getInstance("Power").setState(true);
