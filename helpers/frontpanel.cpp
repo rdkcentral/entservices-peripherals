@@ -192,7 +192,7 @@ namespace WPEFramework
 		    else
 		    {
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-		    }
+		    }*/
 
                     if (powerStatus) {
                         if (TV != profileType) {
