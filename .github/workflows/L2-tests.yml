@@ -453,7 +453,7 @@ jobs:
           -DPLUGIN_LEDCONTROL=ON
           -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICE_L2_TEST=ON
-          -DPLUGIN_L2Tests=OFF
+          -DPLUGIN_L2Tests=ON
           -DUSE_THUNDER_R4=ON
           -DHIDE_NON_EXTERNAL_SYMBOLS=OFF
           &&
