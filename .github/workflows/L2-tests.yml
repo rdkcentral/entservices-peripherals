@@ -451,7 +451,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDS_FOUND=ON
           -DPLUGIN_LEDCONTROL=ON
-          -DPLUGIN_MOTION_DETECTION=OFF
+          -DPLUGIN_MOTION_DETECTION=ON
           -DRDK_SERVICE_L2_TEST=ON
           -DPLUGIN_L2Tests=OFF
           -DUSE_THUNDER_R4=ON
