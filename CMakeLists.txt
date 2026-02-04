@@ -52,9 +52,7 @@ if(PLUGIN_REMOTECONTROL)
 	add_subdirectory(RemoteControl)
 endif()
 
-if(PLUGIN_FRONTPANEL)
-    add_subdirectory(FrontPanel)
-endif()
+
 
 if(PLUGIN_MOTION_DETECTION)
     add_subdirectory(MotionDetection)
