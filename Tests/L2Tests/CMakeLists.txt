@@ -21,10 +21,6 @@ set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(THUNDER_PORT 9998)
 find_package(${NAMESPACE}Plugins REQUIRED)
 
-if(PLUGIN_LEDCONTROL)
-    set(SRC_FILES ${SRC_FILES} tests/LedControl_L2Test.cpp)
-endif()
-
 add_library(${MODULE_NAME} SHARED ${SRC_FILES})
 
 set_target_properties(${MODULE_NAME} PROPERTIES
