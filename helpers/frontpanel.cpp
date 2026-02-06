@@ -69,6 +69,7 @@ namespace WPEFramework
     {
         CFrontPanel* CFrontPanel::s_instance = NULL;
         static int globalLedBrightness = 100;
+	static int firstTimeSetLED = 0;
 
         int CFrontPanel::initDone = 0;
         static bool isMessageLedOn = false;
@@ -191,14 +192,14 @@ namespace WPEFramework
 		    else
 		    {
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-		    }*/
+		    }
 
-		    if (powerStatus) {
-                if (TV != profileType) {
-                    LOGWARN("Instance: setState(true) is called for Power LED");
-                    device::FrontPanelIndicator::getInstance("Power").setState(true);
-                }
-            }
+                    if (powerStatus) {
+                        if (TV != profileType) {
+                            LOGWARN("Instance: setState(true) is called for Power LED");
+                            device::FrontPanelIndicator::getInstance("Power").setState(true);
+                        }
+                    }*/
 
                 }
                 catch (...)
@@ -440,6 +441,11 @@ namespace WPEFramework
             string ledIndicator = svc2iarm(parameters["ledIndicator"].String());
             int brightness = -1;
 
+            if (!firstTimeSetLED) {
+                LOGWARN("FirstTime setLED received after Bootup");
+                device::FrontPanelIndicator::getInstance("Power").setState(false);
+		firstTimeSetLED = 1;
+	    }
             if (parameters.HasLabel("brightness"))
                 //brightness = properties["brightness"].Number();
                 getNumberParameter("brightness", brightness);
