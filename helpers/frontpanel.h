@@ -32,6 +32,7 @@
 #include <list>
 #include <vector>
 
+#include <core/core.h>
 #include <plugins/plugins.h>
 
 namespace WPEFramework
