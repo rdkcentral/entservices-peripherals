@@ -44,16 +44,6 @@ if(RDK_SERVICE_L2_TEST)
     add_subdirectory(Tests/L2Tests)
 endif()
 
-if(PLUGIN_VOICECONTROL)
-    add_subdirectory(VoiceControl)
-endif()
-
-if(PLUGIN_REMOTECONTROL)
-	add_subdirectory(RemoteControl)
-endif()
-
-
-
 if(PLUGIN_MOTION_DETECTION)
     add_subdirectory(MotionDetection)
 endif()
