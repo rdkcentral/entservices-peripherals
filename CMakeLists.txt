@@ -40,10 +40,6 @@ if(RDK_SERVICES_L1_TEST)
     add_subdirectory(Tests/L1Tests)
 endif()
 
-if(RDK_SERVICE_L2_TEST)
-    add_subdirectory(Tests/L2Tests)
-endif()
-
 if(PLUGIN_VOICECONTROL)
     add_subdirectory(VoiceControl)
 endif()
@@ -56,10 +52,6 @@ endif()
 
 if(PLUGIN_MOTION_DETECTION)
     add_subdirectory(MotionDetection)
-endif()
-
-if(PLUGIN_LEDCONTROL)
-    add_subdirectory(LEDControl)
 endif()
 
 if(WPEFRAMEWORK_CREATE_IPKG_TARGETS)
