@@ -780,7 +780,8 @@ namespace WPEFramework {
             JsonObject params;
 
             params.FromString(eventData->payload);
-
+	    LOGINFO("[TTT]Raw voice data: %s", eventData->payload);
+	    std::cout<<"[TTT] Raw message:"<<eventData->payload;
             sendNotify_("onServerMessage", params);
         }
 
