@@ -40,16 +40,13 @@ if(RDK_SERVICES_L1_TEST)
     add_subdirectory(Tests/L1Tests)
 endif()
 
-if(RDK_SERVICE_L2_TEST)
-    add_subdirectory(Tests/L2Tests)
-endif()
 
 if(PLUGIN_MOTION_DETECTION)
     add_subdirectory(MotionDetection)
 endif()
 
 # Add a dummy install target to prevent cmake install failures when no plugins are enabled.  This is needed temporarily while plugins are moved to other repos.
-if(NOT RDK_SERVICES_L1_TEST AND NOT RDK_SERVICE_L2_TEST AND NOT PLUGIN_MOTION_DETECTION)
+if(NOT RDK_SERVICES_L1_TEST AND NOT PLUGIN_MOTION_DETECTION)
     install(CODE "message(STATUS \"entservices-peripherals: No install target available, ignoring...\")")
 endif()
 
