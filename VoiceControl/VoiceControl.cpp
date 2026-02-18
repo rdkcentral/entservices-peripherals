@@ -775,13 +775,61 @@ namespace WPEFramework {
             sendNotify("onKeywordVerification", params);
         }
 
-        void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
+	void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
         {
             JsonObject params;
 
             params.FromString(eventData->payload);
 
-            sendNotify_("onServerMessage", params);
+            // Log raw voice-to-text data
+            LOGINFO("Raw voice data: %s", eventData->payload);
+
+            // Check if we should filter this command
+            bool shouldBroadcast = true;
+
+            if (params.HasLabel("msgPayload")) {
+                JsonObject msgPayload = params["msgPayload"].Object();
+
+                if (msgPayload.HasLabel("lastCommand")) {
+                    JsonObject lastCommand = msgPayload["lastCommand"].Object();
+
+                    if (lastCommand.HasLabel("transcription")) {
+                        std::string transcription = lastCommand["transcription"].String();
+                        std::transform(transcription.begin(), transcription.end(), transcription.begin(), ::tolower);
+
+                        // Filter smart home commands - don't broadcast to homepage
+                        if (transcription.find("turn off") != std::string::npos ||
+                            transcription.find("turn on") != std::string::npos ||
+                            transcription.find("light") != std::string::npos ||
+                            transcription.find("thermostat") != std::string::npos ||
+                            transcription.find("plug") != std::string::npos) {
+
+                            LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
+
+                            // Call BartonMatter plugin directly via JSON-RPC
+                            JsonObject bartonParams;
+                            bartonParams["transcription"] = transcription;
+                            bartonParams["rawPayload"] = params;
+
+                            // Invoke BartonMatter's onSmartHomeCommand method
+                            JsonObject bartonResponse;
+                            auto ret = InvokeServiceMethod("org.rdk.barton.1", "OnVoiceCommandReceived", bartonParams, bartonResponse);
+                            if (ret != Core::ERROR_NONE) {
+                                LOGWARN("Failed to invoke BartonMatter.onSmartHomeCommand, error: %u", ret);
+                            } else {
+                                LOGINFO("Successfully routed voice command to BartonMatter");
+                            }
+
+                            shouldBroadcast = false; // Don't send to homepage
+                        }
+                    }
+                }
+            }
+
+            // Only broadcast to all clients if not filtered
+            if (shouldBroadcast) {
+                sendNotify_("onServerMessage", params);
+            }
         }
 
         void VoiceControl::onStreamEnd(ctrlm_voice_iarm_event_json_t* eventData)
