@@ -815,12 +815,12 @@ namespace WPEFramework {
 							std::string bartonParamsStr;
 							bartonParams.ToString(bartonParamsStr);
 							std::string cmd =
-								"curl -s -H \"Content-Type: application/json\" "
-								"--request POST "
-								"--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
-								"\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
-								"\"params\":{\"payload\":\"" + bartonParamsStr + "\"}}' "
-								"http://127.0.0.1:9998/jsonrpc";
+    "curl -s -H \"Content-Type: application/json\" "
+    "--request POST "
+    "--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
+    "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
+    "\"params\":{\"payload\":\"" + transcription + "\"}}' "
+    "http://127.0.0.1:9998/jsonrpc";
 
 							FILE* pipe = popen(cmd.c_str(), "r");
 
