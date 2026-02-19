@@ -810,7 +810,6 @@ namespace WPEFramework {
 							JsonObject bartonParams;
 							bartonParams["transcription"] = transcription;
 							bartonParams["rawPayload"] = params;
-							std::string bartonParamsStr = bartonParams.ToString();
 							// Invoke BartonMatter's onSmartHomeCommand method
 							JsonObject bartonResponse;
 							std::string bartonParamsStr;
