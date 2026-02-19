@@ -810,10 +810,10 @@ namespace WPEFramework {
                             JsonObject bartonParams;
                             bartonParams["transcription"] = transcription;
                             bartonParams["rawPayload"] = params;
-
+			    std::string bartonParamsStr = bartonParams.ToString();
                             // Invoke BartonMatter's onSmartHomeCommand method
                             JsonObject bartonResponse;
-                            auto ret = InvokeServiceMethod("org.rdk.barton.1", "OnVoiceCommandReceived", bartonParams, bartonResponse);
+                            auto ret = InvokeServiceMethod("org.rdk.barton.1", "OnVoiceCommandReceived", bartonParamsStr, bartonResponse);
                             if (ret != Core::ERROR_NONE) {
                                 LOGWARN("Failed to invoke BartonMatter.onSmartHomeCommand, error: %u", ret);
                             } else {
