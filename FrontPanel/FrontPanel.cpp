@@ -26,6 +26,7 @@
 #include "frontPanelTextDisplay.hpp"
 
 #include "libIBus.h"
+#include "rdk/iarmmgrs-hal/pwrMgr.h"
 
 #include "UtilsJsonRpc.h"
 #include "UtilsIarm.h"
@@ -65,9 +66,6 @@
 #define API_VERSION_NUMBER_MAJOR 1
 #define API_VERSION_NUMBER_MINOR 0
 #define API_VERSION_NUMBER_PATCH 6
-
-using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
-
 
 namespace
 {
@@ -179,8 +177,6 @@ namespace WPEFramework
         : PluginHost::JSONRPC()
         , m_updateTimer(this)
         , m_runUpdateTimer(false)
-        , _pwrMgrNotification(*this)
-        , _registeredEventHandlers(false)
         {
             FrontPanel::_instance = this;
             m_runUpdateTimer = false;
@@ -204,20 +200,12 @@ namespace WPEFramework
 
         FrontPanel::~FrontPanel()
         {
-            if (_powerManagerPlugin) {
-                _powerManagerPlugin->Unregister(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());
-                _powerManagerPlugin.Reset();
-            }
-
-            _registeredEventHandlers = false;
         }
-
-        const string FrontPanel::Initialize(PluginHost::IShell *service)
+	    const string FrontPanel::Initialize(PluginHost::IShell * /* service */)
         {
-            InitializePowerManager(service);
             FrontPanel::_instance = this;
-            CFrontPanel::instance(service);
-            CFrontPanel::instance()->start();
+            InitializeIARM();
+	    CFrontPanel::instance()->start();
             CFrontPanel::instance()->addEventObserver(this);
             loadPreferences();
 
@@ -233,41 +221,46 @@ namespace WPEFramework
                 m_runUpdateTimer = false;
             }
             patternUpdateTimer.Revoke(m_updateTimer);
+
+            DeinitializeIARM();
+        }
+        void FrontPanel::powerModeChange(const char *owner, IARM_EventId_t eventId, void *data, size_t len)
+        {
+            if (strcmp(owner, IARM_BUS_PWRMGR_NAME)  == 0) {
+               if (eventId == IARM_BUS_PWRMGR_EVENT_MODECHANGED ) {
+                   IARM_Bus_PWRMgr_EventData_t *param = (IARM_Bus_PWRMgr_EventData_t *)data;
+                   LOGINFO("Event IARM_BUS_PWRMGR_EVENT_MODECHANGED: State Changed %d -- > %d\r",
+                               param->data.state.curState, param->data.state.newState);
+                   if(param->data.state.newState == IARM_BUS_PWRMGR_POWERSTATE_ON)
+                   {
+                       LOGINFO("setPowerStatus true");
+                       CFrontPanel::instance()->setPowerStatus(true);
+                   }
+                   else
+                   {
+                       LOGINFO("setPowerStatus false");
+                       CFrontPanel::instance()->setPowerStatus(false);
+                   }
+               }
+            }
         }
 
-        void FrontPanel::InitializePowerManager(PluginHost::IShell *service)
+        void FrontPanel::InitializeIARM()
         {
-            _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
-                                        .withIShell(service)
-                                        .withRetryIntervalMS(200)
-                                        .withRetryCount(25)
-                                        .createInterface();
-            registerEventHandlers();
-        }
-
-        void FrontPanel::onPowerModeChanged(const PowerState currentState, const PowerState newState)
-        {
-            if(newState == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
+            if (Utils::IARM::init())
             {
-                LOGINFO("setPowerStatus true");
-                CFrontPanel::instance()->setPowerStatus(true);
+                IARM_Result_t res;
+                IARM_CHECK( IARM_Bus_RegisterEventHandler(IARM_BUS_PWRMGR_NAME,IARM_BUS_PWRMGR_EVENT_MODECHANGED, powerModeChange) );
             }
-            else
-            {
-                LOGINFO("setPowerStatus false");
-                CFrontPanel::instance()->setPowerStatus(false);
-            }
-            return;
         }
 
-        void FrontPanel::registerEventHandlers()
+        void FrontPanel::DeinitializeIARM()
         {
-            ASSERT (_powerManagerPlugin);
-
-            if(!_registeredEventHandlers && _powerManagerPlugin) {
-                _registeredEventHandlers = true;
-                _powerManagerPlugin->Register(_pwrMgrNotification.baseInterface<Exchange::IPowerManager::IModeChangedNotification>());
-            }
+           if (Utils::IARM::isConnected())
+           {
+              IARM_Result_t res;
+              IARM_CHECK( IARM_Bus_RemoveEventHandler(IARM_BUS_PWRMGR_NAME,IARM_BUS_PWRMGR_EVENT_MODECHANGED, powerModeChange) );
+           }
         }
 
         void setResponseArray(JsonObject& response, const char* key, const std::vector<std::string>& items)
