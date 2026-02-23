@@ -826,7 +826,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             pclose(pipe);
                         }
                         
-                        // Create replacement message matching "Go home" success format
+                        // Create SUCCESS response (like "Go home", NOT like silence error)
                         JsonObject uiResponse;
                         
                         uiResponse["msgType"] = "vrexResponse";
@@ -837,8 +837,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["returnCode"] = 0;
                         uiMsgPayload["connectionClosed"] = true;
                         uiMsgPayload["lastCommand"] = lastCommand;
-                        
-                        // Create executeResponse with sky.legacy format
+                     
                         JsonObject executeResponse;
                         executeResponse["executeAgent"] = "SOIP";
                         
@@ -846,14 +845,14 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         jsonResponse["target"] = "TV";
                         jsonResponse["type"] = "sky.legacy";
                         
-                        // Create execution in sky.legacy format with success indicator
+                        // Create execution with success indicator (like "Go home")
                         JsonArray executions;
                         JsonObject execution;
                         execution["_type"] = "sky.legacy";
                         execution["action"] = "command.smarthome";
                         execution["domain"] = "TV";
                         execution["target"] = "client";
-                        execution["success"] = "200";  // Success code like "Go home"
+                        execution["success"] = "200";
                         
                         executions.Add(execution);
                         jsonResponse["executions"] = executions;
@@ -864,6 +863,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"] = uiMsgPayload;
                         
+                        LOGINFO("Sending smart home success response");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
