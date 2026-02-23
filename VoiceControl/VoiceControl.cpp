@@ -775,92 +775,104 @@ namespace WPEFramework {
 			sendNotify("onKeywordVerification", params);
 		}
 
-		void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
+void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
 {
     JsonObject params;
-    
     params.FromString(eventData->payload);
     
-    // Log raw voice-to-text data
     LOGINFO("Raw voice data: %s", eventData->payload);
     
-    // Check if we should filter this command
-    bool shouldBroadcast = true;
+    bool isSmartHomeCommand = false;
     
-    if (params.HasLabel("msgPayload")) {
-        JsonObject msgPayload = params["msgPayload"].Object();
-        
-        if (msgPayload.HasLabel("lastCommand")) {
-            JsonObject lastCommand = msgPayload["lastCommand"].Object();
+    // Only intercept vrexResponse messages for smart home commands
+    if (params.HasLabel("msgType") && params["msgType"].String() == "vrexResponse") {
+        if (params.HasLabel("msgPayload")) {
+            JsonObject msgPayload = params["msgPayload"].Object();
             
-            if (lastCommand.HasLabel("transcription")) {
-                std::string transcription = lastCommand["transcription"].String();
-                std::transform(transcription.begin(), transcription.end(), transcription.begin(), ::tolower);
+            if (msgPayload.HasLabel("lastCommand")) {
+                JsonObject lastCommand = msgPayload["lastCommand"].Object();
                 
-                // Filter smart home commands - don't broadcast to homepage
-                if (transcription.find("turn off") != std::string::npos ||
-                    transcription.find("turn on") != std::string::npos ||
-                    transcription.find("light") != std::string::npos ||
-                    transcription.find("thermostat") != std::string::npos ||
-                    transcription.find("plug") != std::string::npos) {
+                if (lastCommand.HasLabel("transcription")) {
+                    std::string transcription = lastCommand["transcription"].String();
+                    std::string transcriptionLower = transcription;
+                    std::transform(transcriptionLower.begin(), transcriptionLower.end(), 
+                                 transcriptionLower.begin(), ::tolower);
                     
-                    LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
-                    
-                    // Call BartonMatter plugin directly via JSON-RPC
-                    std::string cmd =
-                        "curl -s -H \"Content-Type: application/json\" "
-                        "--request POST "
-                        "--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
-                        "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
-                        "\"params\":{\"payload\":\"" + transcription + "\"}}' "
-                        "http://127.0.0.1:9998/jsonrpc";
-                    
-                    bool bartonSuccess = false;
-                    FILE* pipe = popen(cmd.c_str(), "r");
-                    
-                    if (pipe) {
-                        char buffer[256];
-                        std::string response;
-                        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-                            response += buffer;
-                            LOGINFO("BartonMatter Response: %s", buffer);
-                        }
-                        pclose(pipe);
+                    // Detect smart home commands
+                    if (transcriptionLower.find("turn off") != std::string::npos ||
+                        transcriptionLower.find("turn on") != std::string::npos ||
+                        transcriptionLower.find("light") != std::string::npos ||
+                        transcriptionLower.find("thermostat") != std::string::npos ||
+                        transcriptionLower.find("plug") != std::string::npos) {
                         
-                        // Check if response indicates success
-                        bartonSuccess = (response.find("\"success\":true") != std::string::npos || 
-                                       response.find("error") == std::string::npos);
+                        isSmartHomeCommand = true;
+                        LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
+                        
+                        // Call BartonMatter plugin
+                        std::string cmd =
+                            "curl -s -H \"Content-Type: application/json\" "
+                            "--request POST "
+                            "--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
+                            "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
+                            "\"params\":{\"payload\":\"" + transcription + "\"}}' "
+                            "http://127.0.0.1:9998/jsonrpc";
+                        
+                        FILE* pipe = popen(cmd.c_str(), "r");
+                        if (pipe) {
+                            char buffer[256];
+                            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                                LOGINFO("BartonMatter Response: %s", buffer);
+                            }
+                            pclose(pipe);
+                        }
+                        
+                        // Create replacement message matching "Go home" success format
+                        JsonObject uiResponse;
+                        
+                        uiResponse["msgType"] = "vrexResponse";
+                        uiResponse["trx"] = params["trx"];
+                        uiResponse["created"] = params["created"];
+                        
+                        JsonObject uiMsgPayload;
+                        uiMsgPayload["returnCode"] = 0;
+                        uiMsgPayload["connectionClosed"] = true;
+                        uiMsgPayload["lastCommand"] = lastCommand;
+                        
+                        // Create executeResponse with sky.legacy format
+                        JsonObject executeResponse;
+                        executeResponse["executeAgent"] = "SOIP";
+                        
+                        JsonObject jsonResponse;
+                        jsonResponse["target"] = "TV";
+                        jsonResponse["type"] = "sky.legacy";
+                        
+                        // Create execution in sky.legacy format with success indicator
+                        JsonArray executions;
+                        JsonObject execution;
+                        execution["_type"] = "sky.legacy";
+                        execution["action"] = "command.smarthome";
+                        execution["domain"] = "TV";
+                        execution["target"] = "client";
+                        execution["success"] = "200";  // Success code like "Go home"
+                        
+                        executions.Add(execution);
+                        jsonResponse["executions"] = executions;
+                        
+                        executeResponse["jsonResponse"] = jsonResponse;
+                        executeResponse["responseTime"] = 5;
+                        
+                        uiMsgPayload["executeResponse"] = executeResponse;
+                        uiResponse["msgPayload"] = uiMsgPayload;
+                        
+                        sendNotify_("onServerMessage", uiResponse);
                     }
-                    
-                    // Create custom UI response for smart home commands
-                    JsonObject uiResponse;
-                    JsonObject uiMsgPayload;
-                    JsonObject uiLastCommand;
-                    
-                    uiLastCommand["transcription"] = transcription;
-                    
-                    if (bartonSuccess) {
-                        uiLastCommand["status"] = "success";
-                        uiLastCommand["message"] = "Smart home command executed successfully";
-                    } else {
-                        uiLastCommand["status"] = "success"; // Still show success to maintain consistency
-                        uiLastCommand["message"] = "Smart home command received";
-                    }
-                    
-                    uiMsgPayload["lastCommand"] = uiLastCommand;
-                    uiResponse["msgPayload"] = uiMsgPayload;
-                    
-                    // Send custom response to UI
-                    sendNotify_("onServerMessage", uiResponse);
-                    
-                    shouldBroadcast = false; // Don't send original message to homepage
                 }
             }
         }
     }
     
-    // Only broadcast original message to all clients if not filtered
-    if (shouldBroadcast) {
+    // Send original message only if NOT a smart home command
+    if (!isSmartHomeCommand) {
         sendNotify_("onServerMessage", params);
     }
 }
