@@ -319,16 +319,15 @@ namespace WPEFramework {
                 returnResponse(false);
             }
 
-            string rSensitivity(sensitivity);
-
-            if (currentMode == 1) {
-                response["value"] = rSensitivity;
-            }
-            else if (currentMode == 2) {
-                response["name"] = rSensitivity;
-            }
-            
             if (sensitivity) {
+                string rSensitivity(sensitivity);
+
+                if (currentMode == 1) {
+                    response["value"] = rSensitivity;
+                }
+                else if (currentMode == 2) {
+                    response["name"] = rSensitivity;
+                }
                 free(sensitivity);
             }
             returnResponse(true);
