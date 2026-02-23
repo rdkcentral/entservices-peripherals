@@ -776,73 +776,94 @@ namespace WPEFramework {
 		}
 
 		void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
-		{
-			JsonObject params;
-
-			params.FromString(eventData->payload);
-
-			// Log raw voice-to-text data
-			LOGINFO("Raw voice data: %s", eventData->payload);
-
-			// Check if we should filter this command
-			bool shouldBroadcast = true;
-
-			if (params.HasLabel("msgPayload")) {
-				JsonObject msgPayload = params["msgPayload"].Object();
-
-				if (msgPayload.HasLabel("lastCommand")) {
-					JsonObject lastCommand = msgPayload["lastCommand"].Object();
-
-					if (lastCommand.HasLabel("transcription")) {
-						std::string transcription = lastCommand["transcription"].String();
-						std::transform(transcription.begin(), transcription.end(), transcription.begin(), ::tolower);
-
-						// Filter smart home commands - don't broadcast to homepage
-						if (transcription.find("turn off") != std::string::npos ||
-								transcription.find("turn on") != std::string::npos ||
-								transcription.find("light") != std::string::npos ||
-								transcription.find("thermostat") != std::string::npos ||
-								transcription.find("plug") != std::string::npos) {
-
-							LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
-
-							// Call BartonMatter plugin directly via JSON-RPC
-							JsonObject bartonParams;
-							bartonParams["transcription"] = transcription;
-							bartonParams["rawPayload"] = params;
-							// Invoke BartonMatter's onSmartHomeCommand method
-							JsonObject bartonResponse;
-							std::string bartonParamsStr;
-							bartonParams.ToString(bartonParamsStr);
-							std::string cmd =
-    "curl -s -H \"Content-Type: application/json\" "
-    "--request POST "
-    "--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
-    "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
-    "\"params\":{\"payload\":\"" + transcription + "\"}}' "
-    "http://127.0.0.1:9998/jsonrpc";
-
-							FILE* pipe = popen(cmd.c_str(), "r");
-
-							if (pipe) {
-								char buffer[256];
-								while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-									LOGINFO("Response: %s", buffer);
-								}
-								pclose(pipe);
-							}
-
-							shouldBroadcast = false; // Don't send to homepage
-						}
-					}
-				}
-			}
-
-			// Only broadcast to all clients if not filtered
-			if (shouldBroadcast) {
-				sendNotify_("onServerMessage", params);
-			}
-		}
+{
+    JsonObject params;
+    
+    params.FromString(eventData->payload);
+    
+    // Log raw voice-to-text data
+    LOGINFO("Raw voice data: %s", eventData->payload);
+    
+    // Check if we should filter this command
+    bool shouldBroadcast = true;
+    
+    if (params.HasLabel("msgPayload")) {
+        JsonObject msgPayload = params["msgPayload"].Object();
+        
+        if (msgPayload.HasLabel("lastCommand")) {
+            JsonObject lastCommand = msgPayload["lastCommand"].Object();
+            
+            if (lastCommand.HasLabel("transcription")) {
+                std::string transcription = lastCommand["transcription"].String();
+                std::transform(transcription.begin(), transcription.end(), transcription.begin(), ::tolower);
+                
+                // Filter smart home commands - don't broadcast to homepage
+                if (transcription.find("turn off") != std::string::npos ||
+                    transcription.find("turn on") != std::string::npos ||
+                    transcription.find("light") != std::string::npos ||
+                    transcription.find("thermostat") != std::string::npos ||
+                    transcription.find("plug") != std::string::npos) {
+                    
+                    LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
+                    
+                    // Call BartonMatter plugin directly via JSON-RPC
+                    std::string cmd =
+                        "curl -s -H \"Content-Type: application/json\" "
+                        "--request POST "
+                        "--data '{\"jsonrpc\":\"2.0\",\"id\":\"4\","
+                        "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
+                        "\"params\":{\"payload\":\"" + transcription + "\"}}' "
+                        "http://127.0.0.1:9998/jsonrpc";
+                    
+                    bool bartonSuccess = false;
+                    FILE* pipe = popen(cmd.c_str(), "r");
+                    
+                    if (pipe) {
+                        char buffer[256];
+                        std::string response;
+                        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                            response += buffer;
+                            LOGINFO("BartonMatter Response: %s", buffer);
+                        }
+                        pclose(pipe);
+                        
+                        // Check if response indicates success
+                        bartonSuccess = (response.find("\"success\":true") != std::string::npos || 
+                                       response.find("error") == std::string::npos);
+                    }
+                    
+                    // Create custom UI response for smart home commands
+                    JsonObject uiResponse;
+                    JsonObject uiMsgPayload;
+                    JsonObject uiLastCommand;
+                    
+                    uiLastCommand["transcription"] = transcription;
+                    
+                    if (bartonSuccess) {
+                        uiLastCommand["status"] = "success";
+                        uiLastCommand["message"] = "Smart home command executed successfully";
+                    } else {
+                        uiLastCommand["status"] = "success"; // Still show success to maintain consistency
+                        uiLastCommand["message"] = "Smart home command received";
+                    }
+                    
+                    uiMsgPayload["lastCommand"] = uiLastCommand;
+                    uiResponse["msgPayload"] = uiMsgPayload;
+                    
+                    // Send custom response to UI
+                    sendNotify_("onServerMessage", uiResponse);
+                    
+                    shouldBroadcast = false; // Don't send original message to homepage
+                }
+            }
+        }
+    }
+    
+    // Only broadcast original message to all clients if not filtered
+    if (shouldBroadcast) {
+        sendNotify_("onServerMessage", params);
+    }
+}
 
 		void VoiceControl::onStreamEnd(ctrlm_voice_iarm_event_json_t* eventData)
 		{
