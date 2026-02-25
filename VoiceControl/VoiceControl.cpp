@@ -826,23 +826,36 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             pclose(pipe);
                         }
                         
-                        // Create SUCCESS response with no executeResponse.
-                        // The command was handled externally by BartonMatter,
-                        // so the UI has nothing to execute — it will just close cleanly.
+                        // Send vrexResponse with executeResponse but EMPTY executions array.
+                        // The UI gets the response structure it expects,
+                        // but has no actions to execute — should close silently.
                         JsonObject uiResponse;
-                        
                         uiResponse["msgType"] = "vrexResponse";
                         uiResponse["trx"] = params["trx"];
                         uiResponse["created"] = params["created"];
-                        
+
                         JsonObject uiMsgPayload;
                         uiMsgPayload["returnCode"] = 0;
                         uiMsgPayload["connectionClosed"] = true;
                         uiMsgPayload["lastCommand"] = lastCommand;
-                        
+
+                        JsonObject executeResponse;
+                        executeResponse["executeAgent"] = "SOIP";
+
+                        JsonObject jsonResponse;
+                        jsonResponse["target"] = "TV";
+                        jsonResponse["type"] = "sky.legacy";
+
+                        JsonArray executions;  // empty array — nothing to execute
+                        jsonResponse["executions"] = executions;
+
+                        executeResponse["jsonResponse"] = jsonResponse;
+                        executeResponse["responseTime"] = 5;
+
+                        uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"] = uiMsgPayload;
-                        
-                        LOGINFO("Sending smart home success response (handled by BartonMatter)");
+
+                        LOGINFO("Sending smart home success response with empty executions (handled by BartonMatter)");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
