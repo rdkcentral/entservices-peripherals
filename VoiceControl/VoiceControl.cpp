@@ -779,36 +779,36 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
 {
     JsonObject params;
     params.FromString(eventData->payload);
-    
+
     LOGINFO("Raw voice data: %s", eventData->payload);
-    
+
     bool isSmartHomeCommand = false;
-    
+
     // Only intercept vrexResponse messages for smart home commands
     if (params.HasLabel("msgType") && params["msgType"].String() == "vrexResponse") {
         if (params.HasLabel("msgPayload")) {
             JsonObject msgPayload = params["msgPayload"].Object();
-            
+
             if (msgPayload.HasLabel("lastCommand")) {
                 JsonObject lastCommand = msgPayload["lastCommand"].Object();
-                
+
                 if (lastCommand.HasLabel("transcription")) {
                     std::string transcription = lastCommand["transcription"].String();
                     std::string transcriptionLower = transcription;
-                    std::transform(transcriptionLower.begin(), transcriptionLower.end(), 
-                                 transcriptionLower.begin(), ::tolower);
-                    
+                    std::transform(transcriptionLower.begin(), transcriptionLower.end(),
+                                   transcriptionLower.begin(), ::tolower);
+
                     // Detect smart home commands
                     if (transcriptionLower.find("turn off") != std::string::npos ||
-                        transcriptionLower.find("turn on") != std::string::npos ||
-                        transcriptionLower.find("light") != std::string::npos ||
+                        transcriptionLower.find("turn on")  != std::string::npos ||
+                        transcriptionLower.find("light")    != std::string::npos ||
                         transcriptionLower.find("thermostat") != std::string::npos ||
-                        transcriptionLower.find("plug") != std::string::npos) {
-                        
+                        transcriptionLower.find("plug")     != std::string::npos) {
+
                         isSmartHomeCommand = true;
                         LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
-                        
-                        // Call BartonMatter plugin
+
+                        // Forward to BartonMatter plugin
                         std::string cmd =
                             "curl -s -H \"Content-Type: application/json\" "
                             "--request POST "
@@ -816,7 +816,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             "\"method\":\"org.rdk.barton.1.OnVoiceCommandReceived\","
                             "\"params\":{\"payload\":\"" + transcription + "\"}}' "
                             "http://127.0.0.1:9998/jsonrpc";
-                        
+
                         FILE* pipe = popen(cmd.c_str(), "r");
                         if (pipe) {
                             char buffer[256];
@@ -825,60 +825,51 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             }
                             pclose(pipe);
                         }
-                        
-                        // Use the same pattern as "go to settings" (which closes silently):
-                        // _type:"sky.legacy" + known action + success:"200"
-                        // Using command.navigation.home — navigates home (already there = no-op).
+
+                        // Send a "command.cancel" response — this is a known UI action
+                        // that closes the voice overlay silently with no side effects.
                         JsonObject uiResponse;
                         uiResponse["msgType"] = "vrexResponse";
-                        uiResponse["trx"] = params["trx"];
+                        uiResponse["trx"]     = params["trx"];
                         uiResponse["created"] = params["created"];
 
                         JsonObject uiMsgPayload;
-                        uiMsgPayload["returnCode"] = 0;
+                        uiMsgPayload["returnCode"]       = 0;
                         uiMsgPayload["connectionClosed"] = true;
-                        uiMsgPayload["lastCommand"] = lastCommand;
+                        uiMsgPayload["lastCommand"]      = lastCommand;
 
                         JsonObject executeResponse;
                         executeResponse["executeAgent"] = "SOIP";
 
                         JsonObject jsonResponse;
                         jsonResponse["target"] = "TV";
-                        jsonResponse["type"] = "sky.legacy";
+                        jsonResponse["type"]   = "sky.legacy";
 
                         JsonArray executions;
                         JsonObject execution;
-                        execution["_type"] = "sky.legacy";
-                        execution["action"] = "command.navigation";
-                        execution["domain"] = "TV";
-                        execution["target"] = "client";
+                        execution["_type"]   = "sky.legacy";
+                        execution["action"]  = "command.cancel";
+                        execution["domain"]  = "TV";
+                        execution["target"]  = "client";
                         execution["success"] = "200";
-
-                        JsonArray entities;
-                        JsonObject entity;
-                        entity["name"] = "home";
-                        entity["targetId"] = "1002";
-                        entities.Add(entity);
-                        execution["entities"] = entities;
-
                         executions.Add(execution);
-                        jsonResponse["executions"] = executions;
 
+                        jsonResponse["executions"]      = executions;
                         executeResponse["jsonResponse"] = jsonResponse;
                         executeResponse["responseTime"] = 5;
 
                         uiMsgPayload["executeResponse"] = executeResponse;
-                        uiResponse["msgPayload"] = uiMsgPayload;
+                        uiResponse["msgPayload"]        = uiMsgPayload;
 
-                        LOGINFO("Sending smart home nav-home response (handled by BartonMatter)");
+                        LOGINFO("Sending command.cancel response to suppress UI error (BartonMatter handled the command)");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
             }
         }
     }
-    
-    // Send original message only if NOT a smart home command
+
+    // Pass through all non-smart-home messages unchanged
     if (!isSmartHomeCommand) {
         sendNotify_("onServerMessage", params);
     }
