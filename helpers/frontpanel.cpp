@@ -41,16 +41,12 @@
 
 #if defined(HAS_API_POWERSTATE)
 #include "libIBus.h"
-#include <interfaces/IPowerManager.h>
-
-using namespace WPEFramework;
-using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
+#include "pwrMgr.h"
 #endif
 
 #include "UtilsJsonRpc.h"
 #include "UtilsLogging.h"
 #include "UtilssyncPersistFile.h"
-#include "PowerManagerInterface.h"
 #include "UtilsSearchRDKProfile.h"
 
 #define FP_SETTINGS_FILE_JSON "/opt/fp_service_preferences.json"
@@ -85,7 +81,6 @@ namespace WPEFramework
         static int m_currentBlinkListIndex = 0;
         static std::vector<std::string> m_lights;
         static device::List <device::FrontPanelIndicator> fpIndicators;
-        static PowerManagerInterfaceRef _powerManagerPlugin;
 
         static Core::TimerType<BlinkInfo> blinkTimer(64 * 1024, "BlinkTimer");
 
@@ -128,18 +123,10 @@ namespace WPEFramework
         {
         }
 
-        CFrontPanel* CFrontPanel::instance(PluginHost::IShell *service)
+        CFrontPanel* CFrontPanel::instance()
         {
             if (!initDone)
             {
-                if (nullptr != service)
-                {
-                    _powerManagerPlugin = PowerManagerInterfaceBuilder(_T("org.rdk.PowerManager"))
-                                      .withIShell(service)
-                                      .withRetryIntervalMS(200)
-                                      .withRetryCount(25)
-                                      .createInterface();
-                }
                 if (!s_instance)
                     s_instance = new CFrontPanel;
 #ifdef USE_DS
@@ -161,18 +148,13 @@ namespace WPEFramework
 
 #if defined(HAS_API_POWERSTATE)
                     {
-                        Core::hresult res = Core::ERROR_GENERAL;
-                        PowerState pwrStateCur = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
-                        PowerState pwrStatePrev = WPEFramework::Exchange::IPowerManager::POWER_STATE_UNKNOWN;
-                        ASSERT (_powerManagerPlugin);
-                        if (_powerManagerPlugin) {
-                            res = _powerManagerPlugin->GetPowerState(pwrStateCur, pwrStatePrev);
-                            if (Core::ERROR_NONE == res)
-                            {
-                                if (pwrStateCur == WPEFramework::Exchange::IPowerManager::POWER_STATE_ON)
-                                    powerStatus = true;
-                            }
-                            LOGINFO("pwrStateCur[%d] pwrStatePrev[%d] powerStatus[%d]", pwrStateCur, pwrStatePrev, powerStatus);
+                        IARM_Bus_PWRMgr_GetPowerState_Param_t param;
+                        IARM_Result_t res = IARM_Bus_Call(IARM_BUS_PWRMGR_NAME, IARM_BUS_PWRMGR_API_GetPowerState,
+                            (void*)&param, sizeof(param));
+
+                        if (res == IARM_RESULT_SUCCESS) {
+                            if (param.curState == IARM_BUS_PWRMGR_POWERSTATE_ON)
+                                powerStatus = true;
                         }
                     }
 #endif

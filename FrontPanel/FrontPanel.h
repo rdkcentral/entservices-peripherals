@@ -23,12 +23,6 @@
 #include "Module.h"
 #include "libIARM.h"
 #include "frontpanel.h"
-#include <interfaces/IPowerManager.h>
-#include "PowerManagerInterface.h"
-
-using namespace WPEFramework;
-using PowerState = WPEFramework::Exchange::IPowerManager::PowerState;
-using ThermalTemperature = WPEFramework::Exchange::IPowerManager::ThermalTemperature;
 
 #define DATA_LED  "data_led"
 #define RECORD_LED "record_led"
@@ -85,38 +79,6 @@ namespace WPEFramework {
 		// will receive a JSONRPC message as a notification, in case this method is called.
         class FrontPanel : public PluginHost::IPlugin, public PluginHost::JSONRPC {
         private:
-            class PowerManagerNotification : public Exchange::IPowerManager::IModeChangedNotification {
-            private:
-                PowerManagerNotification(const PowerManagerNotification&) = delete;
-                PowerManagerNotification& operator=(const PowerManagerNotification&) = delete;
-            
-            public:
-                explicit PowerManagerNotification(FrontPanel& parent)
-                    : _parent(parent)
-                {
-                }
-                ~PowerManagerNotification() override = default;
-            
-            public:
-                void OnPowerModeChanged(const PowerState currentState, const PowerState newState) override
-                {
-                    _parent.onPowerModeChanged(currentState, newState);
-                }
-
-                template <typename T>
-                T* baseInterface()
-                {
-                    static_assert(std::is_base_of<T, PowerManagerNotification>(), "base type mismatch");
-                    return static_cast<T*>(this);
-                }
-
-                BEGIN_INTERFACE_MAP(PowerManagerNotification)
-                INTERFACE_ENTRY(Exchange::IPowerManager::IModeChangedNotification)
-                END_INTERFACE_MAP
-            
-            private:
-                FrontPanel& _parent;
-            };
 
             // We do not allow this plugin to be copied !!
             FrontPanel(const FrontPanel&) = delete;
@@ -139,7 +101,6 @@ namespace WPEFramework {
             void setClockTestPattern(bool show);
 
             void loadPreferences();
-            void InitializePowerManager(PluginHost::IShell *service);
 
             //Begin methods
             uint32_t setBrightnessWrapper(const JsonObject& parameters, JsonObject& response);
@@ -164,14 +125,16 @@ namespace WPEFramework {
             virtual const string Initialize(PluginHost::IShell* shell) override;
             virtual void Deinitialize(PluginHost::IShell* service) override;
             virtual string Information() const override { return {}; }
-            void onPowerModeChanged(const PowerState currentState, const PowerState newState);
             void updateLedTextPattern();
-            void registerEventHandlers();
 
             BEGIN_INTERFACE_MAP(FrontPanel)
             INTERFACE_ENTRY(PluginHost::IPlugin)
             INTERFACE_ENTRY(PluginHost::IDispatcher)
             END_INTERFACE_MAP
+        private:
+            void InitializeIARM();
+            void DeinitializeIARM();
+            static void powerModeChange(const char *owner, IARM_EventId_t eventId, void *data, size_t len);
         public:
             static FrontPanel* _instance;
         private:
@@ -181,9 +144,6 @@ namespace WPEFramework {
             TestPatternInfo m_updateTimer;
             bool           m_runUpdateTimer;
             std::mutex      m_updateTimerMutex;
-            PowerManagerInterfaceRef _powerManagerPlugin;
-            Core::Sink<PowerManagerNotification> _pwrMgrNotification;
-            bool _registeredEventHandlers;
 
         };
 	} // namespace Plugin
