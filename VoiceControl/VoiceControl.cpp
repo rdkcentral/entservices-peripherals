@@ -826,9 +826,9 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             pclose(pipe);
                         }
                         
-                        // Send vrexResponse with executeResponse but EMPTY executions array.
-                        // The UI gets the response structure it expects,
-                        // but has no actions to execute — should close silently.
+                        // Use the same pattern as "go to settings" (which closes silently):
+                        // _type:"sky.legacy" + known action + success:"200"
+                        // Using command.navigation.home — navigates home (already there = no-op).
                         JsonObject uiResponse;
                         uiResponse["msgType"] = "vrexResponse";
                         uiResponse["trx"] = params["trx"];
@@ -846,7 +846,18 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         jsonResponse["target"] = "TV";
                         jsonResponse["type"] = "sky.legacy";
 
-                        JsonArray executions;  // empty array — nothing to execute
+                        JsonArray executions;
+                        JsonObject execution;
+                        execution["_type"] = "sky.legacy";
+                        execution["action"] = "command.navigation.home";
+                        execution["domain"] = "TV";
+                        execution["target"] = "client";
+                        execution["success"] = "200";
+
+                        JsonArray entities;
+                        execution["entities"] = entities;
+
+                        executions.Add(execution);
                         jsonResponse["executions"] = executions;
 
                         executeResponse["jsonResponse"] = jsonResponse;
@@ -855,7 +866,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"] = uiMsgPayload;
 
-                        LOGINFO("Sending smart home success response with empty executions (handled by BartonMatter)");
+                        LOGINFO("Sending smart home nav-home response (handled by BartonMatter)");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
