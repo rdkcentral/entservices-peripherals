@@ -849,12 +849,16 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         JsonArray executions;
                         JsonObject execution;
                         execution["_type"] = "sky.legacy";
-                        execution["action"] = "command.navigation.home";
+                        execution["action"] = "command.navigation";
                         execution["domain"] = "TV";
                         execution["target"] = "client";
                         execution["success"] = "200";
 
                         JsonArray entities;
+                        JsonObject entity;
+                        entity["name"] = "home";
+                        entity["targetId"] = "1002";
+                        entities.Add(entity);
                         execution["entities"] = entities;
 
                         executions.Add(execution);
