@@ -826,7 +826,9 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                             pclose(pipe);
                         }
                         
-                        // Create SUCCESS response (like "Go home", NOT like silence error)
+                        // Create SUCCESS response with no executeResponse.
+                        // The command was handled externally by BartonMatter,
+                        // so the UI has nothing to execute — it will just close cleanly.
                         JsonObject uiResponse;
                         
                         uiResponse["msgType"] = "vrexResponse";
@@ -837,33 +839,10 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["returnCode"] = 0;
                         uiMsgPayload["connectionClosed"] = true;
                         uiMsgPayload["lastCommand"] = lastCommand;
-                     
-                        JsonObject executeResponse;
-                        executeResponse["executeAgent"] = "SOIP";
                         
-                        JsonObject jsonResponse;
-                        jsonResponse["target"] = "TV";
-                        jsonResponse["type"] = "sky.legacy";
-                        
-                        // Create execution with success indicator (like "Go home")
-                        JsonArray executions;
-                        JsonObject execution;
-                        execution["_type"] = "sky.legacy";
-                        execution["action"] = "command.smarthome";
-                        execution["domain"] = "TV";
-                        execution["target"] = "client";
-                        execution["success"] = "200";
-                        
-                        executions.Add(execution);
-                        jsonResponse["executions"] = executions;
-                        
-                        executeResponse["jsonResponse"] = jsonResponse;
-                        executeResponse["responseTime"] = 5;
-                        
-                        uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"] = uiMsgPayload;
                         
-                        LOGINFO("Sending smart home success response");
+                        LOGINFO("Sending smart home success response (handled by BartonMatter)");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
