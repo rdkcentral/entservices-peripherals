@@ -818,11 +818,23 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         isSmartHomeCommand = true;
                         LOGINFO("Smart home app launch command detected: \"%s\" - launching app", transcription.c_str());
 
-                        FILE* pipe = popen(
-                            "curl -s --header \"Sky-Enable-Debugger: -\" --data \"\" "
-                            "\"http://127.0.0.1:9001/as/apps/action/launch?appId=jsruntime_player11\"",
-                            "r");
-                        if (pipe) pclose(pipe);
+                        const char* launchCmd =
+                            "curl --header \"Sky-Enable-Debugger: -\" --data \"\" "
+                            "http://127.0.0.1:9001/as/apps/action/launch?appId=jsruntime_player1 2>&1";
+                        LOGINFO("Executing launch command: %s", launchCmd);
+                        FILE* pipe = popen(launchCmd, "r");
+                        if (pipe) {
+                            char buffer[512];
+                            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                                size_t blen = strlen(buffer);
+                                if (blen > 0 && buffer[blen-1] == '\n') buffer[blen-1] = '\0';
+                                LOGINFO("curl launch response: %s", buffer);
+                            }
+                            int rc = pclose(pipe);
+                            LOGINFO("curl exit code: %d", rc);
+                        } else {
+                            LOGERR("ERROR - popen failed for smart home app launch command");
+                        }
 
                         // Suppress UI voice overlay with command.cancel
                         JsonObject uiResponse;
