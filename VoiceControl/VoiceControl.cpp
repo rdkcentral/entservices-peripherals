@@ -857,7 +857,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         JsonArray executions;
                         JsonObject execution;
                         execution["_type"]   = "sky.legacy";
-                        execution["action"]  = "command.cancel";
+                        execution["action"]  = "command.chat";
                         execution["domain"]  = "TV";
                         execution["target"]  = "client";
                         execution["success"] = "200";
