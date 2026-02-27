@@ -862,7 +862,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         execution["target"]  = "client";
                         JsonArray chatEntities;
                         JsonObject chatEntity;
-                        chatEntity["value"] = "Opening your Smart Home app!";
+                        chatEntity["value"] = "Rome wasn't built in a day, neither your smart home was. Welcome back!";
                         chatEntities.Add(chatEntity);
                         execution["entities"] = chatEntities;
                         execution["success"] = "200";
@@ -933,7 +933,16 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         execution["target"]  = "client";
                         JsonArray chatEntities;
                         JsonObject chatEntity;
-                        chatEntity["value"] = "Happy to help!";
+                        static const char* const kFunnyResponses[] = {
+                            "Let there be light, as my Emperor commands.",
+                            "As you wish, my sovereign. The light fades.",
+                            "The gods requested permission. You granted it. Light appears.",
+                            "Even the stars dim at your request, my sovereign."
+                        };
+                        static int kFunnyResponseIndex = 0;
+                        const char* funnyMsg = kFunnyResponses[kFunnyResponseIndex % 4];
+                        kFunnyResponseIndex++;
+                        chatEntity["value"] = funnyMsg;
                         chatEntities.Add(chatEntity);
                         execution["entities"] = chatEntities;
                         execution["success"] = "200";
