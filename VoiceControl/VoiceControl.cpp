@@ -860,6 +860,11 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         execution["action"]  = "command.chat";
                         execution["domain"]  = "TV";
                         execution["target"]  = "client";
+                        JsonArray chatEntities;
+                        JsonObject chatEntity;
+                        chatEntity["value"] = "Opening your Smart Home app!";
+                        chatEntities.Add(chatEntity);
+                        execution["entities"] = chatEntities;
                         execution["success"] = "200";
                         executions.Add(execution);
 
@@ -870,7 +875,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"]        = uiMsgPayload;
 
-                        LOGINFO("Sending command.cancel to suppress UI overlay after smart home app launch");
+                        LOGINFO("Sending command.chat to show launch message in UI");
                         sendNotify_("onServerMessage", uiResponse);
 
                     // Detect smart home device-control commands → route to BartonMatter
@@ -923,9 +928,14 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         JsonArray executions;
                         JsonObject execution;
                         execution["_type"]   = "sky.legacy";
-                        execution["action"]  = "command.cancel";
+                        execution["action"]  = "command.chat";
                         execution["domain"]  = "TV";
                         execution["target"]  = "client";
+                        JsonArray chatEntities;
+                        JsonObject chatEntity;
+                        chatEntity["value"] = "Happy to help!";
+                        chatEntities.Add(chatEntity);
+                        execution["entities"] = chatEntities;
                         execution["success"] = "200";
                         executions.Add(execution);
 
@@ -936,7 +946,7 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         uiMsgPayload["executeResponse"] = executeResponse;
                         uiResponse["msgPayload"]        = uiMsgPayload;
 
-                        LOGINFO("Sending command.cancel response to suppress UI error (BartonMatter handled the command)");
+                        LOGINFO("Sending command.chat with 'Happy to help!' after BartonMatter handled the command");
                         sendNotify_("onServerMessage", uiResponse);
                     }
                 }
