@@ -798,12 +798,75 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                     std::transform(transcriptionLower.begin(), transcriptionLower.end(),
                                    transcriptionLower.begin(), ::tolower);
 
-                    // Detect smart home commands
-                    if (transcriptionLower.find("turn off") != std::string::npos ||
-                        transcriptionLower.find("turn on")  != std::string::npos ||
-                        transcriptionLower.find("light")    != std::string::npos ||
-                        transcriptionLower.find("thermostat") != std::string::npos ||
-                        transcriptionLower.find("plug")     != std::string::npos) {
+                    // Detect smart home app launch commands (checked first — most specific)
+                    static const char* const kLaunchPhrases[] = {
+                        "open my smart home",
+                        "show my connected devices",
+                        "launch smart home",
+                        "open device control",
+                        nullptr
+                    };
+                    bool isSmartHomeLaunch = false;
+                    for (int i = 0; kLaunchPhrases[i] != nullptr; ++i) {
+                        if (transcriptionLower.find(kLaunchPhrases[i]) != std::string::npos) {
+                            isSmartHomeLaunch = true;
+                            break;
+                        }
+                    }
+
+                    if (isSmartHomeLaunch) {
+                        isSmartHomeCommand = true;
+                        LOGINFO("Smart home app launch command detected: \"%s\" - launching app", transcription.c_str());
+
+                        FILE* pipe = popen(
+                            "curl -s --header \"Sky-Enable-Debugger: -\" --data \"\" "
+                            "\"http://127.0.0.1:9001/as/apps/action/launch?appId=jsruntime_player11\"",
+                            "r");
+                        if (pipe) pclose(pipe);
+
+                        // Suppress UI voice overlay with command.cancel
+                        JsonObject uiResponse;
+                        uiResponse["msgType"] = "vrexResponse";
+                        uiResponse["trx"]     = params["trx"];
+                        uiResponse["created"] = params["created"];
+
+                        JsonObject uiMsgPayload;
+                        uiMsgPayload["returnCode"]       = 0;
+                        uiMsgPayload["connectionClosed"] = true;
+                        uiMsgPayload["lastCommand"]      = lastCommand;
+
+                        JsonObject executeResponse;
+                        executeResponse["executeAgent"] = "SOIP";
+
+                        JsonObject jsonResponse;
+                        jsonResponse["target"] = "TV";
+                        jsonResponse["type"]   = "sky.legacy";
+
+                        JsonArray executions;
+                        JsonObject execution;
+                        execution["_type"]   = "sky.legacy";
+                        execution["action"]  = "command.cancel";
+                        execution["domain"]  = "TV";
+                        execution["target"]  = "client";
+                        execution["success"] = "200";
+                        executions.Add(execution);
+
+                        jsonResponse["executions"]      = executions;
+                        executeResponse["jsonResponse"] = jsonResponse;
+                        executeResponse["responseTime"] = 5;
+
+                        uiMsgPayload["executeResponse"] = executeResponse;
+                        uiResponse["msgPayload"]        = uiMsgPayload;
+
+                        LOGINFO("Sending command.cancel to suppress UI overlay after smart home app launch");
+                        sendNotify_("onServerMessage", uiResponse);
+
+                    // Detect smart home device-control commands → route to BartonMatter
+                    } else if (transcriptionLower.find("turn off") != std::string::npos ||
+                               transcriptionLower.find("turn on")  != std::string::npos ||
+                               transcriptionLower.find("light")    != std::string::npos ||
+                               transcriptionLower.find("thermostat") != std::string::npos ||
+                               transcriptionLower.find("plug")     != std::string::npos) {
 
                         isSmartHomeCommand = true;
                         LOGINFO("Smart home command detected: %s - routing to BartonMatter", transcription.c_str());
