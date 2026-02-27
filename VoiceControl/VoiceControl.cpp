@@ -934,10 +934,10 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                         JsonArray chatEntities;
                         JsonObject chatEntity;
                         static const char* const kFunnyResponses[] = {
-                            "Let there be light, as my Emperor commands.",
-                            "As you wish, my sovereign. The light fades.",
-                            "The gods requested permission. You granted it. Light appears.",
-                            "Even the stars dim at your request, my sovereign."
+                            "Your wish is my command, oh great one.",
+                            "As you decree, so it shall be done, my sovereign.",
+                            "The universe bends to your will. Consider it handled.",
+                            "Even the stars realign at your request, my sovereign."
                         };
                         static int kFunnyResponseIndex = 0;
                         const char* funnyMsg = kFunnyResponses[kFunnyResponseIndex % 4];
