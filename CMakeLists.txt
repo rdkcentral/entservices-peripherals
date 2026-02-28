@@ -40,18 +40,14 @@ if(RDK_SERVICES_L1_TEST)
     add_subdirectory(Tests/L1Tests)
 endif()
 
-if(PLUGIN_VOICECONTROL)
-    add_subdirectory(VoiceControl)
-endif()
-
-if(PLUGIN_REMOTECONTROL)
-	add_subdirectory(RemoteControl)
-endif()
-
-
 
 if(PLUGIN_MOTION_DETECTION)
     add_subdirectory(MotionDetection)
+endif()
+
+# Add a dummy install target to prevent cmake install failures when no plugins are enabled.  This is needed temporarily while plugins are moved to other repos.
+if(NOT RDK_SERVICES_L1_TEST AND NOT PLUGIN_MOTION_DETECTION)
+    install(CODE "message(STATUS \"entservices-peripherals: No install target available, ignoring...\")")
 endif()
 
 if(WPEFRAMEWORK_CREATE_IPKG_TARGETS)
