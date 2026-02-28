@@ -172,30 +172,29 @@ namespace WPEFramework
                         }
                     }
 #endif
-
+#if 0
                     globalLedBrightness = device::FrontPanelIndicator::getInstance("Power").getBrightness();
                     LOGINFO("Power light brightness, %d, power status %d", globalLedBrightness, powerStatus);
 
-		    profileType = searchRdkProfile();
-		    if (TV != profileType)
-		    {
+                    profileType = searchRdkProfile();
+                    if (TV != profileType)
+                    {
                         for (uint i = 0; i < fpIndicators.size(); i++)
-			{
+                        {
                             LOGWARN("Initializing light %s", fpIndicators.at(i).getName().c_str());
-			    if (powerStatus)
+                            if (powerStatus)
                                 device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setBrightness(globalLedBrightness, false);
-
-			    device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
-			}
-		    }
-		    else
-		    {
+                            device::FrontPanelIndicator::getInstance(fpIndicators.at(i).getName()).setState(false);
+                        }
+                    }
+                    else
+                    {
                         LOGWARN("Power LED Initializing is not set since we continue with bootloader patern");
-		    }
+                    }
 
-		    if (powerStatus)
+                    if (powerStatus)
                         device::FrontPanelIndicator::getInstance("Power").setState(true);
-
+#endif
                 }
                 catch (...)
                 {
@@ -229,8 +228,10 @@ namespace WPEFramework
             LOGWARN("Front panel start");
             try
             {
+#if 0
                 if (powerStatus)
                     device::FrontPanelIndicator::getInstance("Power").setState(true);
+#endif
 
                 device::List <device::FrontPanelIndicator> fpIndicators = device::FrontPanelConfig::getInstance().getIndicators();
                 for (uint i = 0; i < fpIndicators.size(); i++)
