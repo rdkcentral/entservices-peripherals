@@ -883,6 +883,9 @@ void VoiceControl::onServerMessage(ctrlm_voice_iarm_event_json_t* eventData)
                                transcriptionLower.find("turn on")  != std::string::npos ||
                                transcriptionLower.find("light")    != std::string::npos ||
                                transcriptionLower.find("thermostat") != std::string::npos ||
+							   transcriptionLower.find("color")    != std::string::npos ||
+							   transcriptionLower.find("brightness")  != std::string::npos ||
+							   transcriptionLower.find("level")    != std::string::npos ||
                                transcriptionLower.find("plug")     != std::string::npos) {
 
                         isSmartHomeCommand = true;
