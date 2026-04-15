@@ -25,6 +25,8 @@
 #include <syscall.h>
 #include "UtilsJsonRpc.h"
 
+#include <telemetry_busmessage_sender.h>
+
 #define NO_DETECTORS_FOUND    "0"
 #define MOTION_DETECTOR_INDEX "FP_MD"
 
@@ -319,16 +321,15 @@ namespace WPEFramework {
                 returnResponse(false);
             }
 
-            string rSensitivity(sensitivity);
-
-            if (currentMode == 1) {
-                response["value"] = rSensitivity;
-            }
-            else if (currentMode == 2) {
-                response["name"] = rSensitivity;
-            }
-            
             if (sensitivity) {
+                string rSensitivity(sensitivity);
+
+                if (currentMode == 1) {
+                    response["value"] = rSensitivity;
+                }
+                else if (currentMode == 2) {
+                    response["name"] = rSensitivity;
+                }
                 free(sensitivity);
             }
             returnResponse(true);
@@ -456,6 +457,8 @@ namespace WPEFramework {
             params["index"] = index;
             params["mode"] = eventType;
             sendNotify("onMotionEvent", params);
+
+			t2_event_d("SYST_INFO_NotifyMotion", 1);
 
             m_lastEventTime = std::chrono::system_clock::now();
         }

@@ -21,6 +21,7 @@ set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(PLUGIN_MOTIONDETECTION_STARTUPORDER "" CACHE STRING "To configure startup order of MotionDetection plugin")
 
 find_package(${NAMESPACE}Plugins REQUIRED)
+find_package(Telemetry)
 
 add_library(${MODULE_NAME} SHARED
         MotionDetection.cpp
@@ -38,6 +39,11 @@ target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Pl
 else(RDK_SERVICES_L1_TEST)
         target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Plugins)
 endif(RDK_SERVICES_L1_TEST)
+
+if(TELEMETRY_FOUND)
+    target_link_libraries(${MODULE_NAME} PRIVATE ${TELEMETRY_LIBRARIES})
+    target_include_directories(${MODULE_NAME} PRIVATE ${TELEMETRY_INCLUDE_DIRS})
+endif()
 
 install(TARGETS ${MODULE_NAME}
         DESTINATION lib/${STORAGE_DIRECTORY}/plugins)
