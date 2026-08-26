@@ -23,7 +23,7 @@
 #include "Module.h"
 #include "motionDetector.h"
 
-namespace WPEFramework {
+namespace Thunder {
 
     namespace Plugin {
 
@@ -88,4 +88,4 @@ namespace WPEFramework {
             std::chrono::system_clock::time_point m_lastEventTime;
         };
 	} // namespace Plugin
-} // namespace WPEFramework
+} // namespace Thunder

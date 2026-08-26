@@ -36,7 +36,7 @@
 
 using namespace std;
 
-namespace WPEFramework {
+namespace Thunder {
 
     namespace {
 
@@ -465,4 +465,4 @@ namespace WPEFramework {
         //End events
 
     } // namespace Plugin
-} // namespace WPEFramework
+} // namespace Thunder
