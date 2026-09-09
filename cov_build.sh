@@ -13,7 +13,6 @@ cmake -G Ninja -S "$GITHUB_WORKSPACE" -B build/entservices-peripherals \
 -DUSE_THUNDER_R4=ON \
 -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr" \
 -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake" \
--DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/install/usr/lib" \
 -DCMAKE_VERBOSE_MAKEFILE=ON \
 -DCMAKE_DISABLE_FIND_PACKAGE_IARMBus=ON \
 -DCMAKE_DISABLE_FIND_PACKAGE_RFC=ON \
@@ -24,6 +23,7 @@ cmake -G Ninja -S "$GITHUB_WORKSPACE" -B build/entservices-peripherals \
 -DPLUGIN_MOTION_DETECTION=ON \
 -DHIDE_NON_EXTERNAL_SYMBOLS=OFF \
 -DCMAKE_CXX_FLAGS="-DEXCEPTIONS_ENABLE=ON \
+-L$GITHUB_WORKSPACE/install/usr/lib \
 -I ${GITHUB_WORKSPACE}/entservices-testframework/Tests/headers \
 -I ${GITHUB_WORKSPACE}/entservices-testframework/Tests/headers/audiocapturemgr \
 -I ${GITHUB_WORKSPACE}/entservices-testframework/Tests/headers/rdk/ds \
