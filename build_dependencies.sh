@@ -98,6 +98,14 @@ cmake -G Ninja -S entservices-apis  -B build/entservices-apis \
 cmake --build build/entservices-apis --target install
 
 
+############################
+# Create stub md-hal library for Coverity build
+mkdir -p ${GITHUB_WORKSPACE}/install/usr/lib
+cat > ${GITHUB_WORKSPACE}/build_stub_md_hal.c << 'EOF'
+/* Stub library for md-hal */
+void md_hal_stub() {}
+EOF
+gcc -shared -fPIC -o ${GITHUB_WORKSPACE}/install/usr/lib/libmd-hal.so ${GITHUB_WORKSPACE}/build_stub_md_hal.c
 
 ############################
 # generating extrnal headers
