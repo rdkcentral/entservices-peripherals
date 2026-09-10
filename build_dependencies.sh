@@ -100,20 +100,23 @@ cmake --build build/entservices-apis --target install
 
 ############################
 # Create stub md-hal library for Coverity build (only if not found in system)
-if ! ldconfig -p | grep -q libmd-hal.so; then
+MD_HAL_STUB_DIR="${GITHUB_WORKSPACE}/install/usr/lib"
+MD_HAL_STUB_LIB="${MD_HAL_STUB_DIR}/libmd-hal.so"
+if [ ! -f "${MD_HAL_STUB_LIB}" ] && ! ldconfig -p 2>/dev/null | grep -qE 'libmd-hal\.so[[:space:]]'; then
     echo "md-hal library not found in system, creating stub..."
-    mkdir -p ${GITHUB_WORKSPACE}/install/usr/lib
-    cat > ${GITHUB_WORKSPACE}/build_stub_md_hal.c << 'EOF'
+    mkdir -p "${MD_HAL_STUB_DIR}"
+    tmp_c="$(mktemp)"
+    cat > "${tmp_c}" << 'EOF'
 /* Stub library for md-hal */
-void md_hal_stub() {}
+void md_hal_stub(void) {}
 EOF
-    gcc -shared -fPIC -o ${GITHUB_WORKSPACE}/install/usr/lib/libmd-hal.so ${GITHUB_WORKSPACE}/build_stub_md_hal.c
-    rm -f ${GITHUB_WORKSPACE}/build_stub_md_hal.c
+    gcc -shared -fPIC -o "${MD_HAL_STUB_LIB}" "${tmp_c}"
+    rm -f "${tmp_c}"
     echo "Stub md-hal library created successfully"
 else
-    echo "md-hal library found in system, skipping stub creation"
-fi
-
+    echo "md-hal library found, skipping stub creation"
+fi 
+ 
 ############################
 # generating extrnal headers
 cd $GITHUB_WORKSPACE
