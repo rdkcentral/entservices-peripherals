@@ -105,7 +105,7 @@ MD_HAL_STUB_LIB="${MD_HAL_STUB_DIR}/libmd-hal.so"
 if [ ! -f "${MD_HAL_STUB_LIB}" ] && ! ldconfig -p 2>/dev/null | grep -qE 'libmd-hal\.so[[:space:]]'; then
     echo "md-hal library not found in system, creating stub..."
     mkdir -p "${MD_HAL_STUB_DIR}"
-    tmp_c="$(mktemp)"
+    tmp_c="$(mktemp --suffix=.c)"
     cat > "${tmp_c}" << 'EOF'
 /* Stub library for md-hal */
 void md_hal_stub(void) {}
