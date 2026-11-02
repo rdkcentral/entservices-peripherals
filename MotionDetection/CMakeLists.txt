@@ -21,6 +21,7 @@ set(MODULE_NAME ${NAMESPACE}${PLUGIN_NAME})
 set(PLUGIN_MOTIONDETECTION_STARTUPORDER "" CACHE STRING "To configure startup order of MotionDetection plugin")
 
 find_package(${NAMESPACE}Plugins REQUIRED)
+find_package(${NAMESPACE}Helpers CONFIG REQUIRED)
 find_package(Telemetry)
 
 add_library(${MODULE_NAME} SHARED
@@ -33,6 +34,8 @@ set_target_properties(${MODULE_NAME} PROPERTIES
 
 target_include_directories(${MODULE_NAME} PRIVATE ../helpers)
 set_source_files_properties(MotionDetection.cpp PROPERTIES COMPILE_FLAGS "-fexceptions")
+
+target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}::${NAMESPACE}Helpers)
 
 if (NOT RDK_SERVICES_L1_TEST AND NOT RDK_SERVICE_L2_TEST)
 target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Plugins md-hal)
